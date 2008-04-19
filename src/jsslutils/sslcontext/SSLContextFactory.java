@@ -157,7 +157,7 @@ public class SSLContextFactory {
 	 * @return The KeyManagers to be used for initialising the SSLContext.
 	 * @throws SSLContextFactoryException
 	 */
-	public KeyManager[] getKeyManagers() throws SSLContextFactoryException {
+	protected KeyManager[] getKeyManagers() throws SSLContextFactoryException {
 		return null;
 	}
 	/**
@@ -166,7 +166,7 @@ public class SSLContextFactory {
 	 * @return The TrustManagers to be used for initialising the SSLContext.
 	 * @throws SSLContextFactoryException
 	 */
-	public TrustManager[] getTrustManagers() throws SSLContextFactoryException {
+	protected TrustManager[] getTrustManagers() throws SSLContextFactoryException {
 		return null;
 	}
 	/**
@@ -175,7 +175,7 @@ public class SSLContextFactory {
 	 * @return The SecureRandom to be used for initialising the SSLContext.
 	 * @throws SSLContextFactoryException
 	 */
-	public SecureRandom getSecureRandom() throws SSLContextFactoryException {
+	protected SecureRandom getSecureRandom() throws SSLContextFactoryException {
 		return null;
 	}
 	
@@ -183,7 +183,7 @@ public class SSLContextFactory {
 	 * SSLContextFactories are likely to contain sensitive information;
 	 * cloning is therefore not allowed.
 	 */
-	public final SSLContextFactory clone() throws CloneNotSupportedException {
+	protected final SSLContextFactory clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
 	}
 	
