@@ -301,13 +301,17 @@ public abstract class MiniSslClientServer {
 						acceptedSocket = fServerSocket.accept();
 						threadPoolExecutor.execute(new RequestHandler(
 								acceptedSocket));
-						synchronized (fServerSocket) {
-							if (!fServerSocket.isClosed())
-								fServerSocket.close();
-						}
 					} catch (IOException e) {
 						MiniSslClientServer.this.requestException = e;
 					}
+				}
+				try {
+					synchronized (fServerSocket) {
+						if (!fServerSocket.isClosed())
+							fServerSocket.close();
+					}
+				} catch (IOException e) {
+					MiniSslClientServer.this.requestException = e;
 				}
 			}
 		});

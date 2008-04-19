@@ -57,6 +57,7 @@ import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -92,9 +93,32 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 * @param enableRevocation sets whether certificate revocation should be 
 	 *  enabled.
 	 */
+	public PKIXSSLContextFactory(KeyStore keyStore, char[] keyPassword, KeyStore trustStore, boolean enableRevocation) {
+		super(keyStore, keyPassword, trustStore);
+		this.enableRevocation = enableRevocation;
+	}
+	/**
+	 * Builds an SSLContextFactory using the PKIX algorithm in the 
+	 *  TrustManagerFactory.
+	 * @param keyStore KeyStore that contains the key.
+	 * @param keyPassword password to the key.
+	 * @param trustStore KeyStore that contains the trusted X.509 certificates.
+	 * @param enableRevocation sets whether certificate revocation should be 
+	 *  enabled.
+	 */
 	public PKIXSSLContextFactory(KeyStore keyStore, String keyPassword, KeyStore trustStore, boolean enableRevocation) {
 		super(keyStore, keyPassword, trustStore);
 		this.enableRevocation = enableRevocation;
+	}
+	/**
+	 * Builds an SSLContextFactory using the PKIX algorithm in the 
+	 *  TrustManagerFactory. Certificate revocation is enabled by default.
+	 * @param keyStore KeyStore that contains the key.
+	 * @param keyPassword password to the key.
+	 * @param trustStore KeyStore that contains the trusted X.509 certificates.
+	 */
+	public PKIXSSLContextFactory(KeyStore keyStore, char[] keyPassword, KeyStore trustStore) {
+		this(keyStore, keyPassword, trustStore, true);
 	}
 	/**
 	 * Builds an SSLContextFactory using the PKIX algorithm in the 
@@ -114,7 +138,7 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 * @return PKIX-based trust managers corresponding to the trust store.
 	 */
 	@Override
-	public TrustManager[] getTrustManagers() throws SSLContextFactoryException {
+	protected TrustManager[] getRawTrustManagers() throws SSLContextFactoryException {
 		try {
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance("PKIX");
 			ManagerFactoryParameters trustParams = getTrustParams();
@@ -191,7 +215,7 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 * @throws SSLContextFactoryException
 	 */
 	public Collection<? extends CRL> getCrlCollection() throws SSLContextFactoryException {
-		return this.crlCollection;
+		return Collections.unmodifiableCollection(this.crlCollection);
 	}
 
 	/**
@@ -220,7 +244,7 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 * @throws SSLContextFactoryException
 	 */
 	public void addRemoteCrl(String crlUrl) throws SSLContextFactoryException, IOException, MalformedURLException {
-		crlCollection.add(fetchRemoteCrl(crlUrl));
+		this.crlCollection.add(fetchRemoteCrl(crlUrl));
 	}
 	
 	/**

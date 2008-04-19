@@ -33,30 +33,22 @@ POSSIBILITY OF SUCH DAMAGE.
 
 -----------------------------------------------------------------------*/
 
-package jsslutils.sslcontext.test;
+package jsslutils.sslcontext;
 
-import javax.net.ssl.SSLServerSocket;
-
-import jsslutils.sslcontext.TrustAllClientsX509SSLContextFactory;
-
+import javax.net.ssl.X509TrustManager;
 
 /**
- * Mini server that should accept any client certificate.
+ * This interface represents a wrapper for an X509TrustManager.
+ * This is intended to provide a way to customize TrustManagers in
+ * the X509SSLContextFactory (or subclasses).
  * 
- * @author Bruno Harbulot
+ * @author Bruno Harbulot.
  */
-public class TrustAllClientsServerTest extends MiniSslClientServer {
-	public void run() throws Exception {
-		TrustAllClientsX509SSLContextFactory sslContextFactory = 
-			new TrustAllClientsX509SSLContextFactory(getServerCertKeyStore(), "testtest", getCaKeyStore());
-		SSLServerSocket socket = prepareServerSocket(sslContextFactory.newInitializedSSLContext());
-		System.out.println("Server listening on port: "+socket.getLocalPort());
-		setServerRequestNumber(0);
-		runServer(socket);
-	}
-
-	public static void main(String[] args) throws Exception {
-		TrustAllClientsServerTest test = new TrustAllClientsServerTest();
-		test.run();
-	}
+public interface X509TrustManagerWrapper {
+	/**
+	 * Builds an X509TrustManager from another X509TrustManager.
+	 * @param trustManager original X509TrustManager.
+	 * @return wrapped X509TrustManager.
+	 */
+	public X509TrustManager wrapTrustManager(X509TrustManager trustManager);
 }
