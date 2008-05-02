@@ -30,11 +30,11 @@ Classes consuming an instance of SSLSocketFactory (subclasses included) should e
 *`PKIXSSLContextFactory`* is a subclass of `X509SSLContextFactory` that uses a *PKIX*-based trust manager. It also comprises methods to set up CRLs.
 
 
-= X509TrustManagerWrapper =
+= !X509TrustManagerWrapper =
 
 It is possible to wrap the `TrustManager`s created by an `SSLContextFactory` to add or relax certain rules using `SSLContextFactory.setTrustManagerWrapper(..)`.
 
-== TrustAllClientsWrappingTrustManager ==
+== !TrustAllClientsWrappingTrustManager ==
 For example, the following will create an `X509SSLContextFactory` that uses X.509 trust managers. However, it will trust any client using the `TrustAllClientsWrappingTrustManager.Wrapper`.
 
 {{{
@@ -45,6 +45,6 @@ sslContextFactory.lockTrustManagerWrapper();
 SSLServerSocket socket = prepareServerSocket(sslContextFactory.newInitializedSSLContext());
 }}}
 
-== GsiWrappingTrustManager ==
+== !GsiWrappingTrustManager ==
 
 Similarly, the `GsiWrappingTrustManager` should accept grid proxy-certificates. The current implementation does not strictly follow RFC 3820, yet. The GSI wrapping trust manager looks for the first non-CA certificate that has signed subsequent certificates in the chain and checks that the Subject DN of those certificates has been built by adding further 'CN=' entries to that non-CA certificate.
