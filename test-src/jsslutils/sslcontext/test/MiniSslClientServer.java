@@ -75,7 +75,7 @@ import jsslutils.sslcontext.SSLContextFactory.SSLContextFactoryException;
 
 /**
  * This class contains both a client and a server that can be used to build
- * small tests, to test the SSLContexxtFactory.
+ * small tests, to test the SSLContextFactory.
  * 
  * These examples come with a demo CA (a few certificates and keys). These are
  * not to be used in real-life application. DO NOT add them to your set of
@@ -197,8 +197,7 @@ public abstract class MiniSslClientServer {
 	 * @throws IOException
 	 */
 	public boolean runTest(SSLContext sslClientContext,
-			SSLContext sslServerContext) throws SSLContextFactoryException,
-			IOException {
+			SSLContext sslServerContext) throws IOException {
 		this.requestException = null;
 		boolean result = false;
 
