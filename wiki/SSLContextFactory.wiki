@@ -13,17 +13,38 @@ The package `jsslutils.sslcontext` provides `SSLSocketFactory` and sub-classes t
 
 For more details, please have a look at the [http://jsslutils.googlecode.com/svn/trunk/javadoc/index.html API documentation].
 
+= SSLContextFactories =
 
-= SSLContextFactory =
+== SSLContextFactory ==
 
 *`SSLContextFactory`* is default SSLContextFactory. It builds an SSLContext from default values, in particular, using `SSLContext.init(null,null,null)`, which calls the default relevant factories from highest priority provider.
 
 Classes consuming an instance of SSLSocketFactory (subclasses included) should expect *`newInitializedSSLContext(String contextProtocol)`* and *`newInitializedSSLContext()`* to return an initialised `SSLContext` ready to be used from creating socket factories.
 
-= X509SSLContextFactory =
+== X509SSLContextFactory ==
 
 *`X509SSLContextFactory`* is a subclass of `SSLSocketFactory` that creates an SSLSocketFactory using the *!SunX509* algorithm for both [http://java.sun.com/j2se/1.5.0/docs/api/javax/net/ssl/KeyManagerFactory.html KeyManagerFactory] and [http://java.sun.com/j2se/1.5.0/docs/api/javax/net/ssl/TrustManagerFactory.html TrustManagerFactory]. It can be initialised with a `KeyStore` for the key store (holding the private credentials) and the trust store.
 
-= PKIXSSLContextFactory =
+== PKIXSSLContextFactory ==
 
 *`PKIXSSLContextFactory`* is a subclass of `X509SSLContextFactory` that uses a *PKIX*-based trust manager. It also comprises methods to set up CRLs.
+
+
+= X509TrustManagerWrapper =
+
+It is possible to wrap the `TrustManager`s created by an `SSLContextFactory` to add or relax certain rules using `SSLContextFactory.setTrustManagerWrapper(..)`.
+
+== TrustAllClientsWrappingTrustManager ==
+For example, the following will create an `X509SSLContextFactory` that uses X.509 trust managers. However, it will trust any client using the `TrustAllClientsWrappingTrustManager.Wrapper`.
+
+{{{
+X509SSLContextFactory sslContextFactory = 
+	new X509SSLContextFactory(getServerCertKeyStore(), "testtest", getCaKeyStore());
+sslContextFactory.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
+sslContextFactory.lockTrustManagerWrapper();
+SSLServerSocket socket = prepareServerSocket(sslContextFactory.newInitializedSSLContext());
+}}}
+
+== GsiWrappingTrustManager ==
+
+Similarly, the `GsiWrappingTrustManager` should accept grid proxy-certificates. The current implementation does not strictly follow RFC 3820, yet. The GSI wrapping trust manager looks for the first non-CA certificate that has signed subsequent certificates in the chain and checks that the Subject DN of those certificates has been built by adding further 'CN=' entries to that non-CA certificate.
