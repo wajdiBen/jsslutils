@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.jsslutils</groupId>
 	<artifactId>jsslutils</artifactId>
-	<version>0.2</version>
+	<version>0.2.1</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils</name>
 	<url>http://code.google.com/p/jsslutils/</url>
@@ -32,6 +32,22 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<artifactId>maven-remote-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-test-resources</phase>
+						<goals>
+							<goal>process</goal>
+						</goals>
+						<configuration>
+							<resourceBundles>
+<resourceBundle>com.googlecode.jsslutils:jsslutils-test-certificates:1.0</resourceBundle>
+							</resourceBundles>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<excludes>
@@ -52,6 +68,12 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.jsslutils</groupId>
+			<artifactId>jsslutils-test-certificates</artifactId>
+			<version>1.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
