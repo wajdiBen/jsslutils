@@ -48,6 +48,7 @@ import java.net.Socket;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.cert.CRLException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidatorException;
@@ -72,6 +73,7 @@ import javax.net.ssl.SSLSessionContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import jsslutils.keystores.KeyStoreLoader;
 import jsslutils.sslcontext.SSLContextFactory.SSLContextFactoryException;
 
 /**
@@ -87,8 +89,10 @@ import jsslutils.sslcontext.SSLContextFactory.SSLContextFactoryException;
  */
 public abstract class MiniSslClientServer {
 	private static int testPort = 31050;
-	
-	private static String CERTIFICATES_DIRECTORY = System.getProperty("jsslutils.test.certificates",".");
+
+	private static String CERTIFICATES_DIRECTORY = System.getProperty(
+			"jsslutils.test.certificates",
+			"certificates/src/main/resources/certificates");
 
 	/**
 	 * Returns the store of CA certificates, to be used as a trust store. The
@@ -102,10 +106,16 @@ public abstract class MiniSslClientServer {
 	 */
 	public KeyStore getCaKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
-		KeyStore keyStore = KeyStore.getInstance("JKS");
-		keyStore.load(new FileInputStream(CERTIFICATES_DIRECTORY+File.separator+"jks"+File.separator+"dummy.jks"), "testtest"
-				.toCharArray());
-		return keyStore;
+		KeyStoreLoader ksLoader = new KeyStoreLoader();
+		ksLoader.setKeyStoreType("JKS");
+		ksLoader.setKeyStorePath(CERTIFICATES_DIRECTORY + File.separator
+				+ "jks" + File.separator + "dummy.jks");
+		ksLoader.setKeyStorePassword("testtest");
+		try {
+			return ksLoader.loadKeyStore();
+		} catch (NoSuchProviderException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -120,10 +130,16 @@ public abstract class MiniSslClientServer {
 	 */
 	public KeyStore getServerCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
-		KeyStore keyStore = KeyStore.getInstance("PKCS12");
-		keyStore.load(new FileInputStream(CERTIFICATES_DIRECTORY+File.separator+"localhost.p12"),
-				"testtest".toCharArray());
-		return keyStore;
+		KeyStoreLoader ksLoader = new KeyStoreLoader();
+		ksLoader.setKeyStoreType("PKCS12");
+		ksLoader.setKeyStorePath(CERTIFICATES_DIRECTORY + File.separator
+				+ "localhost.p12");
+		ksLoader.setKeyStorePassword("testtest");
+		try {
+			return ksLoader.loadKeyStore();
+		} catch (NoSuchProviderException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -140,10 +156,16 @@ public abstract class MiniSslClientServer {
 	 */
 	public KeyStore getGoodClientCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
-		KeyStore keyStore = KeyStore.getInstance("PKCS12");
-		keyStore.load(new FileInputStream(CERTIFICATES_DIRECTORY+File.separator+"testclient.p12"),
-				"testtest".toCharArray());
-		return keyStore;
+		KeyStoreLoader ksLoader = new KeyStoreLoader();
+		ksLoader.setKeyStoreType("PKCS12");
+		ksLoader.setKeyStorePath(CERTIFICATES_DIRECTORY + File.separator
+				+ "testclient.p12");
+		ksLoader.setKeyStorePassword("testtest");
+		try {
+			return ksLoader.loadKeyStore();
+		} catch (NoSuchProviderException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -161,10 +183,16 @@ public abstract class MiniSslClientServer {
 	 */
 	public KeyStore getBadClientCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
-		KeyStore keyStore = KeyStore.getInstance("PKCS12");
-		keyStore.load(new FileInputStream(CERTIFICATES_DIRECTORY+File.separator+"testclient-r.p12"),
-				"testtest".toCharArray());
-		return keyStore;
+		KeyStoreLoader ksLoader = new KeyStoreLoader();
+		ksLoader.setKeyStoreType("PKCS12");
+		ksLoader.setKeyStorePath(CERTIFICATES_DIRECTORY + File.separator
+				+ "testclient-r.p12");
+		ksLoader.setKeyStorePassword("testtest");
+		try {
+			return ksLoader.loadKeyStore();
+		} catch (NoSuchProviderException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -181,7 +209,8 @@ public abstract class MiniSslClientServer {
 	public Collection<X509CRL> getLocalCRLs() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException,
 			CRLException {
-		InputStream inStream = new FileInputStream(CERTIFICATES_DIRECTORY+File.separator+"newca.crl");
+		InputStream inStream = new FileInputStream(CERTIFICATES_DIRECTORY
+				+ File.separator + "newca.crl");
 		CertificateFactory cf = CertificateFactory.getInstance("X.509");
 		X509CRL crl = (X509CRL) cf.generateCRL(inStream);
 		inStream.close();
@@ -193,8 +222,10 @@ public abstract class MiniSslClientServer {
 	/**
 	 * This runs the main test: it runs a client and a server.
 	 * 
-	 * @param sslClientContext SSLContext to be used by the client.
-	 * @param sslServerContext SSLContext to be used by the server.
+	 * @param sslClientContext
+	 *            SSLContext to be used by the client.
+	 * @param sslServerContext
+	 *            SSLContext to be used by the server.
 	 * @return true if the server accepted the SSL certificate.
 	 * @throws SSLContextFactoryException
 	 * @throws IOException
@@ -275,20 +306,22 @@ public abstract class MiniSslClientServer {
 	}
 
 	/**
-	 * Sets the number of requests the mini server is supposed to accept.
-	 * This defaults to 1, with a 4-second timeout.
+	 * Sets the number of requests the mini server is supposed to accept. This
+	 * defaults to 1, with a 4-second timeout.
 	 * 
 	 * @param serverRequestNumber
 	 */
 	protected void setServerRequestNumber(int serverRequestNumber) {
 		this.serverRequestNumber = serverRequestNumber;
 	}
+
 	private int serverRequestNumber = 1;
-	
+
 	/**
 	 * Starts the mini server.
 	 * 
-	 * @param fServerSocket bound SSLServerSocket for this server.
+	 * @param fServerSocket
+	 *            bound SSLServerSocket for this server.
 	 */
 	protected void runServer(final SSLServerSocket fServerSocket) {
 		final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(2,
@@ -321,13 +354,14 @@ public abstract class MiniSslClientServer {
 	}
 
 	/**
-	 * Creates and binds the SSLServerSocket to a port after trying a few 
-	 * port numbers.
+	 * Creates and binds the SSLServerSocket to a port after trying a few port
+	 * numbers.
 	 * 
-	 * @param sslServerContext SSLContext from which to build the socket and
-	 *        its SSLSocketFactory.
+	 * @param sslServerContext
+	 *            SSLContext from which to build the socket and its
+	 *            SSLSocketFactory.
 	 * @return Bound SSLServerSocket.
-	 */ 
+	 */
 	protected SSLServerSocket prepareServerSocket(SSLContext sslServerContext) {
 		SSLServerSocketFactory sslServerSocketFactory = sslServerContext
 				.getServerSocketFactory();
@@ -350,18 +384,18 @@ public abstract class MiniSslClientServer {
 		return serverSocket;
 	}
 
-
 	private Exception requestException;
+
 	/**
 	 * Small class that handles a server request.
 	 */
 	protected class RequestHandler implements Runnable {
 		private final Socket clientSocket;
-	
+
 		public RequestHandler(Socket clientSocket) {
 			this.clientSocket = clientSocket;
 		}
-	
+
 		public void run() {
 			System.out.println("Accepted connection.");
 			try {
@@ -370,13 +404,13 @@ public abstract class MiniSslClientServer {
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 						clientSocket.getInputStream()));
 				String inputLine;
-	
+
 				while ((inputLine = in.readLine()) != null) {
 					System.out.println("Client says: " + inputLine);
 					if (inputLine.length() == 0)
 						break;
 				}
-	
+
 				String theOutput = "HTTP/1.0 200 OK\r\n";
 				theOutput += "Content-type: text/plain\r\n";
 				theOutput += "\r\n";
@@ -390,7 +424,7 @@ public abstract class MiniSslClientServer {
 						theOutput += "Cipher suite: "
 								+ sslSession.getCipherSuite() + "\r\n";
 						theOutput += "Client certificates: \r\n";
-	
+
 						X509Certificate[] certs = (X509Certificate[]) sslSession
 								.getPeerCertificates();
 						for (X509Certificate cert : certs) {
@@ -401,7 +435,7 @@ public abstract class MiniSslClientServer {
 					}
 				}
 				out.print(theOutput);
-	
+
 				out.close();
 				in.close();
 			} catch (Exception e) {
