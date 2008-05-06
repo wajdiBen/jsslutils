@@ -1,0 +1,43 @@
+#summary This is the roadmap for the project
+#labels Phase-Requirements,Featured
+
+This is not intended to be a massive library. I develop it depending on the use-cases I encounter. Please get in touch if you have comments or suggestions.
+
+= Original motivation =
+
+The original objectives for this library was to provide a consistent way of setting SSL-related parameters in [http://www.restlet.org/ Restlet] and [http://www.mortbay.org/jetty/ Jetty].
+
+== Restlet ==
+
+The integration into Restlet is currently being addressed as part of [http://restlet.tigris.org/issues/show_bug.cgi?id=489 Restlet issue 489]. I am now the SSL extension committer.
+
+== Jetty ==
+
+The use in conjunction with Jetty is being addressed in [http://jira.codehaus.org/browse/JETTY-554 JETTY-554]. I also posted some examples on [http://permalink.gmane.org/gmane.comp.java.jetty.general/11386 the Jetty-dev list]. (Please use `buildSSLContext` instead of `newInitializedSSLContext`.)
+
+= Changes =
+
+== SVN: 0.3-SNAPSHOT ==
+
+ * Marked `newInitializedSSLContext` as deprecated in jSSLutils 0.3+, it is replaced with `buildSSLContext`. (Sorry about the inconvenience, but there were only 3 or 4 downloads at the time of the change.)
+ * Added a `KeyStoreLoader` utility class, the aim of which is to load a keystore, perhaps from default system properties and allow for `KeyStore`s that are not file-based for example.
+
+== Version 0.2.1 ==
+
+ * Packaging for [http://maven.apache.org/ Maven].
+ * Separated the demo certificates into their own Maven bundle.
+
+== Version 0.2 ==
+ * Added !TrustManager wrappers.
+ * Removed TrustAllClientsSSLContextFactory: this feature has now been replaced with a !TrustManager wrapper.
+ * Added a GSI !TrustManager wrapper.
+
+== Version 0.1 ==
+ * SSLContextFactory.
+ * X509SSLContextFactory.
+ * PKIXSSLContextFactory.
+ * TrustAllClientsSSLContextFactory.
+ * Test cases.
+
+= Plans for the future =
+ * Add !KeyManager wrappers similarly to the !TrustManager wrappers to support features such as [http://java.sun.com/javase/6/docs/api/javax/net/ssl/X509ExtendedKeyManager.html X509ExtendedKeyManager.chooseEngineClientAlias].
