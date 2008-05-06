@@ -19,7 +19,7 @@ For more details, please have a look at the [http://jsslutils.googlecode.com/svn
 
 *`SSLContextFactory`* is default SSLContextFactory. It builds an SSLContext from default values, in particular, using `SSLContext.init(null,null,null)`, which calls the default relevant factories from highest priority provider.
 
-Classes consuming an instance of SSLSocketFactory (subclasses included) should expect *`newInitializedSSLContext(String contextProtocol)`* and *`newInitializedSSLContext()`* to return an initialised `SSLContext` ready to be used from creating socket factories.
+Classes consuming an instance of SSLSocketFactory (subclasses included) should expect *`buildSSLContext(String contextProtocol)`* (~~`newInitializedSSLContext(..)`~~ prior to version 0.3) and *`buildSSLContext()`* to return an initialised `SSLContext` ready to be used from creating socket factories.
 
 == X509SSLContextFactory ==
 
@@ -42,7 +42,7 @@ X509SSLContextFactory sslContextFactory =
 	new X509SSLContextFactory(getServerCertKeyStore(), "testtest", getCaKeyStore());
 sslContextFactory.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
 sslContextFactory.lockTrustManagerWrapper();
-SSLServerSocket socket = prepareServerSocket(sslContextFactory.newInitializedSSLContext());
+SSLServerSocket socket = prepareServerSocket(sslContextFactory.buildSSLContext());
 }}}
 
 == !GsiWrappingTrustManager ==
