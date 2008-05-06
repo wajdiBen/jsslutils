@@ -8,12 +8,12 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, 
+ * Redistributions of source code must retain the above copyright notice, 
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright 
+ * Redistributions in binary form must reproduce the above copyright 
       notice, this list of conditions and the following disclaimer in the 
       documentation and/or other materials provided with the distribution.
-    * Neither the name of the The University of Manchester nor the names of 
+ * Neither the name of the The University of Manchester nor the names of 
       its contributors may be used to endorse or promote products derived 
       from this software without specific prior written permission.
 
@@ -45,39 +45,42 @@ import jsslutils.sslcontext.X509SSLContextFactory;
 import org.junit.Test;
 
 /**
- * Tests the SSLContext configured for X.509 without CRLs.
- * It should accept both the "good" and the "bad" certificate.
+ * Tests the SSLContext configured for X.509 without CRLs. It should accept both
+ * the "good" and the "bad" certificate.
  * 
  * @author Bruno Harbulot.
- *
+ * 
  */
 public class SimpleX509Test extends MiniSslClientServer {
 	protected KeyStore clientStore = null;
 	protected SSLContextFactory clientSSLContextFactory;
 	protected SSLContextFactory serverSSLContextFactory;
-	
+
 	@Test
 	public void testGoodClient() throws Exception {
 		this.clientStore = getGoodClientCertKeyStore();
 		assertTrue("Loaded keystore", true);
 		assertTrue(runTest());
 	}
-	
+
 	@Test
 	public void testBadClient() throws Exception {
 		this.clientStore = getBadClientCertKeyStore();
 		assertTrue("Loaded keystore", true);
 		assertTrue(runTest());
 	}
-	
+
 	public boolean prepareSSLContextFactories() throws Exception {
-		this.clientSSLContextFactory = new X509SSLContextFactory(this.clientStore, "testtest", getCaKeyStore());
-		this.serverSSLContextFactory = new X509SSLContextFactory(getServerCertKeyStore(), "testtest", getCaKeyStore());
+		this.clientSSLContextFactory = new X509SSLContextFactory(
+				this.clientStore, "testtest", getCaKeyStore());
+		this.serverSSLContextFactory = new X509SSLContextFactory(
+				getServerCertKeyStore(), "testtest", getCaKeyStore());
 		return true;
 	}
-	
+
 	public boolean runTest() throws Exception {
 		assertTrue(prepareSSLContextFactories());
-		return runTest(clientSSLContextFactory.newInitializedSSLContext(), serverSSLContextFactory.newInitializedSSLContext());
+		return runTest(clientSSLContextFactory.buildSSLContext(),
+				serverSSLContextFactory.buildSSLContext());
 	}
 }

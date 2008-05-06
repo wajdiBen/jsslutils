@@ -1,17 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.jsslutils</groupId>
-	<artifactId>jsslutils-test-certificates</artifactId>
-	<version>1.0</version>
-	<packaging>jar</packaging>
-	<name>jSSLutils :: Test certificates</name>
+	<artifactId>jsslutils-root</artifactId>
+	<version>0.3-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>jSSLutils (Root project)</name>
 	<url>http://code.google.com/p/jsslutils/</url>
-	<description>These are a few test keys and certificates (password is 'testtest').</description>
+	<description>This is a set of SSL-related utilities for Java.</description>
 	<licenses>
 		<license>
-			<name>Public Domain</name>
+			<name>BSD</name>
 			<url>LICENSE.txt</url>
 			<distribution>repo</distribution>
 		</license>
@@ -25,18 +27,16 @@
 	<build>
 		<plugins>
 			<plugin>
-				<artifactId>maven-remote-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>bundle</goal>
-						</goals>
-					</execution>
-				</executions>
+				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<includes><include>**/*</include></includes>
+					<source>1.5</source>
+					<target>1.5</target>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+	<modules>
+		<module>jsslutils</module>
+		<module>certificates</module>
+	</modules>
 </project>

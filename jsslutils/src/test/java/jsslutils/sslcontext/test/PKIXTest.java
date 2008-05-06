@@ -8,12 +8,12 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, 
+ * Redistributions of source code must retain the above copyright notice, 
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright 
+ * Redistributions in binary form must reproduce the above copyright 
       notice, this list of conditions and the following disclaimer in the 
       documentation and/or other materials provided with the distribution.
-    * Neither the name of the The University of Manchester nor the names of 
+ * Neither the name of the The University of Manchester nor the names of 
       its contributors may be used to endorse or promote products derived 
       from this software without specific prior written permission.
 
@@ -41,36 +41,42 @@ import jsslutils.sslcontext.PKIXSSLContextFactory;
 import org.junit.Test;
 
 /**
- * Tests the SSLContext configured for PKIX with CRLs.
- * It should accept the "good" certificate but reject the "bad"
- * certificate because it has been revoked.
+ * Tests the SSLContext configured for PKIX with CRLs. It should accept the
+ * "good" certificate but reject the "bad" certificate because it has been
+ * revoked.
  * 
  * @author Bruno Harbulot.
- *
+ * 
  */
 public class PKIXTest extends SimpleX509Test {
 	@Override
 	public boolean prepareSSLContextFactories() throws Exception {
-		PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(this.clientStore, "testtest", getCaKeyStore());
+		PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
+				this.clientStore, "testtest", getCaKeyStore());
 		clientSSLContextFactory.addCrlCollection(getLocalCRLs());
 		this.clientSSLContextFactory = clientSSLContextFactory;
-		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(getServerCertKeyStore(), "testtest", getCaKeyStore());
+		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
+				getServerCertKeyStore(), "testtest", getCaKeyStore());
 		serverSSLContextFactory.addCrlCollection(getLocalCRLs());
-		serverSSLContextFactory.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl");
-		serverSSLContextFactory.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/root-crl.crl");
-		serverSSLContextFactory.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-ca-crl.crl");
-		serverSSLContextFactory.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-root-crl.crl");
+		serverSSLContextFactory
+				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl");
+		serverSSLContextFactory
+				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/root-crl.crl");
+		serverSSLContextFactory
+				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-ca-crl.crl");
+		serverSSLContextFactory
+				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-root-crl.crl");
 		this.serverSSLContextFactory = serverSSLContextFactory;
 		return true;
 	}
-	
+
 	@Test
 	public void testGoodClient() throws Exception {
 		this.clientStore = getGoodClientCertKeyStore();
 		assertTrue("Loaded keystore", true);
 		assertTrue(runTest());
 	}
-	
+
 	@Test
 	public void testBadClient() throws Exception {
 		this.clientStore = getBadClientCertKeyStore();

@@ -56,7 +56,7 @@ import javax.net.ssl.X509TrustManager;
  * @author Bruno Harbulot
  * 
  */
-public class X509SSLContextFactory extends SSLContextFactory {
+public class X509SSLContextFactory extends SSLContextFactory {	
 	private KeyStore keyStore;
 	private char[] keyPassword;
 	private KeyStore trustStore;
@@ -157,7 +157,7 @@ public class X509SSLContextFactory extends SSLContextFactory {
 	 * @return Key managers corresponding to the key store.
 	 */
 	@Override
-	protected KeyManager[] getKeyManagers() throws SSLContextFactoryException {
+	public KeyManager[] getKeyManagers() throws SSLContextFactoryException {
 		try {
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 			kmf.init(this.keyStore, this.keyPassword);
@@ -194,7 +194,7 @@ public class X509SSLContextFactory extends SSLContextFactory {
 	 * @return Wrapped trust managers from getRawTrustManagers().
 	 */
 	@Override
-	protected TrustManager[] getTrustManagers() throws SSLContextFactoryException {
+	public TrustManager[] getTrustManagers() throws SSLContextFactoryException {
 		TrustManager[] trustManagers = getRawTrustManagers();
 		X509TrustManagerWrapper wrapper = x509TrustManagerWrapper;
 		if (wrapper != null) {

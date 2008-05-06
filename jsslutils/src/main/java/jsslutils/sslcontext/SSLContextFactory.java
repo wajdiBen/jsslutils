@@ -40,6 +40,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.SecureRandom;
+import java.security.Security;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -58,7 +59,11 @@ import javax.net.ssl.TrustManager;
 public class SSLContextFactory {
 	private String contextProtocol = "SSLv3";
 	private Provider contextProvider = null;
+	@Deprecated
 	private String contextProviderName = null;
+	private Provider defaultSecureRandomProvider = null;
+	private String defaultSecureRandomAlgorithm = null;
+	private SecureRandom secureRandom = null;
 	
 	/**
 	 * Sets the Provider used for creating the SSLContext (defaults to null).
@@ -68,6 +73,20 @@ public class SSLContextFactory {
 		this.contextProvider = contextProvider;
 		this.contextProviderName = null;
 	}
+	
+	/**
+	 * Sets the Provider used for creating the SSLContext (defaults to null),
+	 * using Security.getProvider(contextProviderName).
+	 * @param contextProviderName name of the Provider to use.
+	 */
+	public void setContextProvider(String contextProviderName) {
+		if (contextProviderName != null) {
+			this.contextProvider =  Security.getProvider(contextProviderName);
+		} else {
+			this.contextProvider = null;
+		}
+	}
+	
 	/**
 	 * Returns the Provider that is used for creating the SSLContext.
 	 * @return Provider that is used for creating the SSLContext.
@@ -75,16 +94,19 @@ public class SSLContextFactory {
 	public Provider getContextProvider() {
 		return this.contextProvider;
 	}
+	
 	/**
 	 * Sets the name of the Provider used for creating the SSLContext 
 	 *  (defaults to null). It is only used if there is no Provider set
 	 *  using setContextProvider(Provider).
 	 * @param contextProviderName name of the Provider to use.
 	 */
+	@Deprecated
 	public void setContextProviderName(String contextProviderName) {
 		this.contextProviderName = contextProviderName;
 		this.contextProvider = null;
 	}
+	
 	/**
 	 * Returns the name of the provider that is used for creating the 
 	 *  SSLContext, if one is set. If there is an actual provider set,
@@ -92,9 +114,11 @@ public class SSLContextFactory {
 	 *  context provider name, set as a String.
 	 * @return Name of the context Provider.
 	 */
+	@Deprecated
 	public String getContextProviderName() {
-		return (this.contextProvider != null) ? this.contextProvider.getName() : this.contextProviderName;
+		return (this.contextProvider != null) ? this.contextProvider.getName() : null;
 	}
+	
 	/**
 	 * Sets the protocol to be used for creating a new SSLContext. If no 
 	 *  value is set, this defaults to "SSLv3".
@@ -111,6 +135,64 @@ public class SSLContextFactory {
 		return this.contextProtocol;
 	}
 	
+	
+	
+	/**
+	 * Returns the default SecureRandom Provider.
+	 * @return The default SecureRandom Provider.
+	 */
+	public Provider getDefaultSecureRandomProvider() {
+		return this.defaultSecureRandomProvider;
+	}
+
+	/**
+	 * Sets the default SecureRandom Provider.
+	 * @param secureRandomProvider the default SecureRandom Provider to set
+	 */
+	public void setDefaultSecureRandomProvider(Provider secureRandomProvider) {
+		this.defaultSecureRandomProvider = secureRandomProvider;
+	}
+	
+	/**
+	 * Sets the default SecureRandom Provider, by name.
+	 * @param secureRandomProviderName the default SecureRandom Provider to set
+	 */
+	public void setDefaultSecureRandomProvider(String secureRandomProviderName) {
+		this.defaultSecureRandomProvider = Security.getProvider(secureRandomProviderName);
+	}
+
+	/**
+	 * Returns the default SecureRandom algorithm.
+	 * @return The default SecureRandom algorithm.
+	 */
+	public String getDefaultSecureRandomAlgorithm() {
+		return this.defaultSecureRandomAlgorithm;
+	}
+
+	/**
+	 * Sets the default SecureRandom algorithm.
+	 * @param secureRandomAlgorithm the default SecureRandom algorithm to set
+	 */
+	public void setDefaultSecureRandomAlgorithm(String secureRandomAlgorithm) {
+		this.defaultSecureRandomAlgorithm = secureRandomAlgorithm;
+	}
+
+	/**
+	 * @see SSLContextFactory#buildSSLContext()
+	 */
+	@Deprecated
+	public SSLContext newInitializedSSLContext() throws SSLContextFactoryException {
+		return buildSSLContext(contextProtocol);
+	}
+	
+	/**
+	 * @see SSLContextFactory#buildSSLContext(String)
+	 */
+	@Deprecated
+	public SSLContext newInitializedSSLContext(String contextProtocol) throws SSLContextFactoryException {
+		return buildSSLContext(contextProtocol);
+	}
+	
 	/**
 	 * Creates a new SSLContext with the context protocol set with 
 	 *  setContextProtocol(String). The default value is "SSLv3".
@@ -118,9 +200,10 @@ public class SSLContextFactory {
 	 *  getTrustManagers() and getSecureRandom().
 	 * @throws SSLContextFactoryException
 	 */
-	public SSLContext newInitializedSSLContext() throws SSLContextFactoryException {
-		return newInitializedSSLContext(contextProtocol);
+	public SSLContext buildSSLContext() throws SSLContextFactoryException {
+		return buildSSLContext(contextProtocol);
 	}
+	
 	/**
 	 * Creates a new SSLContext initialised with getKeyManagers(), 
 	 *  getTrustManagers() and getSecureRandom(). The provider is that
@@ -130,7 +213,7 @@ public class SSLContextFactory {
 	 *  getTrustManagers() and getSecureRandom().
 	 * @throws SSLContextFactoryException
 	 */
-	public SSLContext newInitializedSSLContext(String contextProtocol) throws SSLContextFactoryException {
+	public SSLContext buildSSLContext(String contextProtocol) throws SSLContextFactoryException {
 		try {
 			SSLContext sslContext;
 			if (this.contextProvider != null) {
@@ -157,7 +240,7 @@ public class SSLContextFactory {
 	 * @return The KeyManagers to be used for initialising the SSLContext.
 	 * @throws SSLContextFactoryException
 	 */
-	protected KeyManager[] getKeyManagers() throws SSLContextFactoryException {
+	public KeyManager[] getKeyManagers() throws SSLContextFactoryException {
 		return null;
 	}
 	/**
@@ -166,17 +249,44 @@ public class SSLContextFactory {
 	 * @return The TrustManagers to be used for initialising the SSLContext.
 	 * @throws SSLContextFactoryException
 	 */
-	protected TrustManager[] getTrustManagers() throws SSLContextFactoryException {
+	public TrustManager[] getTrustManagers() throws SSLContextFactoryException {
 		return null;
 	}
+	
+	
+	
+	/**
+	 * Sets the SecureRandom to be used for initialising the SSLContext.
+	 * @param secureRandom the secureRandom to set
+	 */
+	public void setSecureRandom(SecureRandom secureRandom) {
+		this.secureRandom = secureRandom;
+	}
+
 	/**
 	 * Returns the SecureRandom to be used for initialising the SSLContext.
-	 *  Defaults to null.
+	 *  Defaults to SecureRandom.getInstance(...) if 
+	 *  defaultSecureRandomAlgorithm has been set (with optional provider)
+	 *  or null otherwise.
+	 * It will only try to create a new SecureRandom from the default value
+	 * if the current value is null. Reset it to null if you want to
+	 * re-create a new SecureRandom from the default values.
 	 * @return The SecureRandom to be used for initialising the SSLContext.
 	 * @throws SSLContextFactoryException
 	 */
-	protected SecureRandom getSecureRandom() throws SSLContextFactoryException {
-		return null;
+	public SecureRandom getSecureRandom() throws SSLContextFactoryException {
+		if ((this.secureRandom == null) && (this.defaultSecureRandomAlgorithm != null)) {
+			try {
+				if (this.defaultSecureRandomProvider != null) {
+					this.secureRandom = SecureRandom.getInstance(this.defaultSecureRandomAlgorithm, this.defaultSecureRandomProvider);
+				} else {
+					this.secureRandom = SecureRandom.getInstance(this.defaultSecureRandomAlgorithm);
+				}
+			} catch (NoSuchAlgorithmException e) {
+				throw new SSLContextFactoryException("Error initialising SecureRandom.",e);
+			}
+		}
+		return this.secureRandom;
 	}
 	
 	/**
