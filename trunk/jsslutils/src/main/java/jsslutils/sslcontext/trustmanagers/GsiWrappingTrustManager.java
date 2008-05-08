@@ -8,12 +8,12 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, 
+ * Redistributions of source code must retain the above copyright notice, 
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright 
+ * Redistributions in binary form must reproduce the above copyright 
       notice, this list of conditions and the following disclaimer in the 
       documentation and/or other materials provided with the distribution.
-    * Neither the name of the The University of Manchester nor the names of 
+ * Neither the name of the The University of Manchester nor the names of 
       its contributors may be used to endorse or promote products derived 
       from this software without specific prior written permission.
 
@@ -48,134 +48,157 @@ import javax.security.auth.x500.X500Principal;
 import jsslutils.sslcontext.X509TrustManagerWrapper;
 
 /**
- * TrustManager that accepts GSI proxy certificates (clients).
- * The aim is to follow RFC 3820; the current implementation is not strict 
- * enough.
+ * TrustManager that accepts GSI proxy certificates (clients). The aim is to
+ * follow RFC 3820; the current implementation is not strict enough.
  * 
  * @author Bruno Harbulot.
  */
 public class GsiWrappingTrustManager implements X509TrustManager {
 	private X509TrustManager trustManager;
+
 	/**
 	 * Creates a new instance from an existing X509TrustManager.
-	 * @param trustManager X509TrustManager to wrap.
+	 * 
+	 * @param trustManager
+	 *            X509TrustManager to wrap.
 	 */
 	public GsiWrappingTrustManager(X509TrustManager trustManager) {
 		this.trustManager = trustManager;
 	}
-	
+
 	/**
 	 * Checks that the client is trusted; the aim is to follow RFC 3820.
 	 */
-	public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {		
-		int nonCACertIndex = chain.length-1 ;
+	public void checkClientTrusted(X509Certificate[] chain, String authType)
+			throws CertificateException {
+		int nonCACertIndex = chain.length - 1;
 		/*
 		 * Find the first X509Certificate in the chain that is not a CA.
 		 */
-		for ( ; nonCACertIndex >= 0 ; nonCACertIndex--) {
+		for (; nonCACertIndex >= 0; nonCACertIndex--) {
 			X509Certificate cert = chain[nonCACertIndex];
 			if (cert.getBasicConstraints() == -1) {
 				break;
 			}
 		}
-		
+
 		/*
 		 * Test the first non-CA certificate with the default method.
 		 */
-		X509Certificate[] normalChain = new X509Certificate[chain.length-nonCACertIndex];
-		for (int i = nonCACertIndex; i < chain.length ; i++) {
-			normalChain[i-nonCACertIndex] = chain[i];
+		X509Certificate[] normalChain = new X509Certificate[chain.length
+				- nonCACertIndex];
+		for (int i = nonCACertIndex; i < chain.length; i++) {
+			normalChain[i - nonCACertIndex] = chain[i];
 		}
 		trustManager.checkClientTrusted(normalChain, authType);
-		
+
 		/*
-		 * Walk through the rest of the chain to check that the 
-		 * subsequent certificates are GSI proxies.
+		 * Walk through the rest of the chain to check that the subsequent
+		 * certificates are GSI proxies.
 		 */
 		boolean prevIsLimited = false;
-		
+
 		X509Certificate cert = chain[nonCACertIndex];
-		
+
 		X500Principal certSubjectPrincipal = cert.getSubjectX500Principal();
-		X500Principal certIssuerPrincipal = cert.getIssuerX500Principal();			
+		X500Principal certIssuerPrincipal = cert.getIssuerX500Principal();
 		String subjectDN = certSubjectPrincipal.getName(X500Principal.RFC2253);
 		String issuerDN = certIssuerPrincipal.getName(X500Principal.RFC2253);
-		
-		for (int i = nonCACertIndex-1; i >= 0; i--) {
+
+		for (int i = nonCACertIndex - 1; i >= 0; i--) {
 			X509Certificate prevCert = cert;
 			X500Principal prevCertSubjectPrincipal = certSubjectPrincipal;
-			
+
 			cert = chain[i];
 			certSubjectPrincipal = cert.getSubjectX500Principal();
 			certIssuerPrincipal = cert.getIssuerX500Principal();
-			
+
 			subjectDN = certSubjectPrincipal.getName(X500Principal.RFC2253);
 			issuerDN = certIssuerPrincipal.getName(X500Principal.RFC2253);
-			
+
 			/*
 			 * Check the time validity of the current certificate.
 			 */
 			cert.checkValidity();
-			
+
 			try {
 				cert.verify(prevCert.getPublicKey());
 			} catch (InvalidKeyException e) {
-				throw new CertificateException("Failed to verify certificate '"+subjectDN
-						+"' issued by '"+issuerDN+"' with public key from '"
-						+prevCertSubjectPrincipal.getName(X500Principal.RFC2253)+"'.",e);
+				throw new CertificateException("Failed to verify certificate '"
+						+ subjectDN
+						+ "' issued by '"
+						+ issuerDN
+						+ "' with public key from '"
+						+ prevCertSubjectPrincipal
+								.getName(X500Principal.RFC2253) + "'.", e);
 			} catch (NoSuchAlgorithmException e) {
-				throw new CertificateException("Failed to verify certificate '"+subjectDN
-						+"' issued by '"+issuerDN+"' with public key from '"
-						+prevCertSubjectPrincipal.getName(X500Principal.RFC2253)+"'.",e);
+				throw new CertificateException("Failed to verify certificate '"
+						+ subjectDN
+						+ "' issued by '"
+						+ issuerDN
+						+ "' with public key from '"
+						+ prevCertSubjectPrincipal
+								.getName(X500Principal.RFC2253) + "'.", e);
 			} catch (NoSuchProviderException e) {
-				throw new CertificateException("Failed to verify certificate '"+subjectDN
-						+"' issued by '"+issuerDN+"' with public key from '"
-						+prevCertSubjectPrincipal.getName(X500Principal.RFC2253)+"'.",e);
+				throw new CertificateException("Failed to verify certificate '"
+						+ subjectDN
+						+ "' issued by '"
+						+ issuerDN
+						+ "' with public key from '"
+						+ prevCertSubjectPrincipal
+								.getName(X500Principal.RFC2253) + "'.", e);
 			} catch (SignatureException e) {
-				throw new CertificateException("Failed to verify certificate '"+subjectDN
-						+"' issued by '"+issuerDN+"' with public key from '"
-						+prevCertSubjectPrincipal.getName(X500Principal.RFC2253)+"'.",e);
+				throw new CertificateException("Failed to verify certificate '"
+						+ subjectDN
+						+ "' issued by '"
+						+ issuerDN
+						+ "' with public key from '"
+						+ prevCertSubjectPrincipal
+								.getName(X500Principal.RFC2253) + "'.", e);
 			}
-			
+
 			if (prevIsLimited) {
 				throw new CertificateException("Previous proxy is limited!");
 			}
-			
+
 			if (!subjectDN.endsWith(issuerDN)) {
-				throw new CertificateException("Proxy subject DN must end with issuer DN, got '"+subjectDN+"'!");
+				throw new CertificateException(
+						"Proxy subject DN must end with issuer DN, got '"
+								+ subjectDN + "'!");
 			}
-			
+
 			/*
-			 * New-style proxies must start with CN=<a number>,
-			 * old-style ones use CN=proxy or CN=limited proxy
+			 * New-style proxies must start with CN=<a number>, old-style ones
+			 * use CN=proxy or CN=limited proxy
 			 */
 			if (!subjectDN.startsWith("CN=")) {
-				throw new CertificateException("Proxy must start with 'CN=', got '"+subjectDN+"'!");
+				throw new CertificateException(
+						"Proxy must start with 'CN=', got '" + subjectDN + "'!");
 			}
-			
+
 			if (subjectDN.startsWith("CN=limited proxy")) {
 				prevIsLimited = true;
 			}
 		}
 	}
-	
+
 	/**
-	 * Checks that the server is trusted; in this case, it delegates this check to
-	 * the trust manager it wraps.
+	 * Checks that the server is trusted; in this case, it delegates this check
+	 * to the trust manager it wraps.
 	 */
 	public void checkServerTrusted(X509Certificate[] chain, String authType)
 			throws CertificateException {
 		this.trustManager.checkServerTrusted(chain, authType);
 	}
-	
+
 	/**
-	 * Returns the accepted issuers; in this case, it delegates this to
-	 * the trust manager it wraps.
+	 * Returns the accepted issuers; in this case, it delegates this to the
+	 * trust manager it wraps.
 	 */
 	public X509Certificate[] getAcceptedIssuers() {
 		return this.trustManager.getAcceptedIssuers();
 	}
-	
+
 	/**
 	 * Wrapper factory class that wraps existing X509TrustManagers into
 	 * GsiWrappingTrustManagers.
@@ -185,11 +208,13 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 	public static class Wrapper implements X509TrustManagerWrapper {
 		/**
 		 * Builds an X509TrustManager from another X509TrustManager.
-		 * @param trustManager original X509TrustManager.
+		 * 
+		 * @param trustManager
+		 *            original X509TrustManager.
 		 * @return wrapped X509TrustManager.
 		 */
 		public X509TrustManager wrapTrustManager(X509TrustManager trustManager) {
-			return new GsiWrappingTrustManager((X509TrustManager)trustManager);
+			return new GsiWrappingTrustManager((X509TrustManager) trustManager);
 		}
 	}
 }

@@ -129,11 +129,18 @@ public final class KeyStoreLoader {
 		} else {
 			keyStore = KeyStore.getInstance(this.keyStoreType);
 		}
-		FileInputStream keyStoreInputStream = ((this.keyStorePath != null) && (!"NONE"
-				.equals(this.keyStorePath))) ? new FileInputStream(
-				this.keyStorePath) : null;
-		keyStore.load(keyStoreInputStream, (password != null) ? password
-				: this.keyStorePassword);
+		FileInputStream keyStoreInputStream = null;
+		try {
+			keyStoreInputStream = ((this.keyStorePath != null) && (!"NONE"
+					.equals(this.keyStorePath))) ? new FileInputStream(
+					this.keyStorePath) : null;
+			keyStore.load(keyStoreInputStream, (password != null) ? password
+					: this.keyStorePassword);
+		} finally {
+			if (keyStoreInputStream != null) {
+				keyStoreInputStream.close();
+			}
+		}
 		return keyStore;
 	}
 

@@ -8,12 +8,12 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, 
+ * Redistributions of source code must retain the above copyright notice, 
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright 
+ * Redistributions in binary form must reproduce the above copyright 
       notice, this list of conditions and the following disclaimer in the 
       documentation and/or other materials provided with the distribution.
-    * Neither the name of the The University of Manchester nor the names of 
+ * Neither the name of the The University of Manchester nor the names of 
       its contributors may be used to endorse or promote products derived 
       from this software without specific prior written permission.
 
@@ -35,6 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package jsslutils.sslcontext;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -44,185 +45,336 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 /**
  * This class is a factory that provides methods for creating an SSLContext
- *  configured with the settings set in this factory: using the SunX509
- *  algorithm for both the key manager and the trust manager. These managers
- *  are created from the KeyStores passed to the constructor.
- *  Unlike the PKIX implementation, this implementation does not support CRLs.
+ * configured with the settings set in this factory: using the SunX509 algorithm
+ * for both the key manager and the trust manager. These managers are created
+ * from the KeyStores passed to the constructor. Unlike the PKIX implementation,
+ * this implementation does not support CRLs.
  * 
  * @author Bruno Harbulot
  * 
  */
-public class X509SSLContextFactory extends SSLContextFactory {	
+public class X509SSLContextFactory extends SSLContextFactory {
 	private KeyStore keyStore;
 	private char[] keyPassword;
 	private KeyStore trustStore;
-	
+
+	private boolean keyManagerWrapperLocked = false;
+	private X509KeyManagerWrapper x509KeyManagerWrapper;
+
 	private boolean trustManagerWrapperLocked = false;
 	private X509TrustManagerWrapper x509TrustManagerWrapper;
-	
+
+	private CallbackHandler keyPasswordCallbackHandler;
+
 	/**
-	 * Builds an SSLContextFactory using the SunX509 algorithm in the 
-	 *  TrustManagerFactory.
-	 * @param keyStore KeyStore that contains the key.
-	 * @param keyPassword password to the key.
-	 * @param trustStore KeyStore that contains the trusted X.509 certificates.
+	 * Builds an SSLContextFactory using the SunX509 algorithm in the
+	 * TrustManagerFactory.
+	 * 
+	 * @param keyStore
+	 *            KeyStore that contains the key.
+	 * @param keyPassword
+	 *            password to the key.
+	 * @param trustStore
+	 *            KeyStore that contains the trusted X.509 certificates.
 	 */
-	public X509SSLContextFactory(KeyStore keyStore, String keyPassword, KeyStore trustStore) {
-		this(keyStore, (keyPassword != null) ? keyPassword.toCharArray() : null, trustStore);
+	public X509SSLContextFactory(KeyStore keyStore, String keyPassword,
+			KeyStore trustStore) {
+		this(keyStore,
+				(keyPassword != null) ? keyPassword.toCharArray() : null,
+				trustStore);
 	}
-	
+
 	/**
-	 * Builds an SSLContextFactory using the SunX509 algorithm in the 
-	 *  TrustManagerFactory.
-	 * @param keyStore KeyStore that contains the key.
-	 * @param keyPassword password to the key.
-	 * @param trustStore KeyStore that contains the trusted X.509 certificates.
+	 * Builds an SSLContextFactory using the SunX509 algorithm in the
+	 * TrustManagerFactory.
+	 * 
+	 * @param keyStore
+	 *            KeyStore that contains the key.
+	 * @param keyPassword
+	 *            password to the key.
+	 * @param trustStore
+	 *            KeyStore that contains the trusted X.509 certificates.
 	 */
-	public X509SSLContextFactory(KeyStore keyStore, char[] keyPassword, KeyStore trustStore) {
+	public X509SSLContextFactory(KeyStore keyStore, char[] keyPassword,
+			KeyStore trustStore) {
 		this.keyStore = keyStore;
 		this.keyPassword = keyPassword;
 		this.trustStore = trustStore;
 	}
-	
+
 	/**
 	 * Returns the key store.
+	 * 
 	 * @return the key store.
 	 */
 	protected KeyStore getKeyStore() {
 		return this.keyStore;
 	}
-	
+
 	/**
 	 * Returns the trust store.
+	 * 
 	 * @return the trust store.
 	 */
 	protected KeyStore getTrustStore() {
 		return this.trustStore;
 	}
-	
+
 	/**
-	 * Sets the X509TrustManagerWrapper that will be used to wrap
-	 * the trust managers returned by getRawTrustManagers() before
-	 * being returned by getTrustManagers().
-	 * @param trustManagerWrapper wrapper (may be null).
+	 * Sets the X509KeyManagerWrapper that will be used to wrap the trust
+	 * managers returned by getRawKeyManagers() before being returned by
+	 * getKeyManagers().
+	 * 
+	 * @param keyManagerWrapper
+	 *            wrapper (may be null).
 	 */
-	public final void setTrustManagerWrapper(X509TrustManagerWrapper trustManagerWrapper) throws LockedSettingsException {
+	public final void setKeyManagerWrapper(
+			X509KeyManagerWrapper keyManagerWrapper)
+			throws LockedSettingsException {
+		synchronized (this) {
+			if (!this.keyManagerWrapperLocked) {
+				this.x509KeyManagerWrapper = keyManagerWrapper;
+			} else {
+				throw new LockedSettingsException(
+						"KeyManagerWrapper already set and locked.");
+			}
+		}
+	}
+
+	/**
+	 * Gets the X509KeyManagerWrapper that will be used to wrap the trust
+	 * managers returned by getRawKeyManagers() before being returned by
+	 * getKeyManagers().
+	 * 
+	 * @return wrapper.
+	 */
+	public final X509KeyManagerWrapper getKeyManagerWrapper() {
+		return this.x509KeyManagerWrapper;
+	}
+
+	/**
+	 * Locks the key manager wrapper so that it can no longer be set afterwards.
+	 */
+	public final void lockKeyManagerWrapper() {
+		synchronized (this) {
+			this.keyManagerWrapperLocked = true;
+		}
+	}
+
+	/**
+	 * Checks whether-or-not the key manager wrapper can still be changed.
+	 * 
+	 * @return true if it's locked, false if it can be changed.
+	 */
+	public final boolean isKeyManagerWrapperLocked() {
+		synchronized (this) {
+			return this.keyManagerWrapperLocked;
+		}
+	}
+
+	/**
+	 * Sets the X509TrustManagerWrapper that will be used to wrap the trust
+	 * managers returned by getRawTrustManagers() before being returned by
+	 * getTrustManagers().
+	 * 
+	 * @param trustManagerWrapper
+	 *            wrapper (may be null).
+	 */
+	public final void setTrustManagerWrapper(
+			X509TrustManagerWrapper trustManagerWrapper)
+			throws LockedSettingsException {
 		synchronized (this) {
 			if (!this.trustManagerWrapperLocked) {
 				this.x509TrustManagerWrapper = trustManagerWrapper;
 			} else {
-				throw new LockedSettingsException("TrustManagerWrapper already set and locked.");
+				throw new LockedSettingsException(
+						"TrustManagerWrapper already set and locked.");
 			}
 		}
 	}
-	
+
 	/**
-	 * Gets the X509TrustManagerWrapper that will be used to wrap
-	 * the trust managers returned by getRawTrustManagers() before
-	 * being returned by getTrustManagers().
+	 * Gets the X509TrustManagerWrapper that will be used to wrap the trust
+	 * managers returned by getRawTrustManagers() before being returned by
+	 * getTrustManagers().
+	 * 
 	 * @return wrapper.
 	 */
 	public final X509TrustManagerWrapper getTrustManagerWrapper() {
 		return this.x509TrustManagerWrapper;
 	}
-	
+
 	/**
 	 * Locks the trust manager wrapper so that it can no longer be set
 	 * afterwards.
 	 */
 	public final void lockTrustManagerWrapper() {
-		synchronized(this) {
+		synchronized (this) {
 			this.trustManagerWrapperLocked = true;
 		}
 	}
-	
+
 	/**
 	 * Checks whether-or-not the trust manager wrapper can still be changed.
+	 * 
 	 * @return true if it's locked, false if it can be changed.
 	 */
 	public final boolean isTrustManagerWrapperLocked() {
-		synchronized(this) {
+		synchronized (this) {
 			return this.trustManagerWrapperLocked;
 		}
 	}
-	
-	
+
+	/**
+	 * Sets the CallbackHandler that will be used to obtain the key password if
+	 * this password is still null. (Optional.)
+	 * 
+	 * @param keyPasswordCallbackHandler
+	 *            CallbackHandler that will be used to get the password.
+	 */
+	public void setKeyPasswordCallbackHandler(
+			CallbackHandler keyPasswordCallbackHandler) {
+		this.keyPasswordCallbackHandler = keyPasswordCallbackHandler;
+	}
+
 	/**
 	 * Builds KeyManagers from the key store provided in the constructor, using
-	 *  a SunX509 KeyManagerFactory.
+	 * a SunX509 KeyManagerFactory.
+	 * 
 	 * @return Key managers corresponding to the key store.
+	 */
+	protected KeyManager[] getRawKeyManagers()
+			throws SSLContextFactoryException {
+		if (this.keyStore != null) {
+			try {
+				KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+				if ((this.keyPassword != null)
+						|| (this.keyPasswordCallbackHandler == null)) {
+					kmf.init(this.keyStore, this.keyPassword);
+				} else {
+					PasswordCallback passwordCallback = new PasswordCallback(
+							"KeyStore password? ", false);
+					this.keyPasswordCallbackHandler
+							.handle(new Callback[] { passwordCallback });
+					char[] password = passwordCallback.getPassword();
+					kmf.init(this.keyStore, password);
+					if (password != null) {
+						for (int i = 0; i < password.length; i++) {
+							password[i] = 0;
+						}
+					}
+				}
+				return kmf.getKeyManagers();
+			} catch (NoSuchAlgorithmException e) {
+				throw new SSLContextFactoryException(e);
+			} catch (KeyStoreException e) {
+				throw new SSLContextFactoryException(e);
+			} catch (UnrecoverableKeyException e) {
+				throw new SSLContextFactoryException(e);
+			} catch (IOException e) {
+				throw new SSLContextFactoryException(e);
+			} catch (UnsupportedCallbackException e) {
+				throw new SSLContextFactoryException(e);
+			}
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Builds KeyManagers by wrapping getRawKeyManagers(), if a wrapper has been
+	 * set up (return the original key manager otherwise).
+	 * 
+	 * @return Wrapped key managers from getRawKeyManagers().
 	 */
 	@Override
 	public KeyManager[] getKeyManagers() throws SSLContextFactoryException {
-		try {
-			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-			kmf.init(this.keyStore, this.keyPassword);
-			return kmf.getKeyManagers();
-		} catch (NoSuchAlgorithmException e) {
-			throw new SSLContextFactoryException(e);
-		} catch (KeyStoreException e) {
-			throw new SSLContextFactoryException(e);
-		} catch (UnrecoverableKeyException e) {
-			throw new SSLContextFactoryException(e);
+		KeyManager[] keyManagers = getRawKeyManagers();
+		X509KeyManagerWrapper wrapper = x509KeyManagerWrapper;
+		if ((wrapper != null) && (keyManagers != null)) {
+			for (int i = 0; i < keyManagers.length; i++) {
+				if (keyManagers[i] instanceof X509KeyManager)
+					keyManagers[i] = wrapper
+							.wrapKeyManager((X509KeyManager) keyManagers[i]);
+			}
 		}
+		return keyManagers;
 	}
-	
+
 	/**
-	 * Builds TrustManagers from the trust store provided in the constructor, using
-	 *  a SunX509 TrustManagerFactory.
+	 * Builds TrustManagers from the trust store provided in the constructor,
+	 * using a SunX509 TrustManagerFactory.
+	 * 
 	 * @return SunX509-based trust managers corresponding to the trust store.
 	 */
-	protected TrustManager[] getRawTrustManagers() throws SSLContextFactoryException {
-		try {
-			TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-			tmf.init(this.trustStore);
-			return tmf.getTrustManagers();
-		} catch (NoSuchAlgorithmException e) {
-			throw new SSLContextFactoryException(e);
-		} catch (KeyStoreException e) {
-			throw new SSLContextFactoryException(e);
+	protected TrustManager[] getRawTrustManagers()
+			throws SSLContextFactoryException {
+		if (this.trustStore != null) {
+			try {
+				TrustManagerFactory tmf = TrustManagerFactory
+						.getInstance("SunX509");
+				tmf.init(this.trustStore);
+				return tmf.getTrustManagers();
+			} catch (NoSuchAlgorithmException e) {
+				throw new SSLContextFactoryException(e);
+			} catch (KeyStoreException e) {
+				throw new SSLContextFactoryException(e);
+			}
+		} else {
+			return null;
 		}
 	}
-	
+
 	/**
-	 * Builds TrustManagers by wrapping getRawTrustManagers(), if a wrapper has been
-	 * set up (return the original trust manager otherwise).
+	 * Builds TrustManagers by wrapping getRawTrustManagers(), if a wrapper has
+	 * been set up (return the original trust manager otherwise).
+	 * 
 	 * @return Wrapped trust managers from getRawTrustManagers().
 	 */
 	@Override
 	public TrustManager[] getTrustManagers() throws SSLContextFactoryException {
 		TrustManager[] trustManagers = getRawTrustManagers();
 		X509TrustManagerWrapper wrapper = x509TrustManagerWrapper;
-		if (wrapper != null) {
+		if ((wrapper != null) && (trustManagers != null)) {
 			for (int i = 0; i < trustManagers.length; i++) {
 				if (trustManagers[i] instanceof X509TrustManager)
-					trustManagers[i] = wrapper.wrapTrustManager((X509TrustManager)trustManagers[i]);
+					trustManagers[i] = wrapper
+							.wrapTrustManager((X509TrustManager) trustManagers[i]);
 			}
 		}
 		return trustManagers;
 	}
-	
-	
+
 	/**
-	 * This is an exception that should occur when trying to set
-	 * properties that should no longer be set.
+	 * This is an exception that should occur when trying to set properties that
+	 * should no longer be set.
+	 * 
 	 * @author Bruno Harbulot.
 	 */
 	public static class LockedSettingsException extends Exception {
 		private static final long serialVersionUID = 3649279179955493548L;
+
 		public LockedSettingsException() {
 			super();
 		}
+
 		public LockedSettingsException(Throwable ex) {
 			super(ex);
 		}
+
 		public LockedSettingsException(String message) {
 			super(message);
 		}
+
 		public LockedSettingsException(String message, Throwable ex) {
 			super(message, ex);
 		}
