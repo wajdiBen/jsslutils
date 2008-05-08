@@ -35,22 +35,26 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package jsslutils.sslcontext;
 
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.X509KeyManager;
 
 /**
- * This interface represents a wrapper for an X509TrustManager. This is intended
- * to provide a way to customize TrustManagers in the X509SSLContextFactory (or
- * subclasses).
+ * This interface represents a wrapper for an X509KeyManager. This is intended
+ * to provide a way to customize KeyManagers in the X509SSLContextFactory (or
+ * subclasses). On potential use would be to build X509ExtendedKeyManagers that
+ * delegate the defaulf behaviour to the wrapped X609KeyManager but implement
+ * the methods that choose the alias of the certificate to provide when
+ * establishing the connection.
  * 
  * @author Bruno Harbulot.
+ * @see javax.net.ssl.X509ExtendedKeyManager
  */
-public interface X509TrustManagerWrapper {
+public interface X509KeyManagerWrapper {
 	/**
-	 * Builds an X509TrustManager from another X509TrustManager.
+	 * Builds an X509KeyManager from another X509KeyManager.
 	 * 
-	 * @param trustManager
-	 *            original X509TrustManager.
-	 * @return wrapped X509TrustManager.
+	 * @param keyManager
+	 *            original X509KeyManager.
+	 * @return wrapped X509KeyManager.
 	 */
-	public X509TrustManager wrapTrustManager(X509TrustManager trustManager);
+	public X509KeyManager wrapKeyManager(X509KeyManager keyManager);
 }

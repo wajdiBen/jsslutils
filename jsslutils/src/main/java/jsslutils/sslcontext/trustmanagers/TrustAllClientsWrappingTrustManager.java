@@ -8,12 +8,12 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, 
+ * Redistributions of source code must retain the above copyright notice, 
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright 
+ * Redistributions in binary form must reproduce the above copyright 
       notice, this list of conditions and the following disclaimer in the 
       documentation and/or other materials provided with the distribution.
-    * Neither the name of the The University of Manchester nor the names of 
+ * Neither the name of the The University of Manchester nor the names of 
       its contributors may be used to endorse or promote products derived 
       from this software without specific prior written permission.
 
@@ -49,37 +49,40 @@ import jsslutils.sslcontext.X509TrustManagerWrapper;
  */
 public class TrustAllClientsWrappingTrustManager implements X509TrustManager {
 	private X509TrustManager trustManager;
+
 	/**
 	 * Creates a new instance from an existing X509TrustManager.
-	 * @param trustManager X509TrustManager to wrap.
+	 * 
+	 * @param trustManager
+	 *            X509TrustManager to wrap.
 	 */
 	public TrustAllClientsWrappingTrustManager(X509TrustManager trustManager) {
 		this.trustManager = trustManager;
 	}
-	
+
 	/**
 	 * Checks that the client is trusted; in this case, it accepts anything.
 	 */
 	public void checkClientTrusted(X509Certificate[] chain, String authType)
 			throws CertificateException {
 	}
-	
+
 	/**
-	 * Checks that the server is trusted; in this case, it delegates this check to
-	 * the trust manager it wraps.
+	 * Checks that the server is trusted; in this case, it delegates this check
+	 * to the trust manager it wraps.
 	 */
 	public void checkServerTrusted(X509Certificate[] chain, String authType)
 			throws CertificateException {
 		this.trustManager.checkServerTrusted(chain, authType);
 	}
-	
+
 	/**
 	 * Returns the accepted issuers; in this case, it's an empty array.
 	 */
 	public X509Certificate[] getAcceptedIssuers() {
 		return new X509Certificate[0];
 	}
-	
+
 	/**
 	 * Wrapper factory class that wraps existing X509TrustManagers into
 	 * X509TrustManagers that trust any clients.
@@ -89,11 +92,14 @@ public class TrustAllClientsWrappingTrustManager implements X509TrustManager {
 	public static class Wrapper implements X509TrustManagerWrapper {
 		/**
 		 * Builds an X509TrustManager from another X509TrustManager.
-		 * @param trustManager original X509TrustManager.
+		 * 
+		 * @param trustManager
+		 *            original X509TrustManager.
 		 * @return wrapped X509TrustManager.
 		 */
 		public X509TrustManager wrapTrustManager(X509TrustManager trustManager) {
-			return new TrustAllClientsWrappingTrustManager((X509TrustManager)trustManager);
+			return new TrustAllClientsWrappingTrustManager(
+					(X509TrustManager) trustManager);
 		}
 	}
 }
