@@ -21,6 +21,7 @@ The use in conjunction with Jetty is being addressed in [http://jira.codehaus.or
 
  * Marked `newInitializedSSLContext` as deprecated in jSSLutils 0.3+, it is replaced with `buildSSLContext`. (Sorry about the inconvenience, but there were only 3 or 4 downloads at the time of the change.)
  * Added a `KeyStoreLoader` utility class, the aim of which is to load a keystore, perhaps from default system properties and allow for `KeyStore`s that are not file-based for example.
+ * Added !KeyManager wrappers similarly to the !TrustManager wrappers to support features such as [http://java.sun.com/javase/6/docs/api/javax/net/ssl/X509ExtendedKeyManager.html X509ExtendedKeyManager.chooseEngineClientAlias].
 
 == Version 0.2.1 ==
 
@@ -38,6 +39,3 @@ The use in conjunction with Jetty is being addressed in [http://jira.codehaus.or
  * PKIXSSLContextFactory.
  * TrustAllClientsSSLContextFactory.
  * Test cases.
-
-= Plans for the future =
- * Add !KeyManager wrappers similarly to the !TrustManager wrappers to support features such as [http://java.sun.com/javase/6/docs/api/javax/net/ssl/X509ExtendedKeyManager.html X509ExtendedKeyManager.chooseEngineClientAlias].
