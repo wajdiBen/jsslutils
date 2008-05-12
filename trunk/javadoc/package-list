@@ -1,2 +1,3 @@
 jsslutils.keystores
 jsslutils.sslcontext
+jsslutils.sslcontext.trustmanagers
