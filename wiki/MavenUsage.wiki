@@ -3,7 +3,7 @@
 
 = Using jsslutils from Maven =
 
-As of 22/05/2008, jsslutils (version 0.3) has entered the Maven central repository.
+As of 22/05/2008, jsslutils (version 0.3) has entered the [http://maven.apache.org/ Maven] central repository.
 
 Here is the dependency descriptor:
 {{{
