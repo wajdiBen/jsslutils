@@ -1,0 +1,25 @@
+#summary Using jsslutils from Maven.
+#labels Featured
+
+= Using jsslutils from Maven =
+
+As of 22/05/2008, jsslutils (version 0.3) has entered the Maven central repository.
+
+Here is the dependency descriptor:
+{{{
+<dependency>
+	<groupId>com.googlecode.jsslutils</groupId>
+	<artifactId>jsslutils</artifactId>
+	<version>0.3</version>
+</dependency>
+}}}
+
+
+In addition, you may also use the test keys and certificates, which are bundled separately:
+{{{
+<dependency>
+	<groupId>com.googlecode.jsslutils</groupId>
+	<artifactId>jsslutils-test-certificates</artifactId>
+	<version>1.0</version>
+</dependency>
+}}}
