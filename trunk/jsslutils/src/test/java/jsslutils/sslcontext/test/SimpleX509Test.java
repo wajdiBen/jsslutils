@@ -39,6 +39,8 @@ import static org.junit.Assert.*;
 
 import java.security.KeyStore;
 
+import javax.net.ssl.SSLServerSocket;
+
 import jsslutils.sslcontext.SSLContextFactory;
 import jsslutils.sslcontext.X509SSLContextFactory;
 
@@ -82,5 +84,19 @@ public class SimpleX509Test extends MiniSslClientServer {
 		assertTrue(prepareSSLContextFactories());
 		return runTest(clientSSLContextFactory.buildSSLContext(),
 				serverSSLContextFactory.buildSSLContext());
+	}
+
+	public static void main(String[] args) throws Exception {
+		SimpleX509Test test = new SimpleX509Test();
+		test.verboseExceptions = true;
+		test.prepareSSLContextFactories();
+		SSLServerSocket serverSocket = test
+				.prepareServerSocket(test.serverSSLContextFactory
+						.buildSSLContext());
+		test.serverTimeout = 20000;
+		test.runServer(serverSocket);
+		if (test.requestException != null) {
+			test.requestException.printStackTrace();
+		}
 	}
 }

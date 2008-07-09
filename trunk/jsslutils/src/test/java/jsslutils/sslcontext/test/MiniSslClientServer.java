@@ -88,7 +88,9 @@ import jsslutils.sslcontext.SSLContextFactory.SSLContextFactoryException;
  * 
  */
 public abstract class MiniSslClientServer {
-	private static int testPort = 31050;
+	protected boolean verboseExceptions = false;
+	protected int serverTimeout = 4000;
+	protected int testPort = 31050;
 
 	private static String CERTIFICATES_DIRECTORY = System.getProperty(
 			"jsslutils.test.certificates",
@@ -332,7 +334,7 @@ public abstract class MiniSslClientServer {
 				for (int i = max; i > 0 || max == 0; i--) {
 					Socket acceptedSocket = null;
 					try {
-						fServerSocket.setSoTimeout(4000);
+						fServerSocket.setSoTimeout(serverTimeout);
 						acceptedSocket = fServerSocket.accept();
 						threadPoolExecutor.execute(new RequestHandler(
 								acceptedSocket));
@@ -374,6 +376,8 @@ public abstract class MiniSslClientServer {
 				serverSocket = (SSLServerSocket) sslServerSocketFactory
 						.createServerSocket(++testPort);
 				serverSocket.setWantClientAuth(true);
+				System.out.println("Server listening at: https://localhost:"
+						+ testPort + "/");
 				break;
 			} catch (IOException e) {
 				System.err.println("Could not listen on port: " + testPort);
@@ -384,7 +388,7 @@ public abstract class MiniSslClientServer {
 		return serverSocket;
 	}
 
-	private Exception requestException;
+	protected Exception requestException;
 
 	/**
 	 * Small class that handles a server request.
@@ -439,12 +443,18 @@ public abstract class MiniSslClientServer {
 				out.close();
 				in.close();
 			} catch (Exception e) {
+				if (MiniSslClientServer.this.verboseExceptions) {
+					e.printStackTrace();
+				}
 				MiniSslClientServer.this.requestException = e;
 			} finally {
 				try {
 					clientSocket.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					if (MiniSslClientServer.this.verboseExceptions) {
+						e.printStackTrace();
+					}
+					throw new RuntimeException(e);
 				}
 			}
 		}

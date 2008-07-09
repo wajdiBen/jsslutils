@@ -124,10 +124,13 @@ public final class KeyStoreLoader {
 			CertificateException {
 		KeyStore keyStore;
 		if (this.keyStoreProvider != null) {
-			keyStore = KeyStore.getInstance(this.keyStoreType,
-					this.keyStoreProvider);
+			keyStore = KeyStore.getInstance(
+					this.keyStoreType != null ? this.keyStoreType : KeyStore
+							.getDefaultType(), this.keyStoreProvider);
 		} else {
-			keyStore = KeyStore.getInstance(this.keyStoreType);
+			keyStore = KeyStore
+					.getInstance(this.keyStoreType != null ? this.keyStoreType
+							: KeyStore.getDefaultType());
 		}
 		FileInputStream keyStoreInputStream = null;
 		try {
@@ -173,7 +176,7 @@ public final class KeyStoreLoader {
 	public static KeyStoreLoader getKeyStoreDefaultLoader() {
 		KeyStoreLoader ksLoader = new KeyStoreLoader();
 		ksLoader.setKeyStorePath(System.getProperty("javax.net.ssl.keyStore"));
-		ksLoader.setKeyStorePath(System
+		ksLoader.setKeyStoreType(System
 				.getProperty("javax.net.ssl.keyStoreType"));
 		ksLoader.setKeyStoreProvider(System
 				.getProperty("javax.net.ssl.keyStoreProvider"));
@@ -194,7 +197,7 @@ public final class KeyStoreLoader {
 		KeyStoreLoader ksLoader = new KeyStoreLoader();
 		ksLoader
 				.setKeyStorePath(System.getProperty("javax.net.ssl.trustStore"));
-		ksLoader.setKeyStorePath(System
+		ksLoader.setKeyStoreType(System
 				.getProperty("javax.net.ssl.trustStoreType"));
 		ksLoader.setKeyStoreProvider(System
 				.getProperty("javax.net.ssl.trustStoreProvider"));
