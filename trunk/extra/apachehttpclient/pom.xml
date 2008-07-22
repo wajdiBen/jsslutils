@@ -3,18 +3,23 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.jsslutils</groupId>
-	<artifactId>jsslutils</artifactId>
+	<artifactId>jsslutils-extra-apachehttpclient</artifactId>
 	<version>0.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>jSSLutils</name>
+	<name>jSSLutils :: Extra :: Apache Commons HTTP client util</name>
 	<url>http://code.google.com/p/jsslutils/</url>
-	<description>This is a set of SSL-related utilities for Java.</description>
+	<description>Utilities for use with the Apache Commons HTTP client library.</description>
 	<licenses>
-		<license>
-			<name>BSD</name>
-			<url>LICENSE.txt</url>
-			<distribution>repo</distribution>
-		</license>
+	    <license>
+	      <name>The Apache Software License, Version 2.0</name>
+	      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+	      <distribution>repo</distribution>
+	    </license>
+	    <license>
+	      <name>LGPL</name>
+	      <url>http://www.gnu.org/copyleft/lesser.txt</url>
+	      <distribution>repo</distribution>
+	    </license>
 	</licenses>
 	<scm>
 		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
@@ -50,9 +55,6 @@
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<excludes>
-						<exclude>**/TrustAllClientsServerTest.java</exclude>
-					</excludes>
 					<systemProperties>
 						<property>
 							<name>jsslutils.test.certificates</name>
@@ -65,9 +67,14 @@
 	</build>
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.4</version>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.jsslutils</groupId>
+			<artifactId>jsslutils</artifactId>
+			<version>0.4-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -82,19 +89,11 @@
 			<version>1.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.4</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-	<developers>
-		<developer>
-			<id>bruno.harbulot</id>
-			<name>Bruno Harbulot</name>
-			<email>Bruno.Harbulot@manchester.ac.uk</email>
-			<organization>The University of Manchester</organization>
-			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
-			<roles>
-				<role>architect</role>
-				<role>developer</role>
-			</roles>
-			<timezone>0</timezone>
-		</developer>
-	</developers>
 </project>

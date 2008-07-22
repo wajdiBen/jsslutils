@@ -33,7 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 -----------------------------------------------------------------------*/
 
-package jsslutils.sslcontext.test;
+package jsslutils.extra.apachehttpclient.test;
 
 import static org.junit.Assert.assertTrue;
 import jsslutils.sslcontext.PKIXSSLContextFactory;
