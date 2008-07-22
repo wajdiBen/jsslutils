@@ -1,0 +1,36 @@
+#summary Using jSSLutils with the Apache HTTP client library.
+#labels Featured
+
+= Introduction =
+
+The [http://hc.apache.org/httpclient-3.x/ Apache HTTP client library] provides a way to [http://hc.apache.org/httpclient-3.x/sslguide.html configure SSL] via its [http://hc.apache.org/httpclient-3.x/apidocs/org/apache/commons/httpclient/protocol/SecureProtocolSocketFactory.html SecureProtocolSocketFactory].
+
+`jsslutils.extra.apachehttpclient.SslContextedSecureProtocolSocketFactory` is an implementation of `SecureProtocolSocketFactory` which:
+  * allows you to set an `SSLContext` so as to configure trust and use of a client certificate, and
+  * verifies the host name against _CN_ fields in the subject distinguished name of the server certificate.
+
+This class does not depend on _jSSLutils_.
+
+= Example =
+
+{{{
+X509SSLContextFactory sslContextFactory =
+    new X509SSLContextFactory(keyStore, "keypassword", trustStore);
+SSLContext sslClientContext = sslContextFactory.buildSSLContext();
+
+
+HttpClient httpClient = new HttpClient();
+SslContextedSecureProtocolSocketFactory secureProtocolSocketFactory =
+   new SslContextedSecureProtocolSocketFactory(sslClientContext);
+
+Protocol.registerProtocol("https", new Protocol("https",
+   (ProtocolSocketFactory)secureProtocolSocketFactory, 443));
+
+
+GetMethod method = new GetMethod("https://ssl.example.org/");
+int statusCode = httpClient.executeMethod(method);
+}}}
+
+= Licence =
+
+`SslContextedSecureProtocolSocketFactory` is released under the Apache License 2 and LGPL 2, since it is based on the [http://svn.apache.org/viewvc/httpcomponents/oac.hc3x/trunk/src/contrib/org/apache/commons/httpclient/contrib/ssl/StrictSSLProtocolSocketFactory.java?view=markup StrictSSLProtocolSocketFactory] which comes under this dual licence. That class was contributed by Sebastian Hauer as an example in the Apache HTTP client project (it was already capable of verifying the host name).
