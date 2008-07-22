@@ -1,5 +1,5 @@
 #summary Using jSSLutils with the Apache HTTP client library.
-#labels Featured
+#labels Featured,Phase-Deploy
 
 = Introduction =
 
@@ -9,7 +9,7 @@ The [http://hc.apache.org/httpclient-3.x/ Apache HTTP client library] provides a
   * allows you to set an `SSLContext` so as to configure trust and use of a client certificate, and
   * verifies the host name against _CN_ fields in the subject distinguished name of the server certificate.
 
-This class does not depend on _jSSLutils_.
+This class does not depend on _jSSLutils_. It is currently available in version _0.4-SNAPSHOT_, in the _extra_ directory of the subversion repository since revision 31.
 
 = Example =
 
