@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.jsslutils</groupId>
-	<artifactId>jsslutils</artifactId>
+	<artifactId>jsslutils-testhelpers</artifactId>
 	<version>0.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils</name>
 	<url>http://code.google.com/p/jsslutils/</url>
-	<description>This is a set of SSL-related utilities for Java.</description>
+	<description>Helper classes for some of the tests.</description>
 	<licenses>
 		<license>
 			<name>BSD</name>
@@ -31,36 +31,6 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-remote-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>process</goal>
-						</goals>
-						<configuration>
-							<resourceBundles>
-<resourceBundle>com.googlecode.jsslutils:jsslutils-test-certificates:1.0.1-SNAPSHOT</resourceBundle>
-							</resourceBundles>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>**/TrustAllClientsServerTest.java</exclude>
-					</excludes>
-					<systemProperties>
-						<property>
-							<name>jsslutils.test.certificates</name>
-							<value>${basedir}/target/test-classes/certificates</value>
-						</property>
-					</systemProperties>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
@@ -68,19 +38,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.4</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.googlecode.jsslutils</groupId>
-			<artifactId>jsslutils-testhelpers</artifactId>
-			<version>0.4-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.googlecode.jsslutils</groupId>
-			<artifactId>jsslutils-test-certificates</artifactId>
-			<version>1.0</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<developers>

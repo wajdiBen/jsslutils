@@ -32,58 +32,54 @@ POSSIBILITY OF SUCH DAMAGE.
   Author........: Bruno Harbulot
 
 -----------------------------------------------------------------------*/
+package jsslutils.extra.apachehttpclient.test;
 
-package jsslutils.sslcontext.test;
+import java.io.IOException;
+import java.net.ConnectException;
 
-import static org.junit.Assert.assertTrue;
-import jsslutils.sslcontext.PKIXSSLContextFactory;
+import javax.net.ssl.SSLContext;
 
-import org.junit.Test;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import static org.junit.Assert.*;
+
+import jsslutils.extra.apachehttpclient.SslContextedSecureProtocolSocketFactory;
+import jsslutils.sslcontext.test.MiniSslClientServer;
 
 /**
- * Tests the SSLContext configured for PKIX with CRLs. It should accept the
- * "good" certificate but reject the "bad" certificate because it has been
- * revoked.
+ * This class is a small test based on MiniSslClientServer which uses the Apache
+ * HTTP client library to make the client request.
  * 
  * @author Bruno Harbulot.
  * 
  */
-public class PKIXTest extends SimpleX509Test {
+public abstract class MiniSslApacheClientServerTest extends MiniSslClientServer {
+	protected HttpClient httpClient;
+	protected SslContextedSecureProtocolSocketFactory secureProtocolSocketFactory;
+
+	public MiniSslApacheClientServerTest() {
+		MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
+		this.httpClient = new HttpClient(connectionManager);
+	}
+
 	@Override
-	public boolean prepareSSLContextFactories() throws Exception {
-		PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
-				this.clientStore, "testtest", getCaKeyStore());
-		clientSSLContextFactory.addCrlCollection(getLocalCRLs());
-		this.clientSSLContextFactory = clientSSLContextFactory;
-		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
-				getServerCertKeyStore(), "testtest", getCaKeyStore());
-		serverSSLContextFactory.addCrlCollection(getLocalCRLs());
-/*
- * The following lines are just an example, but they are not strictly part of the test.
- */
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/root-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-ca-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-root-crl.crl");
-		this.serverSSLContextFactory = serverSSLContextFactory;
-		return true;
-	}
+	protected void doClientRequest(SSLContext sslClientContext)
+			throws IOException {
+		this.secureProtocolSocketFactory = new SslContextedSecureProtocolSocketFactory(
+				sslClientContext);
 
-	@Test
-	public void testGoodClient() throws Exception {
-		this.clientStore = getGoodClientCertKeyStore();
-		assertTrue("Loaded keystore", true);
-		assertTrue(runTest());
-	}
+		Protocol.registerProtocol("https", new Protocol("https",
+				(ProtocolSocketFactory) this.secureProtocolSocketFactory, 443));
 
-	@Test
-	public void testBadClient() throws Exception {
-		this.clientStore = getBadClientCertKeyStore();
-		assertTrue("Loaded keystore", true);
-		assertTrue(!runTest());
+		GetMethod method = new GetMethod("https://localhost:" + testPort + "/");
+		try {
+			int statusCode = httpClient.executeMethod(method);
+			assertEquals("Request successful", 200, statusCode);
+			method.getResponseBodyAsStream();
+		} catch (ConnectException e) {
+		}
 	}
 }

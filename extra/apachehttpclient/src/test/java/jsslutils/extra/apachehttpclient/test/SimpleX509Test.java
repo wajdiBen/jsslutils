@@ -33,45 +33,30 @@ POSSIBILITY OF SUCH DAMAGE.
 
 -----------------------------------------------------------------------*/
 
-package jsslutils.sslcontext.test;
+package jsslutils.extra.apachehttpclient.test;
 
-import static org.junit.Assert.assertTrue;
-import jsslutils.sslcontext.PKIXSSLContextFactory;
+import static org.junit.Assert.*;
+
+import java.security.KeyStore;
+
+import javax.net.ssl.SSLServerSocket;
+
+import jsslutils.sslcontext.SSLContextFactory;
+import jsslutils.sslcontext.X509SSLContextFactory;
 
 import org.junit.Test;
 
 /**
- * Tests the SSLContext configured for PKIX with CRLs. It should accept the
- * "good" certificate but reject the "bad" certificate because it has been
- * revoked.
+ * Tests the SSLContext configured for X.509 without CRLs. It should accept both
+ * the "good" and the "bad" certificate.
  * 
  * @author Bruno Harbulot.
  * 
  */
-public class PKIXTest extends SimpleX509Test {
-	@Override
-	public boolean prepareSSLContextFactories() throws Exception {
-		PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
-				this.clientStore, "testtest", getCaKeyStore());
-		clientSSLContextFactory.addCrlCollection(getLocalCRLs());
-		this.clientSSLContextFactory = clientSSLContextFactory;
-		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
-				getServerCertKeyStore(), "testtest", getCaKeyStore());
-		serverSSLContextFactory.addCrlCollection(getLocalCRLs());
-/*
- * The following lines are just an example, but they are not strictly part of the test.
- */
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/root-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-ca-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-root-crl.crl");
-		this.serverSSLContextFactory = serverSSLContextFactory;
-		return true;
-	}
+public class SimpleX509Test extends MiniSslApacheClientServerTest {
+	protected KeyStore clientStore = null;
+	protected SSLContextFactory clientSSLContextFactory;
+	protected SSLContextFactory serverSSLContextFactory;
 
 	@Test
 	public void testGoodClient() throws Exception {
@@ -84,6 +69,34 @@ public class PKIXTest extends SimpleX509Test {
 	public void testBadClient() throws Exception {
 		this.clientStore = getBadClientCertKeyStore();
 		assertTrue("Loaded keystore", true);
-		assertTrue(!runTest());
+		assertTrue(runTest());
+	}
+
+	public boolean prepareSSLContextFactories() throws Exception {
+		this.clientSSLContextFactory = new X509SSLContextFactory(
+				this.clientStore, "testtest", getCaKeyStore());
+		this.serverSSLContextFactory = new X509SSLContextFactory(
+				getServerCertKeyStore(), "testtest", getCaKeyStore());
+		return true;
+	}
+
+	public boolean runTest() throws Exception {
+		assertTrue(prepareSSLContextFactories());
+		return runTest(clientSSLContextFactory.buildSSLContext(),
+				serverSSLContextFactory.buildSSLContext());
+	}
+
+	public static void main(String[] args) throws Exception {
+		SimpleX509Test test = new SimpleX509Test();
+		test.verboseExceptions = true;
+		test.prepareSSLContextFactories();
+		SSLServerSocket serverSocket = test
+				.prepareServerSocket(test.serverSSLContextFactory
+						.buildSSLContext());
+		test.serverTimeout = 20000;
+		test.runServer(serverSocket);
+		if (test.requestException != null) {
+			test.requestException.printStackTrace();
+		}
 	}
 }

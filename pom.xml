@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.jsslutils</groupId>
 	<artifactId>jsslutils-root</artifactId>
-	<version>0.3</version>
+	<version>0.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>jSSLutils (Root project)</name>
 	<url>http://code.google.com/p/jsslutils/</url>
@@ -38,5 +38,7 @@
 	<modules>
 		<module>jsslutils</module>
 		<module>certificates</module>
+		<module>extra/apachehttpclient</module>
+		<module>testhelpers</module>
 	</modules>
 </project>

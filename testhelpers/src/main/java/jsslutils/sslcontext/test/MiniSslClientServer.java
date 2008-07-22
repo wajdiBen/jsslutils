@@ -48,7 +48,6 @@ import java.net.Socket;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.CRLException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidatorException;
@@ -72,9 +71,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSessionContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-
-import jsslutils.keystores.KeyStoreLoader;
-import jsslutils.sslcontext.SSLContextFactory.SSLContextFactoryException;
 
 /**
  * This class contains both a client and a server that can be used to build
@@ -108,16 +104,12 @@ public abstract class MiniSslClientServer {
 	 */
 	public KeyStore getCaKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
-		KeyStoreLoader ksLoader = new KeyStoreLoader();
-		ksLoader.setKeyStoreType("JKS");
-		ksLoader.setKeyStorePath(CERTIFICATES_DIRECTORY + File.separator
+		KeyStore ks = KeyStore.getInstance("JKS");
+		FileInputStream fis = new FileInputStream(CERTIFICATES_DIRECTORY + File.separator
 				+ "jks" + File.separator + "dummy.jks");
-		ksLoader.setKeyStorePassword("testtest");
-		try {
-			return ksLoader.loadKeyStore();
-		} catch (NoSuchProviderException e) {
-			throw new RuntimeException(e);
-		}
+		ks.load(fis, "testtest".toCharArray());
+		fis.close();
+		return ks;
 	}
 
 	/**
@@ -132,16 +124,12 @@ public abstract class MiniSslClientServer {
 	 */
 	public KeyStore getServerCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
-		KeyStoreLoader ksLoader = new KeyStoreLoader();
-		ksLoader.setKeyStoreType("PKCS12");
-		ksLoader.setKeyStorePath(CERTIFICATES_DIRECTORY + File.separator
+		KeyStore ks = KeyStore.getInstance("PKCS12");
+		FileInputStream fis = new FileInputStream(CERTIFICATES_DIRECTORY + File.separator
 				+ "localhost.p12");
-		ksLoader.setKeyStorePassword("testtest");
-		try {
-			return ksLoader.loadKeyStore();
-		} catch (NoSuchProviderException e) {
-			throw new RuntimeException(e);
-		}
+		ks.load(fis, "testtest".toCharArray());
+		fis.close();
+		return ks;
 	}
 
 	/**
@@ -158,16 +146,12 @@ public abstract class MiniSslClientServer {
 	 */
 	public KeyStore getGoodClientCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
-		KeyStoreLoader ksLoader = new KeyStoreLoader();
-		ksLoader.setKeyStoreType("PKCS12");
-		ksLoader.setKeyStorePath(CERTIFICATES_DIRECTORY + File.separator
+		KeyStore ks = KeyStore.getInstance("PKCS12");
+		FileInputStream fis = new FileInputStream(CERTIFICATES_DIRECTORY + File.separator
 				+ "testclient.p12");
-		ksLoader.setKeyStorePassword("testtest");
-		try {
-			return ksLoader.loadKeyStore();
-		} catch (NoSuchProviderException e) {
-			throw new RuntimeException(e);
-		}
+		ks.load(fis, "testtest".toCharArray());
+		fis.close();
+		return ks;
 	}
 
 	/**
@@ -185,16 +169,12 @@ public abstract class MiniSslClientServer {
 	 */
 	public KeyStore getBadClientCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
-		KeyStoreLoader ksLoader = new KeyStoreLoader();
-		ksLoader.setKeyStoreType("PKCS12");
-		ksLoader.setKeyStorePath(CERTIFICATES_DIRECTORY + File.separator
+		KeyStore ks = KeyStore.getInstance("PKCS12");
+		FileInputStream fis = new FileInputStream(CERTIFICATES_DIRECTORY + File.separator
 				+ "testclient-r.p12");
-		ksLoader.setKeyStorePassword("testtest");
-		try {
-			return ksLoader.loadKeyStore();
-		} catch (NoSuchProviderException e) {
-			throw new RuntimeException(e);
-		}
+		ks.load(fis, "testtest".toCharArray());
+		fis.close();
+		return ks;
 	}
 
 	/**
@@ -237,9 +217,6 @@ public abstract class MiniSslClientServer {
 		this.requestException = null;
 		boolean result = false;
 
-		SSLSocketFactory sslClientSocketFactory = sslClientContext
-				.getSocketFactory();
-
 		SSLServerSocket serverSocket = prepareServerSocket(sslServerContext);
 
 		assertNotNull("Server socket not null", serverSocket);
@@ -249,41 +226,13 @@ public abstract class MiniSslClientServer {
 		if (fServerSocket != null) {
 			runServer(fServerSocket);
 
-			PrintWriter cout = null;
-			BufferedReader cin = null;
-			SSLSocket sslClientSocket = null;
 			try {
-				sslClientSocket = (SSLSocket) sslClientSocketFactory
-						.createSocket("localhost", testPort);
-				assertTrue("Client socket connected", sslClientSocket
-						.isConnected());
-
-				sslClientSocket.setSoTimeout(500);
-				cin = new BufferedReader(new InputStreamReader(sslClientSocket
-						.getInputStream()));
-				String inputLine = null;
-
-				cout = new PrintWriter(sslClientSocket.getOutputStream(), true);
-				cout.println("GET / HTTP/1.1");
-				cout.println("Host: localhost");
-				cout.println();
-				while ((inputLine = cin.readLine()) != null) {
-					System.out.println("Server says: " + inputLine);
-				}
-			} catch (SSLException e) {
-				printSslException("! Client: ", e, sslClientSocket);
-			} catch (IOException e) {
-				e.printStackTrace();
-				fail();
+				doClientRequest(sslClientContext);
 			} finally {
 				synchronized (fServerSocket) {
 					if (!fServerSocket.isClosed())
 						fServerSocket.close();
 				}
-				if (cin != null)
-					cin.close();
-				if (cout != null)
-					cout.close();
 			}
 			synchronized (fServerSocket) {
 				assertTrue(fServerSocket.isClosed());
@@ -305,6 +254,49 @@ public abstract class MiniSslClientServer {
 		System.out.println();
 
 		return result;
+	}
+
+	/**
+	 * @param sslClientSocketFactory
+	 * @throws IOException
+	 */
+	protected void doClientRequest(SSLContext sslClientContext)
+			throws IOException {
+		SSLSocketFactory sslClientSocketFactory = sslClientContext
+				.getSocketFactory();
+		
+		PrintWriter cout = null;
+		BufferedReader cin = null;
+		SSLSocket sslClientSocket = null;
+		try {
+			sslClientSocket = (SSLSocket) sslClientSocketFactory
+					.createSocket("localhost", testPort);
+			assertTrue("Client socket connected", sslClientSocket
+					.isConnected());
+
+			sslClientSocket.setSoTimeout(500);
+			cin = new BufferedReader(new InputStreamReader(sslClientSocket
+					.getInputStream()));
+			String inputLine = null;
+
+			cout = new PrintWriter(sslClientSocket.getOutputStream(), true);
+			cout.println("GET / HTTP/1.1");
+			cout.println("Host: localhost");
+			cout.println();
+			while ((inputLine = cin.readLine()) != null) {
+				System.out.println("Server says: " + inputLine);
+			}
+		} catch (SSLException e) {
+			printSslException("! Client: ", e, sslClientSocket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail();
+		} finally {
+			if (cin != null)
+				cin.close();
+			if (cout != null)
+				cout.close();
+		}
 	}
 
 	/**
