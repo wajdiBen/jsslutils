@@ -17,6 +17,11 @@ The use in conjunction with Jetty is being addressed in [http://jira.codehaus.or
 
 = Changes =
 
+== Version 0.4-SNAPSHOT ==
+
+ * Added a `FixedServerAliasKeyManager` class, see [http://restlet.tigris.org/servlets/ReadMsg?list=discuss&msgNo=5712 (restlet-discuss) SSL + Virtual Hosts and Issue #489?].
+ * Added an example [http://hc.apache.org/httpclient-3.x/apidocs/org/apache/commons/httpclient/protocol/SecureProtocolSocketFactory.html SecureProtocolSocketFactory] for using SSLContext with [http://hc.apache.org/httpclient-3.x/ Apache HTTP Client].
+
 == Version 0.3 ==
 
  * Marked `newInitializedSSLContext` as deprecated in jSSLutils 0.3+, it is replaced with `buildSSLContext`. (Sorry about the inconvenience, but there were only 3 or 4 downloads at the time of the change.)
