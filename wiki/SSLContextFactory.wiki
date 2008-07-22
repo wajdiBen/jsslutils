@@ -48,3 +48,20 @@ SSLServerSocket socket = prepareServerSocket(sslContextFactory.buildSSLContext()
 == !GsiWrappingTrustManager ==
 
 Similarly, the `GsiWrappingTrustManager` should accept grid proxy-certificates. The current implementation does not strictly follow RFC 3820, yet. The GSI wrapping trust manager looks for the first non-CA certificate that has signed subsequent certificates in the chain and checks that the Subject DN of those certificates has been built by adding further 'CN=' entries to that non-CA certificate.
+
+
+= !X509KeyManagerWrapper =
+
+Similarly, it is possible to wrap the `KeyManager`s created by an `SSLContextFactory` to choose a particular alias for example, using `SSLContextFactory.setKeyManagerWrapper(..)`.
+
+== !FixedServerAliasKeyManager ==
+
+This `KeyManager` will always choose the same alias for server sockets.
+
+The following example shows how to configure an `X509SSLContextFactory` to produce an `SSLContext` that will always pick alias _host.example.org_ (which coincidentally, may correspond to a certificate for that host name).
+
+{{{
+X509SSLContextFactory sslContextFactory =
+    new X509SSLContextFactory(keyStore, "keypassword", trustStore);
+sslContextFactory.setKeyManagerWrapper(new FixedServerAliasKeyManager.Wrapper("host.example.org"));
+}}}
