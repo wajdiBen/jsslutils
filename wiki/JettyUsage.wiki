@@ -1,0 +1,54 @@
+#summary Using jSSLutils in conjunction with Jetty.
+
+= Jetty Configuration =
+
+If the `setSslContext` method gets added to the [http://www.mortbay.org/ Jetty] SSL connectors (see [http://jira.codehaus.org/browse/JETTY-554 JETTY-554]), it should be possible to use Certificate Revocation Lists (CRLs) in Jetty using a configuration file along these lines (you would need to adapt it to use the location of your keystores and CRLs):
+
+{{{
+<Configure id="Server" class="org.mortbay.jetty.Server">
+  <New class="java.lang.String"><Arg><SystemProperty name="keystorePassword" /></Arg><Call id="password" name="toCharArray" /></New>
+
+  <New class="jsslutils.sslcontext.PKIXSSLContextFactory">
+    <Arg>
+      <Call class="java.security.KeyStore" name="getInstance">
+        <Arg>PKCS12</Arg>
+        <Call name="load">
+          <Arg><New class="java.io.FileInputStream"><Arg><SystemProperty name="keystore" /></Arg></New></Arg>
+          <Arg><Ref id="password" /></Arg>
+        </Call>
+      </Call>
+    </Arg>
+    <Arg><SystemProperty name="keystorePassword" /></Arg>
+    <Arg>
+      <Call class="java.security.KeyStore" name="getInstance">
+        <Arg>JKS</Arg>
+        <Call name="load">
+          <Arg><New class="java.io.FileInputStream"><Arg><SystemProperty name="truststore" /></Arg></New></Arg>
+          <Arg><Ref id="password" /></Arg>
+        </Call>
+      </Call>
+    </Arg>
+    <Call name="addRemoteCrl">
+
+<Arg>http://jsslutils.googlecode.com/svn/trunk/certificates/src/main/resources/certificates/newca.crl</Arg>
+    </Call>
+    <Call id="context" name="buildSSLContext">
+      <Arg>TLS</Arg>
+    </Call>
+  </New>
+
+  <Call name="addConnector">
+    <Arg>
+      <New class="org.mortbay.jetty.security.SslSocketConnector">
+        <Set name="Port">8443</Set>
+        <Set name="maxIdleTime">30000</Set>
+        <Set name="handshakeTimeout">10000</Set>
+        <Set name="sslContext">
+          <Ref id="context" />
+        </Set>
+        <Set name="wantClientAuth">true</Set>
+      </New>
+    </Arg>
+  </Call>
+</Configure>
+}}}
