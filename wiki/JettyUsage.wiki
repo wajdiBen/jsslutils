@@ -12,6 +12,8 @@ java -Djetty.class.path=/path/to/jsslutils-0.3.jar \
    -jar start.jar etc/jetty.xml etc/jetty-sslcontext.xml
 }}}
 
+Further details about this configuration syntax can be found on the [http://docs.codehaus.org/display/JETTY/Syntax+Reference Jetty Wiki].
+
 == Example jetty-sslcontext.xml, using jsslutils.keystores.!KeyStoreLoader ==
 
 {{{
