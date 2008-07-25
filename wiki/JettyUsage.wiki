@@ -12,7 +12,7 @@ java -Djetty.class.path=/path/to/jsslutils-0.3.jar \
    -jar start.jar etc/jetty.xml etc/jetty-sslcontext.xml
 }}}
 
-== Example jetty-sslcontext.xml, using jsslutils.keystores.KeyStoreLoader ==
+== Example jetty-sslcontext.xml, using jsslutils.keystores.!KeyStoreLoader ==
 
 {{{
 <Configure id="Server" class="org.mortbay.jetty.Server">
@@ -67,7 +67,7 @@ java -Djetty.class.path=/path/to/jsslutils-0.3.jar \
 }}}
 
 
-== Example jetty-sslcontext.xml, using KeyStore and FileInputStream ==
+== Example jetty-sslcontext.xml, using !KeyStore and !FileInputStream ==
 
 {{{
 <Configure id="Server" class="org.mortbay.jetty.Server">
