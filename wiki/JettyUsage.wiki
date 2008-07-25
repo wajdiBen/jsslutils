@@ -1,36 +1,105 @@
 #summary Using jSSLutils in conjunction with Jetty.
+#labels Featured
 
 = Jetty Configuration =
 
-If the `setSslContext` method gets added to the [http://www.mortbay.org/ Jetty] SSL connectors (see [http://jira.codehaus.org/browse/JETTY-554 JETTY-554]), it should be possible to use Certificate Revocation Lists (CRLs) in Jetty using a configuration file along these lines (you would need to adapt it to use the location of your keystores and CRLs):
+If the `setSslContext` method gets added to the [http://www.mortbay.org/ Jetty] SSL connectors (see [http://jira.codehaus.org/browse/JETTY-554 JETTY-554]), it will be possible to use jSSLutils with Jetty. This can be used for configuring Certificate Revocation Lists (CRLs).
+
+For the following examples to work, jsslutils-0.3.jar needs to be on the classpath:
+
+{{{
+java -Djetty.class.path=/path/to/jsslutils-0.3.jar \
+   -jar start.jar etc/jetty.xml etc/jetty-sslcontext.xml
+}}}
+
+== Example jetty-sslcontext.xml, using jsslutils.keystores.KeyStoreLoader ==
 
 {{{
 <Configure id="Server" class="org.mortbay.jetty.Server">
-  <New class="java.lang.String"><Arg><SystemProperty name="keystorePassword" /></Arg><Call id="password" name="toCharArray" /></New>
+  <!-- Use the KeyStoreLoader to load the key store into "keystore" -->
+  <New class="jsslutils.keystores.KeyStoreLoader">
+    <Set name="keyStoreType">PKCS12</Set>
+    <Set name="keyStorePath">/path/to/your/pkcs12keystore.p12</Set>
+    <Set name="keyStorePassword">THE_KEYSTORE_PASSWORD</Set>
+    <Call id="keystore" name="loadKeyStore"><Arg /></Call>
+  </New>
+  
+  <!-- Use the KeyStoreLoader to load the trust store into "truststore" -->
+  <New class="jsslutils.keystores.KeyStoreLoader">
+    <Set name="keyStoreType">JKS</Set>
+    <Set name="keyStorePath">/path/to/your/jksTruststore.jks</Set>
+    <Set name="keyStorePassword">THE_TRUSTSTORE_PASSWORD</Set>
+    <Call id="truststore" name="loadKeyStore"><Arg /></Call>
+  </New>
+
+  <!-- Creates a PKIX-based SSLContext into "context" -->
+  <New class="jsslutils.sslcontext.PKIXSSLContextFactory">
+    <Arg><Ref id="keystore" /></Arg>
+    <Arg>THE_KEY_PASSWORD</Arg>
+    <Arg><Ref id="truststore" /></Arg>
+    <!-- Adds remote CRLs -->
+    <Call name="addRemoteCrl">
+       <Arg>http://ca.grid-support.ac.uk/pub/crl/root-crl.crl</Arg>
+    </Call>
+    <Call name="addRemoteCrl">
+       <Arg>http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl</Arg>
+    </Call>
+    <Call id="context" name="buildSSLContext">
+      <Arg>TLS</Arg>
+    </Call>
+  </New>
+
+  <!-- Adds a connector that uses this SSLContext -->
+  <Call name="addConnector">
+    <Arg>
+      <New class="org.mortbay.jetty.security.SslSocketConnector">
+        <Set name="Port">8443</Set>
+        <Set name="maxIdleTime">30000</Set>
+        <Set name="handshakeTimeout">10000</Set>
+        <Set name="sslContext">
+          <Ref id="context" />
+        </Set>
+        <Set name="wantClientAuth">true</Set>
+      </New>
+    </Arg>
+  </Call>
+</Configure>
+}}}
+
+
+== Example jetty-sslcontext.xml, using KeyStore and FileInputStream ==
+
+{{{
+<Configure id="Server" class="org.mortbay.jetty.Server">
+  <New class="java.lang.String"><Arg>THE_TRUSTSTORE_PASSWORD</Arg><Call id="tspassword" name="toCharArray" /></New>
+  <!-- For PKCS#12 KeyStores, the key password and the keystore password are the same. -->
+  <New class="java.lang.String"><Arg>THE_KEY_AND_KEYSTORE_PASSWORD</Arg><Call id="kspassword" name="toCharArray" /></New>
 
   <New class="jsslutils.sslcontext.PKIXSSLContextFactory">
     <Arg>
       <Call class="java.security.KeyStore" name="getInstance">
         <Arg>PKCS12</Arg>
         <Call name="load">
-          <Arg><New class="java.io.FileInputStream"><Arg><SystemProperty name="keystore" /></Arg></New></Arg>
-          <Arg><Ref id="password" /></Arg>
+          <Arg><New class="java.io.FileInputStream"><Arg>/path/to/your/pkcs12keystore.p12</Arg></New></Arg>
+          <Arg><Ref id="kspassword" /></Arg>
         </Call>
       </Call>
     </Arg>
-    <Arg><SystemProperty name="keystorePassword" /></Arg>
+    <Arg><Ref id="kspassword" /></Arg>
     <Arg>
       <Call class="java.security.KeyStore" name="getInstance">
         <Arg>JKS</Arg>
         <Call name="load">
-          <Arg><New class="java.io.FileInputStream"><Arg><SystemProperty name="truststore" /></Arg></New></Arg>
-          <Arg><Ref id="password" /></Arg>
+          <Arg><New class="java.io.FileInputStream"><Arg>/path/to/your/jksTruststore.jks</Arg></New></Arg>
+          <Arg><Ref id="tspassword" /></Arg>
         </Call>
       </Call>
     </Arg>
     <Call name="addRemoteCrl">
-
-<Arg>http://jsslutils.googlecode.com/svn/trunk/certificates/src/main/resources/certificates/newca.crl</Arg>
+       <Arg>http://ca.grid-support.ac.uk/pub/crl/root-crl.crl</Arg>
+    </Call>
+    <Call name="addRemoteCrl">
+       <Arg>http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl</Arg>
     </Call>
     <Call id="context" name="buildSSLContext">
       <Arg>TLS</Arg>
