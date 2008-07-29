@@ -54,8 +54,6 @@ import java.security.cert.PKIXBuilderParameters;
 import java.security.cert.PKIXParameters;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CertSelector;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -65,8 +63,6 @@ import javax.net.ssl.CertPathTrustManagerParameters;
 import javax.net.ssl.ManagerFactoryParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-
-import sun.security.util.DerValue;
 
 /**
  * This class is a factory that provides methods for creating an SSLContext
@@ -322,42 +318,5 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 		} catch (CRLException e) {
 			throw new SSLContextFactoryException(e);
 		}
-	}
-
-	public static final String OID_CRL_Distribution_Points = "2.5.29.31";
-	public static final String OID_Netscape_CA_Revocation_URL = "2.16.840.1.113730.1.4";
-	public static final String OID_Netscape_Revocation_URL = "2.16.840.1.113730.1.3";
-	protected static final String[] URL_OID = { OID_CRL_Distribution_Points,
-			OID_Netscape_CA_Revocation_URL, OID_Netscape_Revocation_URL };
-
-	/**
-	 * Extracts a Collection of Strings from various CRL-related OIDs in a X.509
-	 * certificate.
-	 * <ul>
-	 * <li>OID CRL Distribution Points: 2.5.29.31</li>
-	 * <li>OID Netscape CA Revocation URL: 2.16.840.1.113730.1.4</li>
-	 * <li>OID Netscape Revocation URL: 2.16.840.1.113730.1.3</li>
-	 * </ul>
-	 * 
-	 * @param x509Certificate
-	 *            certificate from which to extract these OIDs.
-	 * @return URLs to CRLs.
-	 * @throws IOException
-	 */
-	public static Collection<String> extractCrlUrlCollection(
-			X509Certificate x509Certificate) throws IOException {
-		Set<String> criticalOIDs = x509Certificate.getCriticalExtensionOIDs();
-		Collection<String> crlUrls = new ArrayList<String>();
-		for (String oid : URL_OID) {
-			try {
-				byte[] oidArray = x509Certificate.getExtensionValue(oid);
-				if (oidArray != null)
-					crlUrls.add(new DerValue(oidArray).getAsString());
-			} catch (IOException e) {
-				if (criticalOIDs.contains(oid))
-					throw e;
-			}
-		}
-		return crlUrls;
 	}
 }
