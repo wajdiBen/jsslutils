@@ -63,9 +63,9 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  * 
  */
 public class X509SSLContextFactory extends SSLContextFactory {
-	private KeyStore keyStore;
-	private char[] keyPassword;
-	private KeyStore trustStore;
+	private final KeyStore keyStore;
+	private final char[] keyPassword;
+	private final KeyStore trustStore;
 
 	private boolean keyManagerWrapperLocked = false;
 	private X509KeyManagerWrapper x509KeyManagerWrapper;
@@ -256,7 +256,8 @@ public class X509SSLContextFactory extends SSLContextFactory {
 			throws SSLContextFactoryException {
 		if (this.keyStore != null) {
 			try {
-				KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+				KeyManagerFactory kmf = KeyManagerFactory
+						.getInstance("SunX509");
 				if ((this.keyPassword != null)
 						|| (this.keyPasswordCallbackHandler == null)) {
 					kmf.init(this.keyStore, this.keyPassword);
