@@ -238,7 +238,7 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 * Returns the Collection of X509CRLs used to initialise the
 	 * CollectionCertStoreParameters used in getCertStore().
 	 * 
-	 * @return Collection of X509CRL ultimetely checked by the trust manager.
+	 * @return Collection of X509CRL ultimately checked by the trust manager.
 	 * @throws SSLContextFactoryException
 	 */
 	public Collection<? extends CRL> getCrlCollection()
@@ -275,13 +275,56 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 * Adds a CRL from a URL to the collection used by getCrlCollection() (and
 	 * thus the trust manager by default).
 	 * 
+	 * @param crlInputStream
+	 *            InputStream containing the CRL to read (this is not closed by
+	 *            this method).
+	 * @throws SSLContextFactoryException
+	 */
+	public void addCrl(InputStream crlInputStream)
+			throws SSLContextFactoryException {
+		this.crlCollection.add(loadCrl(crlInputStream));
+	}
+
+	/**
+	 * Adds a CRL from a URL to the collection used by getCrlCollection() (and
+	 * thus the trust manager by default).
+	 * 
 	 * @param crlUrl
 	 *            URL of the CRL to fetch.
 	 * @throws SSLContextFactoryException
+	 * @throws IOException
+	 * @throws MalformedURLException
 	 */
-	public void addRemoteCrl(String crlUrl) throws SSLContextFactoryException,
-			IOException, MalformedURLException {
-		this.crlCollection.add(fetchRemoteCrl(crlUrl));
+	public void addCrl(String crlUrl) throws SSLContextFactoryException,
+			MalformedURLException, IOException {
+		this.crlCollection.add(loadCrl(crlUrl));
+	}
+
+	/**
+	 * Builds a CRL object from an InputStream.
+	 * 
+	 * @param crlInputStream
+	 *            InputStream containing the CRL to read (this is not closed by
+	 *            this method).
+	 * @return X509CRL built from the representation obtained from this
+	 *         InputStream.
+	 * @throws SSLContextFactoryException
+	 */
+	public synchronized CRL loadCrl(InputStream crlInputStream)
+			throws SSLContextFactoryException {
+		try {
+			if (this.certificateFactory == null) {
+				this.certificateFactory = CertificateFactory
+						.getInstance("X.509");
+			}
+			X509CRL crl = (X509CRL) this.certificateFactory
+					.generateCRL(crlInputStream);
+			return crl;
+		} catch (CertificateException e) {
+			throw new SSLContextFactoryException(e);
+		} catch (CRLException e) {
+			throw new SSLContextFactoryException(e);
+		}
 	}
 
 	/**
@@ -294,29 +337,47 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 * @throws IOException
 	 * @throws MalformedURLException
 	 */
+	public CRL loadCrl(String crlUrl) throws SSLContextFactoryException,
+			IOException, MalformedURLException {
+		InputStream is = null;
+		try {
+			URL url = new URL(crlUrl);
+			is = url.openStream();
+			return loadCrl(new BufferedInputStream(is));
+		} finally {
+			if (is != null) {
+				is.close();
+			}
+		}
+	}
+
+	/**
+	 * Adds a CRL from a URL to the collection used by getCrlCollection() (and
+	 * thus the trust manager by default).
+	 * 
+	 * @param crlUrl
+	 *            URL of the CRL to fetch.
+	 * @throws SSLContextFactoryException
+	 */
+	@Deprecated
+	public void addRemoteCrl(String crlUrl) throws SSLContextFactoryException,
+			IOException, MalformedURLException {
+		addCrl(crlUrl);
+	}
+
+	/**
+	 * Builds a CRL object from a URL.
+	 * 
+	 * @param crlUrl
+	 *            URL of the CRL to fetch.
+	 * @return X509CRL built from the representation obtained from this URL.
+	 * @throws SSLContextFactoryException
+	 * @throws IOException
+	 * @throws MalformedURLException
+	 */
+	@Deprecated
 	public CRL fetchRemoteCrl(String crlUrl) throws SSLContextFactoryException,
 			IOException, MalformedURLException {
-		try {
-			if (this.certificateFactory == null) {
-				this.certificateFactory = CertificateFactory
-						.getInstance("X.509");
-			}
-			InputStream is = null;
-			try {
-				URL url = new URL(crlUrl);
-				is = url.openStream();
-				X509CRL crl = (X509CRL) this.certificateFactory
-						.generateCRL(new BufferedInputStream(is));
-				return crl;
-			} finally {
-				if (is != null) {
-					is.close();
-				}
-			}
-		} catch (CertificateException e) {
-			throw new SSLContextFactoryException(e);
-		} catch (CRLException e) {
-			throw new SSLContextFactoryException(e);
-		}
+		return loadCrl(crlUrl);
 	}
 }

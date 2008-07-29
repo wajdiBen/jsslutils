@@ -49,10 +49,10 @@ import java.security.cert.CertificateException;
  * 
  */
 public final class KeyStoreLoader {
-	private String keyStorePath;
-	private String keyStoreType;
-	private String keyStoreProvider;
-	private char[] keyStorePassword;
+	private volatile String keyStorePath;
+	private volatile String keyStoreType;
+	private volatile String keyStoreProvider;
+	private volatile char[] keyStorePassword;
 
 	/**
 	 * Sets the KeyStore path.
