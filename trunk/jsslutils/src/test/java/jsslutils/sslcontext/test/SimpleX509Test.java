@@ -74,9 +74,11 @@ public class SimpleX509Test extends MiniSslClientServer {
 
 	public boolean prepareSSLContextFactories() throws Exception {
 		this.clientSSLContextFactory = new X509SSLContextFactory(
-				this.clientStore, "testtest", getCaKeyStore());
+				this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+				getCaKeyStore());
 		this.serverSSLContextFactory = new X509SSLContextFactory(
-				getServerCertKeyStore(), "testtest", getCaKeyStore());
+				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+				getCaKeyStore());
 		return true;
 	}
 

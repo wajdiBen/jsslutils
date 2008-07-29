@@ -48,7 +48,8 @@ import jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManager;
 public class TrustAllClientsServerTest extends MiniSslClientServer {
 	public void run() throws Exception {
 		X509SSLContextFactory sslContextFactory = new X509SSLContextFactory(
-				getServerCertKeyStore(), "testtest", getCaKeyStore());
+				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+				getCaKeyStore());
 		sslContextFactory
 				.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
 		sslContextFactory.lockTrustManagerWrapper();

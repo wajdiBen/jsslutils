@@ -38,8 +38,6 @@ package jsslutils.sslcontext.test;
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -88,9 +86,8 @@ public abstract class MiniSslClientServer {
 	protected int serverTimeout = 4000;
 	protected int testPort = 31050;
 
-	private static String CERTIFICATES_DIRECTORY = System.getProperty(
-			"jsslutils.test.certificates",
-			"certificates/src/main/resources/certificates");
+	public final static String CERTIFICATES_DIRECTORY = "jsslutils/certificates/";
+	public final static char[] KEYSTORE_PASSWORD = "testtest".toCharArray();
 
 	/**
 	 * Returns the store of CA certificates, to be used as a trust store. The
@@ -105,10 +102,11 @@ public abstract class MiniSslClientServer {
 	public KeyStore getCaKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
 		KeyStore ks = KeyStore.getInstance("JKS");
-		FileInputStream fis = new FileInputStream(CERTIFICATES_DIRECTORY + File.separator
-				+ "jks" + File.separator + "dummy.jks");
-		ks.load(fis, "testtest".toCharArray());
-		fis.close();
+		InputStream ksis = ClassLoader
+				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY
+						+ "jks/dummy.jks");
+		ks.load(ksis, KEYSTORE_PASSWORD);
+		ksis.close();
 		return ks;
 	}
 
@@ -125,10 +123,11 @@ public abstract class MiniSslClientServer {
 	public KeyStore getServerCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
 		KeyStore ks = KeyStore.getInstance("PKCS12");
-		FileInputStream fis = new FileInputStream(CERTIFICATES_DIRECTORY + File.separator
-				+ "localhost.p12");
-		ks.load(fis, "testtest".toCharArray());
-		fis.close();
+		InputStream ksis = ClassLoader
+				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY
+						+ "localhost.p12");
+		ks.load(ksis, KEYSTORE_PASSWORD);
+		ksis.close();
 		return ks;
 	}
 
@@ -147,10 +146,11 @@ public abstract class MiniSslClientServer {
 	public KeyStore getGoodClientCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
 		KeyStore ks = KeyStore.getInstance("PKCS12");
-		FileInputStream fis = new FileInputStream(CERTIFICATES_DIRECTORY + File.separator
-				+ "testclient.p12");
-		ks.load(fis, "testtest".toCharArray());
-		fis.close();
+		InputStream ksis = ClassLoader
+				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY
+						+ "testclient.p12");
+		ks.load(ksis, KEYSTORE_PASSWORD);
+		ksis.close();
 		return ks;
 	}
 
@@ -170,10 +170,11 @@ public abstract class MiniSslClientServer {
 	public KeyStore getBadClientCertKeyStore() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
 		KeyStore ks = KeyStore.getInstance("PKCS12");
-		FileInputStream fis = new FileInputStream(CERTIFICATES_DIRECTORY + File.separator
-				+ "testclient-r.p12");
-		ks.load(fis, "testtest".toCharArray());
-		fis.close();
+		InputStream ksis = ClassLoader
+				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY
+						+ "testclient-r.p12");
+		ks.load(ksis, KEYSTORE_PASSWORD);
+		ksis.close();
 		return ks;
 	}
 
@@ -191,8 +192,8 @@ public abstract class MiniSslClientServer {
 	public Collection<X509CRL> getLocalCRLs() throws IOException,
 			NoSuchAlgorithmException, KeyStoreException, CertificateException,
 			CRLException {
-		InputStream inStream = new FileInputStream(CERTIFICATES_DIRECTORY
-				+ File.separator + "newca.crl");
+		InputStream inStream = ClassLoader
+				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY + "newca.crl");
 		CertificateFactory cf = CertificateFactory.getInstance("X.509");
 		X509CRL crl = (X509CRL) cf.generateCRL(inStream);
 		inStream.close();
@@ -264,15 +265,14 @@ public abstract class MiniSslClientServer {
 			throws IOException {
 		SSLSocketFactory sslClientSocketFactory = sslClientContext
 				.getSocketFactory();
-		
+
 		PrintWriter cout = null;
 		BufferedReader cin = null;
 		SSLSocket sslClientSocket = null;
 		try {
-			sslClientSocket = (SSLSocket) sslClientSocketFactory
-					.createSocket("localhost", testPort);
-			assertTrue("Client socket connected", sslClientSocket
-					.isConnected());
+			sslClientSocket = (SSLSocket) sslClientSocketFactory.createSocket(
+					"localhost", testPort);
+			assertTrue("Client socket connected", sslClientSocket.isConnected());
 
 			sslClientSocket.setSoTimeout(500);
 			cin = new BufferedReader(new InputStreamReader(sslClientSocket

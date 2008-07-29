@@ -52,23 +52,26 @@ public class PKIXTest extends SimpleX509Test {
 	@Override
 	public boolean prepareSSLContextFactories() throws Exception {
 		PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
-				this.clientStore, "testtest", getCaKeyStore());
+				this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+				getCaKeyStore());
 		clientSSLContextFactory.addCrlCollection(getLocalCRLs());
 		this.clientSSLContextFactory = clientSSLContextFactory;
 		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
-				getServerCertKeyStore(), "testtest", getCaKeyStore());
+				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+				getCaKeyStore());
 		serverSSLContextFactory.addCrlCollection(getLocalCRLs());
-/*
- * The following lines are just an example, but they are not strictly part of the test.
- */
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/root-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-ca-crl.crl");
-//		serverSSLContextFactory
-//				.addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-root-crl.crl");
+		/*
+		 * The following lines are just an example, but they are not strictly
+		 * part of the test.
+		 */
+		// serverSSLContextFactory
+		// .addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl");
+		// serverSSLContextFactory
+		// .addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/root-crl.crl");
+		// serverSSLContextFactory
+		// .addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-ca-crl.crl");
+		// serverSSLContextFactory
+		// .addRemoteCrl("http://ca.grid-support.ac.uk/pub/crl/escience-root-crl.crl");
 		this.serverSSLContextFactory = serverSSLContextFactory;
 		return true;
 	}
