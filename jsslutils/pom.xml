@@ -32,22 +32,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<artifactId>maven-remote-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>process</goal>
-						</goals>
-						<configuration>
-							<resourceBundles>
-<resourceBundle>com.googlecode.jsslutils:jsslutils-test-certificates:1.0.1-SNAPSHOT</resourceBundle>
-							</resourceBundles>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<excludes>
@@ -72,14 +56,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.jsslutils</groupId>
-			<artifactId>jsslutils-testhelpers</artifactId>
+			<artifactId>jsslutils-test-helpers</artifactId>
 			<version>0.4-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.googlecode.jsslutils</groupId>
-			<artifactId>jsslutils-test-certificates</artifactId>
-			<version>1.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

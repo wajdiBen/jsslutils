@@ -43,6 +43,7 @@ import javax.net.ssl.SSLServerSocket;
 
 import jsslutils.sslcontext.SSLContextFactory;
 import jsslutils.sslcontext.X509SSLContextFactory;
+import jsslutils.sslcontext.test.MiniSslClientServer;
 
 import org.junit.Test;
 
@@ -74,9 +75,11 @@ public class SimpleX509Test extends MiniSslApacheClientServerTest {
 
 	public boolean prepareSSLContextFactories() throws Exception {
 		this.clientSSLContextFactory = new X509SSLContextFactory(
-				this.clientStore, "testtest", getCaKeyStore());
+				this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+				getCaKeyStore());
 		this.serverSSLContextFactory = new X509SSLContextFactory(
-				getServerCertKeyStore(), "testtest", getCaKeyStore());
+				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+				getCaKeyStore());
 		return true;
 	}
 
