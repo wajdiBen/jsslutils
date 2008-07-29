@@ -272,8 +272,8 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	}
 
 	/**
-	 * Adds a CRL from a URL to the collection used by getCrlCollection() (and
-	 * thus the trust manager by default).
+	 * Adds a CRL from an InputStream to the collection used by
+	 * getCrlCollection() (and thus the trust manager by default).
 	 * 
 	 * @param crlInputStream
 	 *            InputStream containing the CRL to read (this is not closed by
@@ -358,6 +358,8 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 * @param crlUrl
 	 *            URL of the CRL to fetch.
 	 * @throws SSLContextFactoryException
+	 * @throws IOException
+	 * @throws MalformedURLException
 	 */
 	@Deprecated
 	public void addRemoteCrl(String crlUrl) throws SSLContextFactoryException,
