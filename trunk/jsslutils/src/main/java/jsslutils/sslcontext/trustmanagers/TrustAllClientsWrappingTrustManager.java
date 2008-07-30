@@ -48,7 +48,7 @@ import jsslutils.sslcontext.X509TrustManagerWrapper;
  * @author Bruno Harbulot.
  */
 public class TrustAllClientsWrappingTrustManager implements X509TrustManager {
-	private X509TrustManager trustManager;
+	private final X509TrustManager trustManager;
 
 	/**
 	 * Creates a new instance from an existing X509TrustManager.
