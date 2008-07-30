@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.jsslutils</groupId>
 	<artifactId>jsslutils</artifactId>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.4</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils</name>
 	<url>http://code.google.com/p/jsslutils/</url>
@@ -37,12 +37,6 @@
 					<excludes>
 						<exclude>**/TrustAllClientsServerTest.java</exclude>
 					</excludes>
-					<systemProperties>
-						<property>
-							<name>jsslutils.test.certificates</name>
-							<value>${basedir}/target/test-classes/certificates</value>
-						</property>
-					</systemProperties>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -57,7 +51,7 @@
 		<dependency>
 			<groupId>com.googlecode.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>0.4-SNAPSHOT</version>
+			<version>0.4</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
