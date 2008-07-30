@@ -51,8 +51,8 @@ import jsslutils.sslcontext.X509KeyManagerWrapper;
  * @author Bruno Harbulot.
  */
 public class FixedServerAliasKeyManager implements X509KeyManager {
-	private X509KeyManager keyManager;
-	private String alias;
+	private final X509KeyManager keyManager;
+	private final String alias;
 
 	/**
 	 * Creates a new instance from an existing X509KeyManager.
