@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.jsslutils</groupId>
 	<artifactId>jsslutils-extra-apachehttpclient</artifactId>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.4</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils :: Extra :: Apache Commons HTTP client util</name>
 	<url>http://code.google.com/p/jsslutils/</url>
@@ -36,17 +36,6 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<systemProperties>
-						<property>
-							<name>jsslutils.test.certificates</name>
-							<value>${basedir}/target/test-classes/certificates</value>
-						</property>
-					</systemProperties>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
@@ -58,13 +47,13 @@
 		<dependency>
 			<groupId>com.googlecode.jsslutils</groupId>
 			<artifactId>jsslutils</artifactId>
-			<version>0.4-SNAPSHOT</version>
+			<version>0.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>0.4-SNAPSHOT</version>
+			<version>0.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
