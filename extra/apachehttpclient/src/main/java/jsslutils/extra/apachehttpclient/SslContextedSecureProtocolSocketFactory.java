@@ -369,7 +369,9 @@ public class SslContextedSecureProtocolSocketFactory implements
 	protected SSLSocketFactory getSslSocketFactory() {
 		SSLSocketFactory sslSocketFactory = null;
 		synchronized (this) {
-			sslSocketFactory = this.sslContext.getSocketFactory();
+			if (this.sslContext != null) {
+				sslSocketFactory = this.sslContext.getSocketFactory();
+			}
 		}
 		if (sslSocketFactory == null) {
 			sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
