@@ -51,7 +51,7 @@
 		<dependency>
 			<groupId>com.googlecode.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>0.4</version>
+			<version>0.5-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
