@@ -162,8 +162,12 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 		try {
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance("PKIX");
 			ManagerFactoryParameters trustParams = getTrustParams();
-			tmf.init(trustParams);
-			return tmf.getTrustManagers();
+			if (trustParams != null) {
+				tmf.init(trustParams);
+				return tmf.getTrustManagers();
+			} else {
+				return null;
+			}
 		} catch (NoSuchAlgorithmException e) {
 			throw new SSLContextFactoryException(e);
 		} catch (InvalidAlgorithmParameterException e) {
@@ -183,9 +187,13 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	protected ManagerFactoryParameters getTrustParams()
 			throws SSLContextFactoryException {
 		PKIXParameters pkixParams = getPKIXParameters();
-		ManagerFactoryParameters trustParams = new CertPathTrustManagerParameters(
-				pkixParams);
-		return trustParams;
+		if (pkixParams != null) {
+			ManagerFactoryParameters trustParams = new CertPathTrustManagerParameters(
+					pkixParams);
+			return trustParams;
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -200,12 +208,17 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 */
 	protected PKIXParameters getPKIXParameters()
 			throws SSLContextFactoryException {
+		KeyStore trustStore = getTrustStore();
 		try {
-			PKIXParameters pkixParams = new PKIXBuilderParameters(
-					getTrustStore(), new X509CertSelector());
-			pkixParams.setRevocationEnabled(this.enableRevocation);
-			pkixParams.addCertStore(getCertStore());
-			return pkixParams;
+			if ((trustStore != null) && (trustStore.size() > 0)) {
+					PKIXParameters pkixParams = new PKIXBuilderParameters(
+							getTrustStore(), new X509CertSelector());
+					pkixParams.setRevocationEnabled(this.enableRevocation);
+					pkixParams.addCertStore(getCertStore());
+					return pkixParams;
+			} else {
+				return null;
+			}
 		} catch (KeyStoreException e) {
 			throw new SSLContextFactoryException(e);
 		} catch (InvalidAlgorithmParameterException e) {
