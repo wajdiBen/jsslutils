@@ -2,12 +2,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.googlecode.jsslutils</groupId>
+	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils</artifactId>
 	<version>0.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils</name>
-	<url>http://code.google.com/p/jsslutils/</url>
+	<url>http://www.jsslutils.org/</url>
 	<description>This is a set of SSL-related utilities for Java.</description>
 	<licenses>
 		<license>
@@ -49,7 +49,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.googlecode.jsslutils</groupId>
+			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
 			<version>0.5-SNAPSHOT</version>
 			<scope>test</scope>

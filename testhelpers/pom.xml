@@ -2,12 +2,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.googlecode.jsslutils</groupId>
+	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils-test-helpers</artifactId>
 	<version>0.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils</name>
-	<url>http://code.google.com/p/jsslutils/</url>
+	<url>http://www.jsslutils.org/</url>
 	<description>Helper classes for some of the tests.</description>
 	<licenses>
 		<license>
@@ -35,7 +35,7 @@
 	</build>
 	<dependencies>
 		<dependency>
-			<groupId>com.googlecode.jsslutils</groupId>
+			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-certificates</artifactId>
 			<version>1.0.1</version>
 		</dependency>
