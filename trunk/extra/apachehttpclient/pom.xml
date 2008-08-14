@@ -2,12 +2,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.googlecode.jsslutils</groupId>
+	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils-extra-apachehttpclient</artifactId>
 	<version>0.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils :: Extra :: Apache Commons HTTP client util</name>
-	<url>http://code.google.com/p/jsslutils/</url>
+	<url>http://www.jsslutils.org/</url>
 	<description>Utilities for use with the Apache Commons HTTP client library.</description>
 	<licenses>
 	    <license>
@@ -45,13 +45,13 @@
 			<version>3.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.googlecode.jsslutils</groupId>
+			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils</artifactId>
 			<version>0.5-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.googlecode.jsslutils</groupId>
+			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
 			<version>0.5-SNAPSHOT</version>
 			<scope>test</scope>
