@@ -1,3 +1,4 @@
-jsslutils.keystores
-jsslutils.sslcontext
-jsslutils.sslcontext.trustmanagers
+org.jsslutils.keystores
+org.jsslutils.sslcontext
+org.jsslutils.sslcontext.keymanagers
+org.jsslutils.sslcontext.trustmanagers
