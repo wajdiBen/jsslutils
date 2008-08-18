@@ -9,7 +9,7 @@ The original objectives for this library was to provide a consistent way of sett
 
 == Restlet ==
 
-I am the SSL extension committer for Restlet. The SSL related documentation can be found in the [http://wiki.restlet.org/|Restlet Wiki].
+I am the SSL extension committer for Restlet. The SSL related documentation can be found in the [http://wiki.restlet.org/ Restlet Wiki].
 
 == Jetty ==
 
@@ -19,7 +19,7 @@ The use in conjunction with Jetty was addressed in [http://jira.codehaus.org/bro
 
 == Version 0.5 ==
 
- * Now using [http://www.jsslutils.org/|org.jsslutils] package name and Maven group ID.
+ * Now using [http://www.jsslutils.org/ org.jsslutils] package name and Maven group ID.
  * Added sample SSLImplementation for Apache Tomcat 6.
  * Fixed issue with trust parameters when no trust store was specified explicitly.
 
