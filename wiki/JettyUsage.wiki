@@ -3,12 +3,12 @@
 
 = Jetty Configuration =
 
-If the `setSslContext` method gets added to the [http://www.mortbay.org/ Jetty] SSL connectors (see [http://jira.codehaus.org/browse/JETTY-554 JETTY-554]), it will be possible to use jSSLutils with Jetty. This can be used for configuring Certificate Revocation Lists (CRLs).
+The `setSslContext` method was added to the [http://www.mortbay.org/ Jetty] SSL connectors (see [http://jira.codehaus.org/browse/JETTY-554 JETTY-554]) in version 7.0.0pre4, so it is possible to use jSSLutils with Jetty. This can be used for configuring Certificate Revocation Lists (CRLs).
 
-For the following examples to work, jsslutils-0.3.jar needs to be on the classpath:
+For the following examples to work, jsslutils-0.5.jar needs to be on the classpath:
 
 {{{
-java -Djetty.class.path=/path/to/jsslutils-0.3.jar \
+java -Djetty.class.path=/path/to/jsslutils-0.5.jar \
    -jar start.jar etc/jetty.xml etc/jetty-sslcontext.xml
 }}}
 
@@ -19,7 +19,7 @@ Further details about this configuration syntax can be found on the [http://docs
 {{{
 <Configure id="Server" class="org.mortbay.jetty.Server">
   <!-- Use the KeyStoreLoader to load the key store into "keystore" -->
-  <New class="jsslutils.keystores.KeyStoreLoader">
+  <New class="org.jsslutils.keystores.KeyStoreLoader">
     <Set name="keyStoreType">PKCS12</Set>
     <Set name="keyStorePath">/path/to/your/pkcs12keystore.p12</Set>
     <Set name="keyStorePassword">THE_KEYSTORE_PASSWORD</Set>
@@ -27,7 +27,7 @@ Further details about this configuration syntax can be found on the [http://docs
   </New>
   
   <!-- Use the KeyStoreLoader to load the trust store into "truststore" -->
-  <New class="jsslutils.keystores.KeyStoreLoader">
+  <New class="org.jsslutils.keystores.KeyStoreLoader">
     <Set name="keyStoreType">JKS</Set>
     <Set name="keyStorePath">/path/to/your/jksTruststore.jks</Set>
     <Set name="keyStorePassword">THE_TRUSTSTORE_PASSWORD</Set>
@@ -35,15 +35,15 @@ Further details about this configuration syntax can be found on the [http://docs
   </New>
 
   <!-- Creates a PKIX-based SSLContext into "context" -->
-  <New class="jsslutils.sslcontext.PKIXSSLContextFactory">
+  <New class="org.jsslutils.sslcontext.PKIXSSLContextFactory">
     <Arg><Ref id="keystore" /></Arg>
     <Arg>THE_KEY_PASSWORD</Arg>
     <Arg><Ref id="truststore" /></Arg>
     <!-- Adds remote CRLs -->
-    <Call name="addRemoteCrl">
+    <Call name="addCrl">
        <Arg>http://ca.grid-support.ac.uk/pub/crl/root-crl.crl</Arg>
     </Call>
-    <Call name="addRemoteCrl">
+    <Call name="addCrl">
        <Arg>http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl</Arg>
     </Call>
     <Call id="context" name="buildSSLContext">
@@ -77,7 +77,7 @@ Further details about this configuration syntax can be found on the [http://docs
   <!-- For PKCS#12 KeyStores, the key password and the keystore password are the same. -->
   <New class="java.lang.String"><Arg>THE_KEY_AND_KEYSTORE_PASSWORD</Arg><Call id="kspassword" name="toCharArray" /></New>
 
-  <New class="jsslutils.sslcontext.PKIXSSLContextFactory">
+  <New class="org.jsslutils.sslcontext.PKIXSSLContextFactory">
     <Arg>
       <Call class="java.security.KeyStore" name="getInstance">
         <Arg>PKCS12</Arg>
@@ -97,10 +97,10 @@ Further details about this configuration syntax can be found on the [http://docs
         </Call>
       </Call>
     </Arg>
-    <Call name="addRemoteCrl">
+    <Call name="addCrl">
        <Arg>http://ca.grid-support.ac.uk/pub/crl/root-crl.crl</Arg>
     </Call>
-    <Call name="addRemoteCrl">
+    <Call name="addCrl">
        <Arg>http://ca.grid-support.ac.uk/pub/crl/ca-crl.crl</Arg>
     </Call>
     <Call id="context" name="buildSSLContext">
