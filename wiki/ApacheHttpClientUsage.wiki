@@ -3,13 +3,13 @@
 
 = Introduction =
 
-The [http://hc.apache.org/httpclient-3.x/ Apache HTTP client library] provides a way to [http://hc.apache.org/httpclient-3.x/sslguide.html configure SSL] via its [http://hc.apache.org/httpclient-3.x/apidocs/org/apache/commons/httpclient/protocol/SecureProtocolSocketFactory.html SecureProtocolSocketFactory].
+The [http://hc.apache.org/httpclient-3.x/ Apache HTTP client library 3.1] provides a way to [http://hc.apache.org/httpclient-3.x/sslguide.html configure SSL] via its [http://hc.apache.org/httpclient-3.x/apidocs/org/apache/commons/httpclient/protocol/SecureProtocolSocketFactory.html SecureProtocolSocketFactory].
 
-`jsslutils.extra.apachehttpclient.SslContextedSecureProtocolSocketFactory` is an implementation of `SecureProtocolSocketFactory` which:
+`org.jsslutils.extra.apachehttpclient.SslContextedSecureProtocolSocketFactory` is an implementation of `SecureProtocolSocketFactory` which:
   * allows you to set an `SSLContext` so as to configure trust and use of a client certificate, and
   * verifies the host name against _CN_ fields in the subject distinguished name of the server certificate.
 
-This class does not depend on _jSSLutils_. It is currently available in version _0.4-SNAPSHOT_, in the _extra_ directory of the subversion repository since revision 31.
+This class does not depend on _jSSLutils_. It is currently available in version 0.5, in the _extra_ directory of the subversion repository.
 
 = Example =
 
