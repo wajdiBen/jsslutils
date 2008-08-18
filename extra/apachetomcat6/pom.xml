@@ -1,23 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
-	<artifactId>jsslutils-extra-apachehttpclient3</artifactId>
+	<artifactId>jsslutils-extra-apachetomcat6</artifactId>
 	<version>0.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>jSSLutils :: Extra :: Apache Commons HTTP client util</name>
+	<name>jSSLutils :: Extra :: SSLImplementation for Apache Tomcat 6</name>
 	<url>http://www.jsslutils.org/</url>
-	<description>Utilities for use with the Apache Commons HTTP client library 3.x.</description>
+	<description>SSLImplementation for Apache Tomcat 6.</description>
 	<licenses>
 	    <license>
 	      <name>The Apache Software License, Version 2.0</name>
 	      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-	      <distribution>repo</distribution>
-	    </license>
-	    <license>
-	      <name>LGPL</name>
-	      <url>http://www.gnu.org/copyleft/lesser.txt</url>
 	      <distribution>repo</distribution>
 	    </license>
 	</licenses>
@@ -40,21 +36,14 @@
 	</build>
 	<dependencies>
 		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>coyote</artifactId>
+			<version>6.0.16</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils</artifactId>
 			<version>0.5-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jsslutils</groupId>
-			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>0.5-SNAPSHOT</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
