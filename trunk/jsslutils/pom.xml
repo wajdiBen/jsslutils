@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils</artifactId>
-	<version>0.5-SNAPSHOT</version>
+	<version>0.5</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils</name>
 	<url>http://www.jsslutils.org/</url>
@@ -51,7 +51,7 @@
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>0.5-SNAPSHOT</version>
+			<version>0.5</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
