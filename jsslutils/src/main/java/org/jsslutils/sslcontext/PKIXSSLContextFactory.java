@@ -164,13 +164,15 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 			ManagerFactoryParameters trustParams = getTrustParams();
 			if (trustParams != null) {
 				tmf.init(trustParams);
-				return tmf.getTrustManagers();
 			} else {
-				return null;
+				tmf.init((KeyStore)null);
 			}
+			return tmf.getTrustManagers();
 		} catch (NoSuchAlgorithmException e) {
 			throw new SSLContextFactoryException(e);
 		} catch (InvalidAlgorithmParameterException e) {
+			throw new SSLContextFactoryException(e);
+		} catch (KeyStoreException e) {
 			throw new SSLContextFactoryException(e);
 		}
 	}
