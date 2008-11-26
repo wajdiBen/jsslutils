@@ -212,12 +212,17 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 			throws SSLContextFactoryException {
 		KeyStore trustStore = getTrustStore();
 		try {
-			if ((trustStore != null) && (trustStore.size() > 0)) {
-					PKIXParameters pkixParams = new PKIXBuilderParameters(
-							getTrustStore(), new X509CertSelector());
+			if (trustStore != null) {
+				PKIXParameters pkixParams = new PKIXBuilderParameters(
+						getTrustStore(), null);
+				CertStore certStore = getCertStore();
+				if (certStore != null) {
 					pkixParams.setRevocationEnabled(this.enableRevocation);
 					pkixParams.addCertStore(getCertStore());
-					return pkixParams;
+				} else {
+					pkixParams.setRevocationEnabled(false);
+				}
+				return pkixParams;
 			} else {
 				return null;
 			}
@@ -239,9 +244,15 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 */
 	protected CertStore getCertStore() throws SSLContextFactoryException {
 		try {
-			CollectionCertStoreParameters collecCertStoreParams = new CollectionCertStoreParameters(
-					getCrlCollection());
-			return CertStore.getInstance("Collection", collecCertStoreParams);
+			Collection<? extends CRL> crlCollection = getCrlCollection();
+			if ((crlCollection != null) && (crlCollection.size() > 0)) {
+				CollectionCertStoreParameters collecCertStoreParams = new CollectionCertStoreParameters(
+						crlCollection);
+				return CertStore.getInstance("Collection",
+						collecCertStoreParams);
+			} else {
+				return null;
+			}
 		} catch (InvalidAlgorithmParameterException e) {
 			throw new SSLContextFactoryException(e);
 		} catch (NoSuchAlgorithmException e) {
