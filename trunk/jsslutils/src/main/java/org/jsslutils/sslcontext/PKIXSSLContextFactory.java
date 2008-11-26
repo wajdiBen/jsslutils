@@ -53,7 +53,6 @@ import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.PKIXBuilderParameters;
 import java.security.cert.PKIXParameters;
 import java.security.cert.X509CRL;
-import java.security.cert.X509CertSelector;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
