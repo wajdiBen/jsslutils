@@ -35,6 +35,7 @@ import javax.net.ssl.SSLSocket;
 import org.jsslutils.keystores.KeyStoreLoader;
 import org.jsslutils.sslcontext.PKIXSSLContextFactory;
 import org.jsslutils.sslcontext.trustmanagers.GsiWrappingTrustManager;
+import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManager;
 
 /**
  * This socket factory is used by the <a
@@ -279,12 +280,19 @@ public class JSSLutilsJSSESocketFactory extends
 				sslContextFactory.addCrl(crlUrl);
 			}
 
-			String acceptProxyCertsAttr = (String) attributes
-					.get("acceptProxyCerts");
-			if ("true".equalsIgnoreCase(acceptProxyCertsAttr)
-					|| "yes".equalsIgnoreCase(acceptProxyCertsAttr)) {
+			String acceptAnyCert = (String) attributes.get("acceptAnyCert");
+			if ("true".equalsIgnoreCase(acceptAnyCert)
+					|| "yes".equalsIgnoreCase(acceptAnyCert)) {
 				sslContextFactory
-						.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper());
+						.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
+			} else {
+				String acceptProxyCertsAttr = (String) attributes
+						.get("acceptProxyCerts");
+				if ("true".equalsIgnoreCase(acceptProxyCertsAttr)
+						|| "yes".equalsIgnoreCase(acceptProxyCertsAttr)) {
+					sslContextFactory
+							.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper());
+				}
 			}
 
 			// Create and init SSLContext
