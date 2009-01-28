@@ -208,7 +208,6 @@ public class JSSLutilsJSSESocketFactory extends
 	 */
 	void init() throws IOException {
 		try {
-
 			String clientAuthStr = (String) attributes.get("clientauth");
 			if ("true".equalsIgnoreCase(clientAuthStr)
 					|| "yes".equalsIgnoreCase(clientAuthStr)) {
@@ -222,11 +221,13 @@ public class JSSLutilsJSSESocketFactory extends
 			if (protocol == null) {
 				protocol = defaultProtocol;
 			}
-
-			String keyPassAttr = (String) attributes.get("keyPass");
+			
+			String keyPassAttr = (String) attributes.get("keypass");
 
 			KeyStoreLoader ksl = KeyStoreLoader.getKeyStoreDefaultLoader();
 			String keystoreFileAttr = (String) attributes.get("keystoreFile");
+			if (keystoreFileAttr == null)
+				keystoreFileAttr = (String) attributes.get("keystore");
 			if (keystoreFileAttr != null) {
 				ksl.setKeyStorePath(keystoreFileAttr.length() == 0 ? null
 						: keystoreFileAttr);
@@ -269,15 +270,20 @@ public class JSSLutilsJSSESocketFactory extends
 						.setKeyStoreProvider(truststoreProviderAttr.length() == 0 ? null
 								: truststoreProviderAttr);
 			}
+			
+			KeyStore keyStore = ksl.loadKeyStore();
+			KeyStore trustStore = tsl.loadKeyStore();
 
 			PKIXSSLContextFactory sslContextFactory = new PKIXSSLContextFactory(
-					ksl.loadKeyStore(), keyPassAttr, tsl.loadKeyStore());
+					keyStore, keyPassAttr, trustStore);
 
 			String crlURLsAttr = (String) attributes.get("crlURLs");
-			StringTokenizer st = new StringTokenizer(crlURLsAttr, " ");
-			while (st.hasMoreTokens()) {
-				String crlUrl = st.nextToken();
-				sslContextFactory.addCrl(crlUrl);
+			if (crlURLsAttr != null) {
+				StringTokenizer st = new StringTokenizer(crlURLsAttr, " ");
+				while (st.hasMoreTokens()) {
+					String crlUrl = st.nextToken();
+					sslContextFactory.addCrl(crlUrl);
+				}
 			}
 
 			String acceptAnyCert = (String) attributes.get("acceptAnyCert");
