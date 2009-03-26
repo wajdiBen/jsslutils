@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 
 import javax.net.ssl.SSLEngine;
 
-import com.sun.grizzly.util.LoggerUtils;
 import com.sun.grizzly.util.net.SSLImplementation;
 import com.sun.grizzly.util.net.SSLSupport;
 import com.sun.grizzly.util.net.ServerSocketFactory;
@@ -34,7 +33,8 @@ import com.sun.grizzly.util.net.ServerSocketFactory;
  * @author Bruno Harbulot
  */
 public class JSSLutilsImplementation extends SSLImplementation {
-	private final static Logger logger = LoggerUtils.getLogger();
+	private final static Logger logger = Logger
+			.getLogger("org.jsslutils.extra.grizzly");
 
 	private final JSSLutilsFactory factory;
 
