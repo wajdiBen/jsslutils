@@ -25,6 +25,8 @@ import java.net.SocketException;
 import java.security.KeyStore;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -37,6 +39,7 @@ import org.jsslutils.sslcontext.PKIXSSLContextFactory;
 import org.jsslutils.sslcontext.trustmanagers.GsiWrappingTrustManager;
 import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManager;
 
+import com.sun.grizzly.util.LoggerUtils;
 import com.sun.grizzly.util.net.ServerSocketFactory;
 
 /**
@@ -61,26 +64,32 @@ import com.sun.grizzly.util.net.ServerSocketFactory;
  * @author Bruno Harbulot -- jSSLutils
  */
 public class JSSLutilsJSSESocketFactory extends ServerSocketFactory {
+	private final static Logger logger = LoggerUtils.getLogger();
+
 	public final static String SYSTEM_PROPERTIES_PREFIX = "org.jsslutils.extra.grizzly";
 
 	static String defaultProtocol = "TLS";
 
-	protected boolean initialized;
-	protected String clientAuth = "false";
+	protected volatile boolean initialized;
+	protected final String defaultClientAuth = "false";
 	protected SSLServerSocketFactory sslProxy = null;
 	protected String[] enabledCiphers;
 
 	/**
 	 * Flag to state that we require client authentication.
 	 */
-	protected boolean requireClientAuth = false;
+	protected volatile boolean requireClientAuth = false;
 
 	/**
 	 * Flag to state that we would like client authentication.
 	 */
-	protected boolean wantClientAuth = false;
+	protected volatile boolean wantClientAuth = false;
 
 	public JSSLutilsJSSESocketFactory() {
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(JSSLutilsJSSESocketFactory.class.getName()
+					+ " instantiated.");
+		}
 	}
 
 	@Override
@@ -118,6 +127,11 @@ public class JSSLutilsJSSESocketFactory extends ServerSocketFactory {
 		try {
 			asock = (SSLSocket) socket.accept();
 			configureClientAuth(asock);
+			if (logger.isLoggable(Level.FINE)) {
+				logger.fine(JSSLutilsJSSESocketFactory.class.getName()
+						+ "#acceptSocket(): " + asock.getWantClientAuth() + "/"
+						+ asock.getNeedClientAuth());
+			}
 		} catch (SSLException e) {
 			throw new SocketException("SSL handshake error" + e.toString());
 		}
@@ -139,7 +153,7 @@ public class JSSLutilsJSSESocketFactory extends ServerSocketFactory {
 	 * @return Array of SSL cipher suites to be enabled, or null if none of the
 	 *         requested ciphers are supported
 	 */
-	protected String[] getEnabledCiphers(String requestedCiphers,
+	protected synchronized String[] getEnabledCiphers(String requestedCiphers,
 			String[] supportedCiphers) {
 
 		String[] enabledCiphers = null;
@@ -335,9 +349,11 @@ public class JSSLutilsJSSESocketFactory extends ServerSocketFactory {
 			String requestedCiphers = System.getProperty(
 					SYSTEM_PROPERTIES_PREFIX + ".ciphers", (String) attributes
 							.get("ciphers"));
-			enabledCiphers = getEnabledCiphers(requestedCiphers, sslProxy
-					.getSupportedCipherSuites());
 
+			synchronized (this) {
+				enabledCiphers = getEnabledCiphers(requestedCiphers, sslProxy
+						.getSupportedCipherSuites());
+			}
 		} catch (Exception e) {
 			if (e instanceof IOException)
 				throw (IOException) e;
@@ -446,10 +462,16 @@ public class JSSLutilsJSSESocketFactory extends ServerSocketFactory {
 	 *            the SSLServerSocket
 	 */
 	protected void configureClientAuth(SSLServerSocket socket) {
+
 		if (wantClientAuth) {
 			socket.setWantClientAuth(wantClientAuth);
 		} else {
 			socket.setNeedClientAuth(requireClientAuth);
+		}
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(JSSLutilsJSSESocketFactory.class.getName()
+					+ "#configureClientAuth(): " + socket.getWantClientAuth()
+					+ "/" + socket.getNeedClientAuth());
 		}
 	}
 
@@ -462,10 +484,16 @@ public class JSSLutilsJSSESocketFactory extends ServerSocketFactory {
 	 *            the SSLSocket
 	 */
 	protected void configureClientAuth(SSLSocket socket) {
+
 		if (wantClientAuth) {
 			socket.setWantClientAuth(wantClientAuth);
 		} else {
 			socket.setNeedClientAuth(requireClientAuth);
+		}
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(JSSLutilsJSSESocketFactory.class.getName()
+					+ "#configureClientAuth(): " + socket.getWantClientAuth()
+					+ "/" + socket.getNeedClientAuth());
 		}
 	}
 
@@ -474,11 +502,16 @@ public class JSSLutilsJSSESocketFactory extends ServerSocketFactory {
 	 * protocol versions, and need for client authentication
 	 */
 	private void initServerSocket(ServerSocket ssocket) {
-
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(JSSLutilsJSSESocketFactory.class.getName()
+					+ "#initServerSocket(): ");
+		}
 		SSLServerSocket socket = (SSLServerSocket) ssocket;
 
-		if (enabledCiphers != null) {
-			socket.setEnabledCipherSuites(enabledCiphers);
+		synchronized (this) {
+			if (enabledCiphers != null) {
+				socket.setEnabledCipherSuites(enabledCiphers);
+			}
 		}
 
 		String requestedProtocols = (String) attributes.get("protocols");

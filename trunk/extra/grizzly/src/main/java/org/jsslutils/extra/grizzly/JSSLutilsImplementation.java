@@ -16,8 +16,16 @@
  */
 package org.jsslutils.extra.grizzly;
 
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.net.ssl.SSLEngine;
+
+import com.sun.grizzly.util.LoggerUtils;
+import com.sun.grizzly.util.net.SSLImplementation;
+import com.sun.grizzly.util.net.SSLSupport;
 import com.sun.grizzly.util.net.ServerSocketFactory;
-import com.sun.grizzly.util.net.jsse.JSSEImplementation;
 
 /**
  * This is an SSLImplementation extending the default JSSEImplementation to use
@@ -25,19 +33,44 @@ import com.sun.grizzly.util.net.jsse.JSSEImplementation;
  * 
  * @author Bruno Harbulot
  */
-public class JSSLutilsImplementation extends JSSEImplementation {
+public class JSSLutilsImplementation extends SSLImplementation {
+	private final static Logger logger = LoggerUtils.getLogger();
+
+	private final JSSLutilsFactory factory;
+
+	public JSSLutilsImplementation() {
+		this.factory = new JSSLutilsFactory();
+	}
+
 	@Override
 	public String getImplementationName() {
 		return "jsslutils";
 	}
 
-	public JSSLutilsImplementation() throws ClassNotFoundException {
-
+	@Override
+	public ServerSocketFactory getServerSocketFactory() {
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(JSSLutilsImplementation.class.getName()
+					+ "#getServerSocketFactory()");
+		}
+		return factory.getSocketFactory();
 	}
 
 	@Override
-	public ServerSocketFactory getServerSocketFactory() {
-		return new JSSLutilsJSSESocketFactory();
+	public SSLSupport getSSLSupport(Socket s) {
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(JSSLutilsImplementation.class.getName()
+					+ "#getSSLSupport()");
+		}
+		return factory.getSSLSupport(s);
 	}
 
+	@Override
+	public SSLSupport getSSLSupport(SSLEngine sslEngine) {
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(JSSLutilsImplementation.class.getName()
+					+ "#getSSLSupport()");
+		}
+		return factory.getSSLSupport(sslEngine);
+	}
 }
