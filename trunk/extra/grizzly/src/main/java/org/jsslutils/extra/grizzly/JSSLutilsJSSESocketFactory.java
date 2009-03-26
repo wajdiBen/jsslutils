@@ -39,7 +39,6 @@ import org.jsslutils.sslcontext.PKIXSSLContextFactory;
 import org.jsslutils.sslcontext.trustmanagers.GsiWrappingTrustManager;
 import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManager;
 
-import com.sun.grizzly.util.LoggerUtils;
 import com.sun.grizzly.util.net.ServerSocketFactory;
 
 /**
@@ -64,7 +63,8 @@ import com.sun.grizzly.util.net.ServerSocketFactory;
  * @author Bruno Harbulot -- jSSLutils
  */
 public class JSSLutilsJSSESocketFactory extends ServerSocketFactory {
-	private final static Logger logger = LoggerUtils.getLogger();
+	private final static Logger logger = Logger
+			.getLogger("org.jsslutils.extra.grizzly");
 
 	public final static String SYSTEM_PROPERTIES_PREFIX = "org.jsslutils.extra.grizzly";
 
