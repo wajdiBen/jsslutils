@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.jsslutils</groupId>
+	<artifactId>jsslutils-test-certificates</artifactId>
+	<version>1.0.2</version>
+	<packaging>jar</packaging>
+	<name>jSSLutils :: Test certificates</name>
+	<url>http://www.jsslutils.org/</url>
+	<description>These are a few test keys and certificates (password is 'testtest').</description>
+	<licenses>
+		<license>
+			<name>Public Domain</name>
+			<url>LICENSE.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/trunk</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://code.google.com/p/jsslutils/source/browse</url>
+	</scm>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-remote-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>bundle</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<includes><include>**/*</include></includes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
