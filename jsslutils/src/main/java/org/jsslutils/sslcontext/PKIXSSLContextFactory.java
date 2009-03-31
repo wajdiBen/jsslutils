@@ -53,6 +53,7 @@ import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.PKIXBuilderParameters;
 import java.security.cert.PKIXParameters;
 import java.security.cert.X509CRL;
+import java.security.cert.X509CertSelector;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -163,15 +164,13 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 			ManagerFactoryParameters trustParams = getTrustParams();
 			if (trustParams != null) {
 				tmf.init(trustParams);
+				return tmf.getTrustManagers();
 			} else {
-				tmf.init((KeyStore)null);
+				return null;
 			}
-			return tmf.getTrustManagers();
 		} catch (NoSuchAlgorithmException e) {
 			throw new SSLContextFactoryException(e);
 		} catch (InvalidAlgorithmParameterException e) {
-			throw new SSLContextFactoryException(e);
-		} catch (KeyStoreException e) {
 			throw new SSLContextFactoryException(e);
 		}
 	}
@@ -211,17 +210,12 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 			throws SSLContextFactoryException {
 		KeyStore trustStore = getTrustStore();
 		try {
-			if (trustStore != null) {
-				PKIXParameters pkixParams = new PKIXBuilderParameters(
-						getTrustStore(), null);
-				CertStore certStore = getCertStore();
-				if (certStore != null) {
+			if ((trustStore != null) && (trustStore.size() > 0)) {
+					PKIXParameters pkixParams = new PKIXBuilderParameters(
+							getTrustStore(), new X509CertSelector());
 					pkixParams.setRevocationEnabled(this.enableRevocation);
 					pkixParams.addCertStore(getCertStore());
-				} else {
-					pkixParams.setRevocationEnabled(false);
-				}
-				return pkixParams;
+					return pkixParams;
 			} else {
 				return null;
 			}
@@ -243,15 +237,9 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 */
 	protected CertStore getCertStore() throws SSLContextFactoryException {
 		try {
-			Collection<? extends CRL> crlCollection = getCrlCollection();
-			if ((crlCollection != null) && (crlCollection.size() > 0)) {
-				CollectionCertStoreParameters collecCertStoreParams = new CollectionCertStoreParameters(
-						crlCollection);
-				return CertStore.getInstance("Collection",
-						collecCertStoreParams);
-			} else {
-				return null;
-			}
+			CollectionCertStoreParameters collecCertStoreParams = new CollectionCertStoreParameters(
+					getCrlCollection());
+			return CertStore.getInstance("Collection", collecCertStoreParams);
 		} catch (InvalidAlgorithmParameterException e) {
 			throw new SSLContextFactoryException(e);
 		} catch (NoSuchAlgorithmException e) {

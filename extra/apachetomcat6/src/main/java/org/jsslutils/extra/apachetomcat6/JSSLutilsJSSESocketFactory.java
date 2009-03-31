@@ -35,7 +35,6 @@ import javax.net.ssl.SSLSocket;
 import org.jsslutils.keystores.KeyStoreLoader;
 import org.jsslutils.sslcontext.PKIXSSLContextFactory;
 import org.jsslutils.sslcontext.trustmanagers.GsiWrappingTrustManager;
-import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManager;
 
 /**
  * This socket factory is used by the <a
@@ -208,6 +207,7 @@ public class JSSLutilsJSSESocketFactory extends
 	 */
 	void init() throws IOException {
 		try {
+
 			String clientAuthStr = (String) attributes.get("clientauth");
 			if ("true".equalsIgnoreCase(clientAuthStr)
 					|| "yes".equalsIgnoreCase(clientAuthStr)) {
@@ -221,13 +221,11 @@ public class JSSLutilsJSSESocketFactory extends
 			if (protocol == null) {
 				protocol = defaultProtocol;
 			}
-			
-			String keyPassAttr = (String) attributes.get("keypass");
+
+			String keyPassAttr = (String) attributes.get("keyPass");
 
 			KeyStoreLoader ksl = KeyStoreLoader.getKeyStoreDefaultLoader();
 			String keystoreFileAttr = (String) attributes.get("keystoreFile");
-			if (keystoreFileAttr == null)
-				keystoreFileAttr = (String) attributes.get("keystore");
 			if (keystoreFileAttr != null) {
 				ksl.setKeyStorePath(keystoreFileAttr.length() == 0 ? null
 						: keystoreFileAttr);
@@ -270,35 +268,23 @@ public class JSSLutilsJSSESocketFactory extends
 						.setKeyStoreProvider(truststoreProviderAttr.length() == 0 ? null
 								: truststoreProviderAttr);
 			}
-			
-			KeyStore keyStore = ksl.loadKeyStore();
-			KeyStore trustStore = tsl.loadKeyStore();
 
 			PKIXSSLContextFactory sslContextFactory = new PKIXSSLContextFactory(
-					keyStore, keyPassAttr, trustStore);
+					ksl.loadKeyStore(), keyPassAttr, tsl.loadKeyStore());
 
 			String crlURLsAttr = (String) attributes.get("crlURLs");
-			if (crlURLsAttr != null) {
-				StringTokenizer st = new StringTokenizer(crlURLsAttr, " ");
-				while (st.hasMoreTokens()) {
-					String crlUrl = st.nextToken();
-					sslContextFactory.addCrl(crlUrl);
-				}
+			StringTokenizer st = new StringTokenizer(crlURLsAttr, " ");
+			while (st.hasMoreTokens()) {
+				String crlUrl = st.nextToken();
+				sslContextFactory.addCrl(crlUrl);
 			}
 
-			String acceptAnyCert = (String) attributes.get("acceptAnyCert");
-			if ("true".equalsIgnoreCase(acceptAnyCert)
-					|| "yes".equalsIgnoreCase(acceptAnyCert)) {
+			String acceptProxyCertsAttr = (String) attributes
+					.get("acceptProxyCerts");
+			if ("true".equalsIgnoreCase(acceptProxyCertsAttr)
+					|| "yes".equalsIgnoreCase(acceptProxyCertsAttr)) {
 				sslContextFactory
-						.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
-			} else {
-				String acceptProxyCertsAttr = (String) attributes
-						.get("acceptProxyCerts");
-				if ("true".equalsIgnoreCase(acceptProxyCertsAttr)
-						|| "yes".equalsIgnoreCase(acceptProxyCertsAttr)) {
-					sslContextFactory
-							.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper());
-				}
+						.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper());
 			}
 
 			// Create and init SSLContext
