@@ -35,22 +35,49 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package org.jsslutils.sslcontext;
 
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
 import javax.net.ssl.X509TrustManager;
 
 /**
- * This interface represents a wrapper for an X509TrustManager. This is intended
- * to provide a way to customize TrustManagers in the X509SSLContextFactory (or
- * subclasses).
+ * Abstract Trust Manager that wraps another one.
  * 
  * @author Bruno Harbulot.
  */
-public interface X509TrustManagerWrapper {
+public abstract class X509WrappingTrustManager implements X509TrustManager {
+	protected final X509TrustManager trustManager;
+
 	/**
-	 * Builds an X509TrustManager from another X509TrustManager.
+	 * Creates a new instance from an existing X509TrustManager.
 	 * 
 	 * @param trustManager
-	 *            original X509TrustManager.
-	 * @return wrapped X509TrustManager.
+	 *            X509TrustManager to wrap.
 	 */
-	public X509TrustManager wrapTrustManager(X509TrustManager trustManager);
+	public X509WrappingTrustManager(X509TrustManager trustManager) {
+		this.trustManager = trustManager;
+	}
+
+	/**
+	 * Delegates call to wrapped X509TrustManager.
+	 */
+	public void checkClientTrusted(X509Certificate[] chain, String authType)
+			throws CertificateException {
+		this.trustManager.checkClientTrusted(chain, authType);
+	}
+
+	/**
+	 * Delegates call to wrapped X509TrustManager.
+	 */
+	public void checkServerTrusted(X509Certificate[] chain, String authType)
+			throws CertificateException {
+		this.trustManager.checkServerTrusted(chain, authType);
+	}
+
+	/**
+	 * Delegates call to wrapped X509TrustManager.
+	 */
+	public X509Certificate[] getAcceptedIssuers() {
+		return this.trustManager.getAcceptedIssuers();
+	}
 }

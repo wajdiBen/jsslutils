@@ -37,11 +37,9 @@ package org.jsslutils.sslcontext.test;
 
 import javax.net.ssl.SSLServerSocket;
 
-
 import org.jsslutils.sslcontext.X509SSLContextFactory;
 import org.jsslutils.sslcontext.test.MiniSslClientServer;
 import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManager;
-
 
 /**
  * Mini server that should accept any client certificate.
@@ -54,8 +52,7 @@ public class TrustAllClientsServerTest extends MiniSslClientServer {
 				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
 				getCaKeyStore());
 		sslContextFactory
-				.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
-		sslContextFactory.lockTrustManagerWrapper();
+				.setTrustManagerWrapper(TrustAllClientsWrappingTrustManager.class);
 		SSLServerSocket socket = prepareServerSocket(sslContextFactory
 				.buildSSLContext());
 		System.out

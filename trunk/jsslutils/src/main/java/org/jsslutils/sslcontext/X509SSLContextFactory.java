@@ -36,21 +36,29 @@ POSSIBILITY OF SUCH DAMAGE.
 package org.jsslutils.sslcontext;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.jsslutils.keystores.KeyStoreLoader;
 
 /**
  * This class is a factory that provides methods for creating an SSLContext
@@ -62,18 +70,39 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  * @author Bruno Harbulot
  * 
  */
-public class X509SSLContextFactory extends SSLContextFactory {
-	private final KeyStore keyStore;
-	private final char[] keyPassword;
-	private final KeyStore trustStore;
+public class X509SSLContextFactory extends DefaultSSLContextFactory {
+	private final static Logger LOGGER = Logger
+			.getLogger(X509SSLContextFactory.class.getName());
 
-	private boolean keyManagerWrapperLocked = false;
-	private X509KeyManagerWrapper x509KeyManagerWrapper;
+	public final static String KEYSTORE_FILE_PROP = "org.jsslutils.prop.keyStore";
+	public final static String KEYSTORE_TYPE_PROP = "org.jsslutils.prop.keyStoreType";
+	public final static String KEYSTORE_PROVIDER_PROP = "org.jsslutils.prop.keyStoreProvider";
+	public final static String KEYSTORE_PASSWORD_PROP = "org.jsslutils.prop.keyStorePassword";
 
-	private boolean trustManagerWrapperLocked = false;
-	private X509TrustManagerWrapper x509TrustManagerWrapper;
+	public final static String KEY_PASSWORD_PROP = "org.jsslutils.prop.keyPassword";
+
+	public final static String TRUSTSTORE_FILE_PROP = "org.jsslutils.prop.trustStore";
+	public final static String TRUSTSTORE_TYPE_PROP = "org.jsslutils.prop.trustStoreType";
+	public final static String TRUSTSTORE_PROVIDER_PROP = "org.jsslutils.prop.trustStoreProvider";
+	public final static String TRUSTSTORE_PASSWORD_PROP = "org.jsslutils.prop.trustStorePassword";
+
+	private KeyStore keyStore;
+	private char[] keyPassword;
+	private KeyStore trustStore;
 
 	private CallbackHandler keyPasswordCallbackHandler;
+	private CallbackHandler keyStorePasswordCallbackHandler;
+	private CallbackHandler trustStorePasswordCallbackHandler;
+
+	private Class<? extends X509WrappingTrustManager> trustManagerWrapper;
+
+	/**
+	 * Builds an SSLContextFactory using the SunX509 algorithm in the
+	 * TrustManagerFactory.
+	 */
+	public X509SSLContextFactory() {
+		this(null, (char[]) null, null);
+	}
 
 	/**
 	 * Builds an SSLContextFactory using the SunX509 algorithm in the
@@ -111,6 +140,92 @@ public class X509SSLContextFactory extends SSLContextFactory {
 		this.trustStore = trustStore;
 	}
 
+	@Override
+	public void configure(Properties properties)
+			throws SSLContextFactoryException {
+		super.configure(properties);
+		try {
+			if (getKeyStore() == null) {
+				String keyStorePath = properties
+						.getProperty(KEYSTORE_FILE_PROP);
+				String keyStoreType = properties
+						.getProperty(KEYSTORE_TYPE_PROP);
+				String keyStoreProvider = properties
+						.getProperty(KEYSTORE_PROVIDER_PROP);
+				String keyStorePassword = properties
+						.getProperty(KEYSTORE_PASSWORD_PROP);
+				if ((keyStorePath != null) || (keyStoreType != null)
+						|| (keyStoreProvider != null)
+						|| (keyStorePassword != null)) {
+					KeyStoreLoader ksl = new KeyStoreLoader();
+					ksl.setKeyStorePath(keyStorePath);
+					ksl.setKeyStoreType(keyStoreType);
+					ksl.setKeyStoreProvider(keyStoreProvider);
+					ksl.setKeyStorePassword(keyStorePassword);
+					ksl
+							.setKeyStorePasswordCallbackHandler(this.keyStorePasswordCallbackHandler);
+					this.keyStore = ksl.loadKeyStore();
+				}
+			}
+
+			if (getTrustStore() == null) {
+				String trustStorePath = properties
+						.getProperty(TRUSTSTORE_FILE_PROP);
+				String trustStoreType = properties
+						.getProperty(TRUSTSTORE_TYPE_PROP);
+				String trustStoreProvider = properties
+						.getProperty(TRUSTSTORE_PROVIDER_PROP);
+				String trustStorePassword = properties
+						.getProperty(TRUSTSTORE_PASSWORD_PROP);
+
+				if ((trustStorePath != null) || (trustStoreType != null)
+						|| (trustStoreProvider != null)
+						|| (trustStorePassword != null)) {
+					KeyStoreLoader ksl = new KeyStoreLoader();
+					ksl.setKeyStorePath(trustStorePath);
+					ksl.setKeyStoreType(trustStoreType);
+					ksl.setKeyStoreProvider(trustStoreProvider);
+					ksl.setKeyStorePassword(trustStorePassword);
+					ksl
+							.setKeyStorePasswordCallbackHandler(this.trustStorePasswordCallbackHandler);
+					this.trustStore = ksl.loadKeyStore();
+				}
+			}
+		} catch (KeyStoreException e) {
+			throw new SSLContextFactoryException(e);
+		} catch (NoSuchProviderException e) {
+			throw new SSLContextFactoryException(e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new SSLContextFactoryException(e);
+		} catch (CertificateException e) {
+			throw new SSLContextFactoryException(e);
+		} catch (IOException e) {
+			throw new SSLContextFactoryException(e);
+		} catch (UnsupportedCallbackException e) {
+			throw new SSLContextFactoryException(e);
+		}
+	}
+
+	/**
+	 * Sets the key store.
+	 * 
+	 * @param keyStore
+	 *            the key store.
+	 */
+	public void setKeyStore(KeyStore keyStore) {
+		this.keyStore = keyStore;
+	}
+
+	/**
+	 * Sets the trust store.
+	 * 
+	 * @param trustStore
+	 *            the trust store.
+	 */
+	public void setTrustStore(KeyStore trustStore) {
+		this.trustStore = trustStore;
+	}
+
 	/**
 	 * Returns the key store.
 	 * 
@@ -130,108 +245,12 @@ public class X509SSLContextFactory extends SSLContextFactory {
 	}
 
 	/**
-	 * Sets the X509KeyManagerWrapper that will be used to wrap the trust
-	 * managers returned by getRawKeyManagers() before being returned by
-	 * getKeyManagers().
+	 * Sets the key password
 	 * 
-	 * @param keyManagerWrapper
-	 *            wrapper (may be null).
+	 * @param keyPassword
 	 */
-	public final void setKeyManagerWrapper(
-			X509KeyManagerWrapper keyManagerWrapper)
-			throws LockedSettingsException {
-		synchronized (this) {
-			if (!this.keyManagerWrapperLocked) {
-				this.x509KeyManagerWrapper = keyManagerWrapper;
-			} else {
-				throw new LockedSettingsException(
-						"KeyManagerWrapper already set and locked.");
-			}
-		}
-	}
-
-	/**
-	 * Gets the X509KeyManagerWrapper that will be used to wrap the trust
-	 * managers returned by getRawKeyManagers() before being returned by
-	 * getKeyManagers().
-	 * 
-	 * @return wrapper.
-	 */
-	public final X509KeyManagerWrapper getKeyManagerWrapper() {
-		return this.x509KeyManagerWrapper;
-	}
-
-	/**
-	 * Locks the key manager wrapper so that it can no longer be set afterwards.
-	 */
-	public final void lockKeyManagerWrapper() {
-		synchronized (this) {
-			this.keyManagerWrapperLocked = true;
-		}
-	}
-
-	/**
-	 * Checks whether-or-not the key manager wrapper can still be changed.
-	 * 
-	 * @return true if it's locked, false if it can be changed.
-	 */
-	public final boolean isKeyManagerWrapperLocked() {
-		synchronized (this) {
-			return this.keyManagerWrapperLocked;
-		}
-	}
-
-	/**
-	 * Sets the X509TrustManagerWrapper that will be used to wrap the trust
-	 * managers returned by getRawTrustManagers() before being returned by
-	 * getTrustManagers().
-	 * 
-	 * @param trustManagerWrapper
-	 *            wrapper (may be null).
-	 */
-	public final void setTrustManagerWrapper(
-			X509TrustManagerWrapper trustManagerWrapper)
-			throws LockedSettingsException {
-		synchronized (this) {
-			if (!this.trustManagerWrapperLocked) {
-				this.x509TrustManagerWrapper = trustManagerWrapper;
-			} else {
-				throw new LockedSettingsException(
-						"TrustManagerWrapper already set and locked.");
-			}
-		}
-	}
-
-	/**
-	 * Gets the X509TrustManagerWrapper that will be used to wrap the trust
-	 * managers returned by getRawTrustManagers() before being returned by
-	 * getTrustManagers().
-	 * 
-	 * @return wrapper.
-	 */
-	public final X509TrustManagerWrapper getTrustManagerWrapper() {
-		return this.x509TrustManagerWrapper;
-	}
-
-	/**
-	 * Locks the trust manager wrapper so that it can no longer be set
-	 * afterwards.
-	 */
-	public final void lockTrustManagerWrapper() {
-		synchronized (this) {
-			this.trustManagerWrapperLocked = true;
-		}
-	}
-
-	/**
-	 * Checks whether-or-not the trust manager wrapper can still be changed.
-	 * 
-	 * @return true if it's locked, false if it can be changed.
-	 */
-	public final boolean isTrustManagerWrapperLocked() {
-		synchronized (this) {
-			return this.trustManagerWrapperLocked;
-		}
+	public void setKeyPassword(char[] keyPassword) {
+		this.keyPassword = keyPassword;
 	}
 
 	/**
@@ -247,13 +266,37 @@ public class X509SSLContextFactory extends SSLContextFactory {
 	}
 
 	/**
+	 * Sets the CallbackHandler that will be used to obtain the key password if
+	 * this password is still null. (Optional.)
+	 * 
+	 * @param keyStorePasswordCallbackHandler
+	 *            CallbackHandler that will be used to get the password.
+	 */
+	public void setKeyStorePasswordCallbackHandler(
+			CallbackHandler keyStorePasswordCallbackHandler) {
+		this.keyStorePasswordCallbackHandler = keyStorePasswordCallbackHandler;
+	}
+
+	/**
+	 * Sets the CallbackHandler that will be used to obtain the key password if
+	 * this password is still null. (Optional.)
+	 * 
+	 * @param trustStorePasswordCallbackHandler
+	 *            CallbackHandler that will be used to get the password.
+	 */
+	public void setTrustStorePasswordCallbackHandler(
+			CallbackHandler trustStorePasswordCallbackHandler) {
+		this.trustStorePasswordCallbackHandler = trustStorePasswordCallbackHandler;
+	}
+
+	/**
 	 * Builds KeyManagers from the key store provided in the constructor, using
 	 * a SunX509 KeyManagerFactory.
 	 * 
 	 * @return Key managers corresponding to the key store.
 	 */
-	protected KeyManager[] getRawKeyManagers()
-			throws SSLContextFactoryException {
+	@Override
+	public KeyManager[] getKeyManagers() throws SSLContextFactoryException {
 		if (this.keyStore != null) {
 			try {
 				KeyManagerFactory kmf = KeyManagerFactory
@@ -263,7 +306,7 @@ public class X509SSLContextFactory extends SSLContextFactory {
 					kmf.init(this.keyStore, this.keyPassword);
 				} else {
 					PasswordCallback passwordCallback = new PasswordCallback(
-							"KeyStore password? ", false);
+							"Key password? ", false);
 					this.keyPasswordCallbackHandler
 							.handle(new Callback[] { passwordCallback });
 					char[] password = passwordCallback.getPassword();
@@ -292,26 +335,6 @@ public class X509SSLContextFactory extends SSLContextFactory {
 	}
 
 	/**
-	 * Builds KeyManagers by wrapping getRawKeyManagers(), if a wrapper has been
-	 * set up (return the original key manager otherwise).
-	 * 
-	 * @return Wrapped key managers from getRawKeyManagers().
-	 */
-	@Override
-	public KeyManager[] getKeyManagers() throws SSLContextFactoryException {
-		KeyManager[] keyManagers = getRawKeyManagers();
-		X509KeyManagerWrapper wrapper = x509KeyManagerWrapper;
-		if ((wrapper != null) && (keyManagers != null)) {
-			for (int i = 0; i < keyManagers.length; i++) {
-				if (keyManagers[i] instanceof X509KeyManager)
-					keyManagers[i] = wrapper
-							.wrapKeyManager((X509KeyManager) keyManagers[i]);
-			}
-		}
-		return keyManagers;
-	}
-
-	/**
 	 * Builds TrustManagers from the trust store provided in the constructor,
 	 * using a SunX509 TrustManagerFactory.
 	 * 
@@ -336,48 +359,70 @@ public class X509SSLContextFactory extends SSLContextFactory {
 	}
 
 	/**
-	 * Builds TrustManagers by wrapping getRawTrustManagers(), if a wrapper has
-	 * been set up (return the original trust manager otherwise).
+	 * Sets the trust manager wrapper.
 	 * 
-	 * @return Wrapped trust managers from getRawTrustManagers().
+	 * @param trustManagerWrapper
+	 */
+	public void setTrustManagerWrapper(
+			Class<? extends X509WrappingTrustManager> trustManagerWrapper) {
+		this.trustManagerWrapper = trustManagerWrapper;
+	}
+
+	/**
+	 * Gets the trust managers. If a trust manager wrapper has been set, the
+	 * "raw" trust managers will be wrapped.
+	 * 
+	 * @return trust managers.
 	 */
 	@Override
 	public TrustManager[] getTrustManagers() throws SSLContextFactoryException {
 		TrustManager[] trustManagers = getRawTrustManagers();
-		X509TrustManagerWrapper wrapper = x509TrustManagerWrapper;
-		if ((wrapper != null) && (trustManagers != null)) {
-			for (int i = 0; i < trustManagers.length; i++) {
-				if (trustManagers[i] instanceof X509TrustManager)
-					trustManagers[i] = wrapper
-							.wrapTrustManager((X509TrustManager) trustManagers[i]);
+		if (this.trustManagerWrapper != null) {
+			try {
+				Constructor<? extends X509WrappingTrustManager> constructor = this.trustManagerWrapper
+						.getConstructor(X509TrustManager.class);
+				for (int i = 0; i < trustManagers.length; i++) {
+					trustManagers[i] = constructor
+							.newInstance(trustManagers[i]);
+				}
+			} catch (SecurityException e) {
+				LOGGER
+						.log(
+								Level.WARNING,
+								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
+								e);
+			} catch (IllegalArgumentException e) {
+				LOGGER
+						.log(
+								Level.WARNING,
+								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
+								e);
+			} catch (NoSuchMethodException e) {
+				LOGGER
+						.log(
+								Level.WARNING,
+								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
+								e);
+			} catch (InstantiationException e) {
+				LOGGER
+						.log(
+								Level.WARNING,
+								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
+								e);
+			} catch (IllegalAccessException e) {
+				LOGGER
+						.log(
+								Level.WARNING,
+								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
+								e);
+			} catch (InvocationTargetException e) {
+				LOGGER
+						.log(
+								Level.WARNING,
+								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
+								e);
 			}
 		}
 		return trustManagers;
-	}
-
-	/**
-	 * This is an exception that should occur when trying to set properties that
-	 * should no longer be set.
-	 * 
-	 * @author Bruno Harbulot.
-	 */
-	public static class LockedSettingsException extends Exception {
-		private static final long serialVersionUID = 3649279179955493548L;
-
-		public LockedSettingsException() {
-			super();
-		}
-
-		public LockedSettingsException(Throwable ex) {
-			super(ex);
-		}
-
-		public LockedSettingsException(String message) {
-			super(message);
-		}
-
-		public LockedSettingsException(String message, Throwable ex) {
-			super(message, ex);
-		}
 	}
 }

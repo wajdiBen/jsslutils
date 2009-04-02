@@ -78,6 +78,10 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	protected Set<CRL> crlCollection = new HashSet<CRL>();
 	private CertificateFactory certificateFactory = null;
 
+	public PKIXSSLContextFactory() {
+		this(null, (char[]) null, null, true);
+	}
+
 	/**
 	 * Builds an SSLContextFactory using the PKIX algorithm in the
 	 * TrustManagerFactory.
@@ -164,7 +168,7 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 			if (trustParams != null) {
 				tmf.init(trustParams);
 			} else {
-				tmf.init((KeyStore)null);
+				tmf.init((KeyStore) null);
 			}
 			return tmf.getTrustManagers();
 		} catch (NoSuchAlgorithmException e) {
@@ -374,37 +378,5 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 				is.close();
 			}
 		}
-	}
-
-	/**
-	 * Adds a CRL from a URL to the collection used by getCrlCollection() (and
-	 * thus the trust manager by default).
-	 * 
-	 * @param crlUrl
-	 *            URL of the CRL to fetch.
-	 * @throws SSLContextFactoryException
-	 * @throws IOException
-	 * @throws MalformedURLException
-	 */
-	@Deprecated
-	public void addRemoteCrl(String crlUrl) throws SSLContextFactoryException,
-			IOException, MalformedURLException {
-		addCrl(crlUrl);
-	}
-
-	/**
-	 * Builds a CRL object from a URL.
-	 * 
-	 * @param crlUrl
-	 *            URL of the CRL to fetch.
-	 * @return X509CRL built from the representation obtained from this URL.
-	 * @throws SSLContextFactoryException
-	 * @throws IOException
-	 * @throws MalformedURLException
-	 */
-	@Deprecated
-	public CRL fetchRemoteCrl(String crlUrl) throws SSLContextFactoryException,
-			IOException, MalformedURLException {
-		return loadCrl(crlUrl);
 	}
 }

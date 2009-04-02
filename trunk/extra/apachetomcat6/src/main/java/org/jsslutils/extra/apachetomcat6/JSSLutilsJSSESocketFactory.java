@@ -44,8 +44,8 @@ import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManage
  * example for using jSSLutils with Tomcat 6. It takes the same parameters as
  * the default factory in Tomcat 6, with the addition of:
  * <ul>
- * <li><i>crlURLs</i>: a space-separated list of URLs of certificate
- * revocation lists.
+ * <li><i>crlURLs</i>: a space-separated list of URLs of certificate revocation
+ * lists.
  * <li><i>acceptProxyCerts</i>: set to 'true' if you wish to use the
  * GsiWrappingTrustManager of jSSLutils (to accept grid proxy certificates).
  * </ul>
@@ -221,7 +221,7 @@ public class JSSLutilsJSSESocketFactory extends
 			if (protocol == null) {
 				protocol = defaultProtocol;
 			}
-			
+
 			String keyPassAttr = (String) attributes.get("keypass");
 
 			KeyStoreLoader ksl = KeyStoreLoader.getKeyStoreDefaultLoader();
@@ -270,7 +270,7 @@ public class JSSLutilsJSSESocketFactory extends
 						.setKeyStoreProvider(truststoreProviderAttr.length() == 0 ? null
 								: truststoreProviderAttr);
 			}
-			
+
 			KeyStore keyStore = ksl.loadKeyStore();
 			KeyStore trustStore = tsl.loadKeyStore();
 
@@ -290,14 +290,14 @@ public class JSSLutilsJSSESocketFactory extends
 			if ("true".equalsIgnoreCase(acceptAnyCert)
 					|| "yes".equalsIgnoreCase(acceptAnyCert)) {
 				sslContextFactory
-						.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
+						.setTrustManagerWrapper(TrustAllClientsWrappingTrustManager.class);
 			} else {
 				String acceptProxyCertsAttr = (String) attributes
 						.get("acceptProxyCerts");
 				if ("true".equalsIgnoreCase(acceptProxyCertsAttr)
 						|| "yes".equalsIgnoreCase(acceptProxyCertsAttr)) {
 					sslContextFactory
-							.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper());
+							.setTrustManagerWrapper(GsiWrappingTrustManager.class);
 				}
 			}
 

@@ -40,17 +40,15 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509TrustManager;
 
-import org.jsslutils.sslcontext.X509TrustManagerWrapper;
-
+import org.jsslutils.sslcontext.X509WrappingTrustManager;
 
 /**
  * TrustManager that accepts all client certificates as trusted.
  * 
  * @author Bruno Harbulot.
  */
-public class TrustAllClientsWrappingTrustManager implements X509TrustManager {
-	private final X509TrustManager trustManager;
-
+public class TrustAllClientsWrappingTrustManager extends
+		X509WrappingTrustManager {
 	/**
 	 * Creates a new instance from an existing X509TrustManager.
 	 * 
@@ -58,7 +56,7 @@ public class TrustAllClientsWrappingTrustManager implements X509TrustManager {
 	 *            X509TrustManager to wrap.
 	 */
 	public TrustAllClientsWrappingTrustManager(X509TrustManager trustManager) {
-		this.trustManager = trustManager;
+		super(trustManager);
 	}
 
 	/**
@@ -69,38 +67,9 @@ public class TrustAllClientsWrappingTrustManager implements X509TrustManager {
 	}
 
 	/**
-	 * Checks that the server is trusted; in this case, it delegates this check
-	 * to the trust manager it wraps.
-	 */
-	public void checkServerTrusted(X509Certificate[] chain, String authType)
-			throws CertificateException {
-		this.trustManager.checkServerTrusted(chain, authType);
-	}
-
-	/**
 	 * Returns the accepted issuers; in this case, it's an empty array.
 	 */
 	public X509Certificate[] getAcceptedIssuers() {
 		return new X509Certificate[0];
-	}
-
-	/**
-	 * Wrapper factory class that wraps existing X509TrustManagers into
-	 * X509TrustManagers that trust any clients.
-	 * 
-	 * @author Bruno Harbulot.
-	 */
-	public static class Wrapper implements X509TrustManagerWrapper {
-		/**
-		 * Builds an X509TrustManager from another X509TrustManager.
-		 * 
-		 * @param trustManager
-		 *            original X509TrustManager.
-		 * @return wrapped X509TrustManager.
-		 */
-		public X509TrustManager wrapTrustManager(X509TrustManager trustManager) {
-			return new TrustAllClientsWrappingTrustManager(
-					(X509TrustManager) trustManager);
-		}
 	}
 }
