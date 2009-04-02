@@ -45,8 +45,7 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 
-import org.jsslutils.sslcontext.X509TrustManagerWrapper;
-
+import org.jsslutils.sslcontext.X509WrappingTrustManager;
 
 /**
  * TrustManager that accepts GSI proxy certificates (clients). The aim is to
@@ -54,9 +53,7 @@ import org.jsslutils.sslcontext.X509TrustManagerWrapper;
  * 
  * @author Bruno Harbulot.
  */
-public class GsiWrappingTrustManager implements X509TrustManager {
-	private final X509TrustManager trustManager;
-
+public class GsiWrappingTrustManager extends X509WrappingTrustManager {
 	/**
 	 * Creates a new instance from an existing X509TrustManager.
 	 * 
@@ -64,7 +61,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 	 *            X509TrustManager to wrap.
 	 */
 	public GsiWrappingTrustManager(X509TrustManager trustManager) {
-		this.trustManager = trustManager;
+		super(trustManager);
 	}
 
 	/**
@@ -91,7 +88,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 		for (int i = nonCACertIndex; i < chain.length; i++) {
 			normalChain[i - nonCACertIndex] = chain[i];
 		}
-		trustManager.checkClientTrusted(normalChain, authType);
+		this.trustManager.checkClientTrusted(normalChain, authType);
 
 		/*
 		 * Walk through the rest of the chain to check that the subsequent
@@ -180,42 +177,6 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 			if (subjectDN.startsWith("CN=limited proxy")) {
 				prevIsLimited = true;
 			}
-		}
-	}
-
-	/**
-	 * Checks that the server is trusted; in this case, it delegates this check
-	 * to the trust manager it wraps.
-	 */
-	public void checkServerTrusted(X509Certificate[] chain, String authType)
-			throws CertificateException {
-		this.trustManager.checkServerTrusted(chain, authType);
-	}
-
-	/**
-	 * Returns the accepted issuers; in this case, it delegates this to the
-	 * trust manager it wraps.
-	 */
-	public X509Certificate[] getAcceptedIssuers() {
-		return this.trustManager.getAcceptedIssuers();
-	}
-
-	/**
-	 * Wrapper factory class that wraps existing X509TrustManagers into
-	 * GsiWrappingTrustManagers.
-	 * 
-	 * @author Bruno Harbulot.
-	 */
-	public static class Wrapper implements X509TrustManagerWrapper {
-		/**
-		 * Builds an X509TrustManager from another X509TrustManager.
-		 * 
-		 * @param trustManager
-		 *            original X509TrustManager.
-		 * @return wrapped X509TrustManager.
-		 */
-		public X509TrustManager wrapTrustManager(X509TrustManager trustManager) {
-			return new GsiWrappingTrustManager((X509TrustManager) trustManager);
 		}
 	}
 }

@@ -41,8 +41,6 @@ import java.security.KeyStore;
 
 import javax.net.ssl.SSLServerSocket;
 
-
-
 import org.jsslutils.sslcontext.SSLContextFactory;
 import org.jsslutils.sslcontext.X509SSLContextFactory;
 import org.jsslutils.sslcontext.test.MiniSslClientServer;

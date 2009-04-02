@@ -2,7 +2,7 @@
 
   This file is part of the jSSLutils library.
   
-Copyright (c) 2008, The University of Manchester, United Kingdom.
+Copyright (c) 2008-2009, The University of Manchester, United Kingdom.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -36,11 +36,17 @@ package org.jsslutils.keystores;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 /**
  * This class is a factory that provides methods for loading a KeyStore.
@@ -50,9 +56,11 @@ import java.security.cert.CertificateException;
  */
 public final class KeyStoreLoader {
 	private volatile String keyStorePath;
+	private volatile InputStream keyStoreInputStream;
 	private volatile String keyStoreType;
 	private volatile String keyStoreProvider;
 	private volatile char[] keyStorePassword;
+	private volatile CallbackHandler keyStorePasswordCallbackHandler;
 
 	/**
 	 * Sets the KeyStore path.
@@ -62,6 +70,18 @@ public final class KeyStoreLoader {
 	 */
 	public void setKeyStorePath(String keyStorePath) {
 		this.keyStorePath = keyStorePath;
+	}
+
+	/**
+	 * Sets the KeyStore InputStream. If null, falls back to KeyStore path. This
+	 * InputStream will be closed by {@link KeyStoreLoader#loadKeyStore(char[])}
+	 * .
+	 * 
+	 * @param keyStoreInputStream
+	 *            the KeyStore InputStream
+	 */
+	public void setKeyStoreInputStream(InputStream keyStoreInputStream) {
+		this.keyStoreInputStream = keyStoreInputStream;
 	}
 
 	/**
@@ -106,6 +126,18 @@ public final class KeyStoreLoader {
 	}
 
 	/**
+	 * Sets the KeyStore password CallbackHander (used to get the password if no
+	 * password is provided).
+	 * 
+	 * @param keyStorePasswordCallbackHandler
+	 *            the KeyStore password CallbackHandler.
+	 */
+	public void setKeyStorePasswordCallbackHandler(
+			CallbackHandler keyStorePasswordCallbackHandler) {
+		this.keyStorePasswordCallbackHandler = keyStorePasswordCallbackHandler;
+	}
+
+	/**
 	 * Loads a KeyStore according to the parameters initialised using the
 	 * setters.
 	 * 
@@ -118,30 +150,47 @@ public final class KeyStoreLoader {
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException
 	 * @throws CertificateException
+	 * @throws UnsupportedCallbackException
 	 */
 	public KeyStore loadKeyStore(char[] password) throws KeyStoreException,
 			NoSuchProviderException, IOException, NoSuchAlgorithmException,
-			CertificateException {
-		KeyStore keyStore;
-		if (this.keyStoreProvider != null) {
-			keyStore = KeyStore.getInstance(
-					this.keyStoreType != null ? this.keyStoreType : KeyStore
-							.getDefaultType(), this.keyStoreProvider);
-		} else {
-			keyStore = KeyStore
-					.getInstance(this.keyStoreType != null ? this.keyStoreType
-							: KeyStore.getDefaultType());
-		}
-		FileInputStream keyStoreInputStream = null;
-		try {
-			keyStoreInputStream = ((this.keyStorePath != null) && (!"NONE"
-					.equals(this.keyStorePath))) ? new FileInputStream(
-					this.keyStorePath) : null;
-			keyStore.load(keyStoreInputStream, (password != null) ? password
-					: this.keyStorePassword);
-		} finally {
-			if (keyStoreInputStream != null) {
-				keyStoreInputStream.close();
+			CertificateException, UnsupportedCallbackException {
+		KeyStore keyStore = null;
+		if ((password != null) || (this.keyStorePassword != null)
+				|| (this.keyStoreProvider != null)
+				|| (this.keyStorePath != null) || (this.keyStoreType != null)) {
+
+			if (this.keyStoreProvider != null) {
+				keyStore = KeyStore.getInstance(
+						this.keyStoreType != null ? this.keyStoreType
+								: KeyStore.getDefaultType(),
+						this.keyStoreProvider);
+			} else {
+				keyStore = KeyStore
+						.getInstance(this.keyStoreType != null ? this.keyStoreType
+								: KeyStore.getDefaultType());
+			}
+			InputStream keyStoreInputStream = this.keyStoreInputStream;
+			try {
+				keyStoreInputStream = ((this.keyStorePath != null) && (!"NONE"
+						.equals(this.keyStorePath))) ? new FileInputStream(
+						this.keyStorePath) : null;
+				if (password == null) {
+					password = this.keyStorePassword;
+				}
+				CallbackHandler pwCallbackHandler = this.keyStorePasswordCallbackHandler;
+				if ((password == null) && (pwCallbackHandler != null)) {
+					PasswordCallback passwordCallback = new PasswordCallback(
+							"KeyStore password? ", false);
+					pwCallbackHandler
+							.handle(new Callback[] { passwordCallback });
+					password = passwordCallback.getPassword();
+				}
+				keyStore.load(keyStoreInputStream, password);
+			} finally {
+				if (keyStoreInputStream != null) {
+					keyStoreInputStream.close();
+				}
 			}
 		}
 		return keyStore;
@@ -157,11 +206,12 @@ public final class KeyStoreLoader {
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException
 	 * @throws CertificateException
+	 * @throws UnsupportedCallbackException
 	 */
 	public KeyStore loadKeyStore() throws KeyStoreException,
 			NoSuchProviderException, IOException, NoSuchAlgorithmException,
-			CertificateException {
-		return loadKeyStore(null);
+			CertificateException, UnsupportedCallbackException {
+		return loadKeyStore(this.keyStorePassword);
 	}
 
 	/**
