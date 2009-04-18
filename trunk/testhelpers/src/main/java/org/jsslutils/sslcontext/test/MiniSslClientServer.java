@@ -2,7 +2,7 @@
 
   This file is part of the jSSLutils library.
   
-Copyright (c) 2008, The University of Manchester, United Kingdom.
+Copyright (c) 2008-2009, The University of Manchester, United Kingdom.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -90,6 +90,10 @@ public abstract class MiniSslClientServer {
 	public final static String CERTIFICATES_DIRECTORY = "org/jsslutils/certificates/";
 	public final static char[] KEYSTORE_PASSWORD = "testtest".toCharArray();
 
+	protected String getCertificatesDirectory() {
+		return CERTIFICATES_DIRECTORY + "local/";
+	}
+
 	/**
 	 * Returns the store of CA certificates, to be used as a trust store. The
 	 * default value is to load 'dummy.jks', part of this test suite.
@@ -104,8 +108,8 @@ public abstract class MiniSslClientServer {
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
 		KeyStore ks = KeyStore.getInstance("JKS");
 		InputStream ksis = ClassLoader
-				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY
-						+ "jks/dummy.jks");
+				.getSystemResourceAsStream(getCertificatesDirectory()
+						+ "cacert.jks");
 		ks.load(ksis, KEYSTORE_PASSWORD);
 		ksis.close();
 		return ks;
@@ -125,7 +129,7 @@ public abstract class MiniSslClientServer {
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
 		KeyStore ks = KeyStore.getInstance("PKCS12");
 		InputStream ksis = ClassLoader
-				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY
+				.getSystemResourceAsStream(getCertificatesDirectory()
 						+ "localhost.p12");
 		ks.load(ksis, KEYSTORE_PASSWORD);
 		ksis.close();
@@ -148,7 +152,7 @@ public abstract class MiniSslClientServer {
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
 		KeyStore ks = KeyStore.getInstance("PKCS12");
 		InputStream ksis = ClassLoader
-				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY
+				.getSystemResourceAsStream(getCertificatesDirectory()
 						+ "testclient.p12");
 		ks.load(ksis, KEYSTORE_PASSWORD);
 		ksis.close();
@@ -172,8 +176,8 @@ public abstract class MiniSslClientServer {
 			NoSuchAlgorithmException, KeyStoreException, CertificateException {
 		KeyStore ks = KeyStore.getInstance("PKCS12");
 		InputStream ksis = ClassLoader
-				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY
-						+ "testclient-r.p12");
+				.getSystemResourceAsStream(getCertificatesDirectory()
+						+ "testclient_r.p12");
 		ks.load(ksis, KEYSTORE_PASSWORD);
 		ksis.close();
 		return ks;
@@ -194,7 +198,8 @@ public abstract class MiniSslClientServer {
 			NoSuchAlgorithmException, KeyStoreException, CertificateException,
 			CRLException {
 		InputStream inStream = ClassLoader
-				.getSystemResourceAsStream(CERTIFICATES_DIRECTORY + "newca.crl");
+				.getSystemResourceAsStream(getCertificatesDirectory()
+						+ "testca-crl.pem");
 		CertificateFactory cf = CertificateFactory.getInstance("X.509");
 		X509CRL crl = (X509CRL) cf.generateCRL(inStream);
 		inStream.close();
