@@ -36,16 +36,7 @@ package org.jsslutils.sslcontext.test;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.Properties;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 
 import org.jsslutils.sslcontext.PKIXSSLContextFactory;
 import org.jsslutils.sslcontext.SSLContextFactory;
