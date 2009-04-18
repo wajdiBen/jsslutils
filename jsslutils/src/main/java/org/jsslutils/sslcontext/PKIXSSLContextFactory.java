@@ -223,7 +223,9 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 					pkixParams.setRevocationEnabled(this.enableRevocation);
 					pkixParams.addCertStore(getCertStore());
 				} else {
-					pkixParams.setRevocationEnabled(false);
+					pkixParams.setRevocationEnabled(Boolean.parseBoolean(System
+							.getProperty("com.sun.security.enableCRLDP",
+									"false")));
 				}
 				return pkixParams;
 			} else {
