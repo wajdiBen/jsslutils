@@ -156,10 +156,7 @@ public final class KeyStoreLoader {
 			NoSuchProviderException, IOException, NoSuchAlgorithmException,
 			CertificateException, UnsupportedCallbackException {
 		KeyStore keyStore = null;
-		if ((password != null) || (this.keyStorePassword != null)
-				|| (this.keyStoreProvider != null)
-				|| (this.keyStorePath != null) || (this.keyStoreType != null)) {
-
+		if (this.keyStorePath != null) {
 			if (this.keyStoreProvider != null) {
 				keyStore = KeyStore.getInstance(
 						this.keyStoreType != null ? this.keyStoreType
@@ -172,9 +169,9 @@ public final class KeyStoreLoader {
 			}
 			InputStream keyStoreInputStream = this.keyStoreInputStream;
 			try {
-				keyStoreInputStream = ((this.keyStorePath != null) && (!"NONE"
-						.equals(this.keyStorePath))) ? new FileInputStream(
-						this.keyStorePath) : null;
+				keyStoreInputStream = (!"NONE".equals(this.keyStorePath)) ? new FileInputStream(
+						this.keyStorePath)
+						: null;
 				if (password == null) {
 					password = this.keyStorePassword;
 				}

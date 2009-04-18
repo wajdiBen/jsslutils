@@ -290,14 +290,14 @@ public class JSSLutilsJSSESocketFactory extends
 			if ("true".equalsIgnoreCase(acceptAnyCert)
 					|| "yes".equalsIgnoreCase(acceptAnyCert)) {
 				sslContextFactory
-						.setTrustManagerWrapper(TrustAllClientsWrappingTrustManager.class);
+						.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
 			} else {
 				String acceptProxyCertsAttr = (String) attributes
 						.get("acceptProxyCerts");
 				if ("true".equalsIgnoreCase(acceptProxyCertsAttr)
 						|| "yes".equalsIgnoreCase(acceptProxyCertsAttr)) {
 					sslContextFactory
-							.setTrustManagerWrapper(GsiWrappingTrustManager.class);
+							.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper());
 				}
 			}
 

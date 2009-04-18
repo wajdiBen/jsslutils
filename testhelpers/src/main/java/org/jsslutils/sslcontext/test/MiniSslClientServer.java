@@ -63,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSession;
@@ -247,7 +248,6 @@ public abstract class MiniSslClientServer {
 					null);
 			result = (cause == null)
 					|| !(cause instanceof CertPathValidatorException);
-			assertNotNull(cause);
 			if (result == true) {
 				throw new RuntimeException(sslException);
 			}
@@ -421,12 +421,18 @@ public abstract class MiniSslClientServer {
 								+ sslSession.getCipherSuite() + "\r\n";
 						theOutput += "Client certificates: \r\n";
 
-						X509Certificate[] certs = (X509Certificate[]) sslSession
-								.getPeerCertificates();
-						for (X509Certificate cert : certs) {
-							theOutput += " - "
-									+ cert.getSubjectX500Principal().getName()
-									+ "\r\n";
+						X509Certificate[] certs = null;
+						try {
+							certs = (X509Certificate[]) sslSession
+									.getPeerCertificates();
+						} catch (SSLPeerUnverifiedException e) {
+						}
+						if (certs != null) {
+							for (X509Certificate cert : certs) {
+								theOutput += " - "
+										+ cert.getSubjectX500Principal()
+												.getName() + "\r\n";
+							}
 						}
 					}
 				}
