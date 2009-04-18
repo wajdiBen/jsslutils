@@ -32,43 +32,25 @@ POSSIBILITY OF SUCH DAMAGE.
   Author........: Bruno Harbulot
 
 -----------------------------------------------------------------------*/
+
 package org.jsslutils.sslcontext;
 
-import java.util.Properties;
-
-import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 /**
- * @author Bruno Harbulot (Bruno.Harbulot@manchester.ac.uk)
+ * This interface represents a wrapper for an X509TrustManager. This is intended
+ * to provide a way to customize TrustManagers in the X509SSLContextFactory (or
+ * subclasses).
  * 
+ * @author Bruno Harbulot.
  */
-public interface SSLContextFactory {
-	public void configure(Properties properties)
-			throws SSLContextFactoryException;
-
-	public SSLContext buildSSLContext() throws SSLContextFactoryException;
-
+public interface X509TrustManagerWrapper {
 	/**
-	 * This class is a wrapper exception for most exceptions that can occur when
-	 * using an SSLContextFactory.
+	 * Builds an X509TrustManager from another X509TrustManager.
 	 * 
-	 * @author Bruno Harbulot (Bruno.Harbulot@manchester.ac.uk)
-	 * 
+	 * @param trustManager
+	 *            original X509TrustManager.
+	 * @return wrapped X509TrustManager.
 	 */
-	public class SSLContextFactoryException extends Exception {
-		private static final long serialVersionUID = 1L;
-		public static final String message = "Exception in SSLContextFactory";
-
-		public SSLContextFactoryException(Exception e) {
-			super(SSLContextFactoryException.message, e);
-		}
-
-		public SSLContextFactoryException(String message) {
-			super(SSLContextFactoryException.message + " " + message);
-		}
-
-		public SSLContextFactoryException(String message, Exception e) {
-			super(SSLContextFactoryException.message + " " + message, e);
-		}
-	}
+	public X509TrustManager wrapTrustManager(X509TrustManager trustManager);
 }

@@ -32,43 +32,29 @@ POSSIBILITY OF SUCH DAMAGE.
   Author........: Bruno Harbulot
 
 -----------------------------------------------------------------------*/
+
 package org.jsslutils.sslcontext;
 
-import java.util.Properties;
-
-import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509KeyManager;
 
 /**
- * @author Bruno Harbulot (Bruno.Harbulot@manchester.ac.uk)
+ * This interface represents a wrapper for an X509KeyManager. This is intended
+ * to provide a way to customize KeyManagers in the X509SSLContextFactory (or
+ * subclasses). On potential use would be to build X509ExtendedKeyManagers that
+ * delegate the defaulf behaviour to the wrapped X609KeyManager but implement
+ * the methods that choose the alias of the certificate to provide when
+ * establishing the connection.
  * 
+ * @author Bruno Harbulot.
+ * @see javax.net.ssl.X509ExtendedKeyManager
  */
-public interface SSLContextFactory {
-	public void configure(Properties properties)
-			throws SSLContextFactoryException;
-
-	public SSLContext buildSSLContext() throws SSLContextFactoryException;
-
+public interface X509KeyManagerWrapper {
 	/**
-	 * This class is a wrapper exception for most exceptions that can occur when
-	 * using an SSLContextFactory.
+	 * Builds an X509KeyManager from another X509KeyManager.
 	 * 
-	 * @author Bruno Harbulot (Bruno.Harbulot@manchester.ac.uk)
-	 * 
+	 * @param keyManager
+	 *            original X509KeyManager.
+	 * @return wrapped X509KeyManager.
 	 */
-	public class SSLContextFactoryException extends Exception {
-		private static final long serialVersionUID = 1L;
-		public static final String message = "Exception in SSLContextFactory";
-
-		public SSLContextFactoryException(Exception e) {
-			super(SSLContextFactoryException.message, e);
-		}
-
-		public SSLContextFactoryException(String message) {
-			super(SSLContextFactoryException.message + " " + message);
-		}
-
-		public SSLContextFactoryException(String message, Exception e) {
-			super(SSLContextFactoryException.message + " " + message, e);
-		}
-	}
+	public X509KeyManager wrapKeyManager(X509KeyManager keyManager);
 }

@@ -2,7 +2,7 @@
 
   This file is part of the jSSLutils library.
   
-Copyright (c) 2008, The University of Manchester, United Kingdom.
+Copyright (c) 2008-2009, The University of Manchester, United Kingdom.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -36,8 +36,6 @@ POSSIBILITY OF SUCH DAMAGE.
 package org.jsslutils.sslcontext;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -52,6 +50,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -94,7 +93,8 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	private CallbackHandler keyStorePasswordCallbackHandler;
 	private CallbackHandler trustStorePasswordCallbackHandler;
 
-	private Class<? extends X509WrappingTrustManager> trustManagerWrapper;
+	private X509KeyManagerWrapper keyManagerWrapper;
+	private X509TrustManagerWrapper trustManagerWrapper;
 
 	/**
 	 * Builds an SSLContextFactory using the SunX509 algorithm in the
@@ -146,50 +146,31 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 		super.configure(properties);
 		try {
 			if (getKeyStore() == null) {
-				String keyStorePath = properties
-						.getProperty(KEYSTORE_FILE_PROP);
-				String keyStoreType = properties
-						.getProperty(KEYSTORE_TYPE_PROP);
-				String keyStoreProvider = properties
-						.getProperty(KEYSTORE_PROVIDER_PROP);
-				String keyStorePassword = properties
-						.getProperty(KEYSTORE_PASSWORD_PROP);
-				if ((keyStorePath != null) || (keyStoreType != null)
-						|| (keyStoreProvider != null)
-						|| (keyStorePassword != null)) {
-					KeyStoreLoader ksl = new KeyStoreLoader();
-					ksl.setKeyStorePath(keyStorePath);
-					ksl.setKeyStoreType(keyStoreType);
-					ksl.setKeyStoreProvider(keyStoreProvider);
-					ksl.setKeyStorePassword(keyStorePassword);
-					ksl
-							.setKeyStorePasswordCallbackHandler(this.keyStorePasswordCallbackHandler);
-					this.keyStore = ksl.loadKeyStore();
-				}
+				KeyStoreLoader ksl = new KeyStoreLoader();
+				ksl.setKeyStorePath(properties.getProperty(KEYSTORE_FILE_PROP));
+				ksl.setKeyStoreType(properties.getProperty(KEYSTORE_TYPE_PROP));
+				ksl.setKeyStoreProvider(properties
+						.getProperty(KEYSTORE_PROVIDER_PROP));
+				ksl.setKeyStorePassword(properties
+						.getProperty(KEYSTORE_PASSWORD_PROP));
+				ksl
+						.setKeyStorePasswordCallbackHandler(this.keyStorePasswordCallbackHandler);
+				this.keyStore = ksl.loadKeyStore();
 			}
 
 			if (getTrustStore() == null) {
-				String trustStorePath = properties
-						.getProperty(TRUSTSTORE_FILE_PROP);
-				String trustStoreType = properties
-						.getProperty(TRUSTSTORE_TYPE_PROP);
-				String trustStoreProvider = properties
-						.getProperty(TRUSTSTORE_PROVIDER_PROP);
-				String trustStorePassword = properties
-						.getProperty(TRUSTSTORE_PASSWORD_PROP);
-
-				if ((trustStorePath != null) || (trustStoreType != null)
-						|| (trustStoreProvider != null)
-						|| (trustStorePassword != null)) {
-					KeyStoreLoader ksl = new KeyStoreLoader();
-					ksl.setKeyStorePath(trustStorePath);
-					ksl.setKeyStoreType(trustStoreType);
-					ksl.setKeyStoreProvider(trustStoreProvider);
-					ksl.setKeyStorePassword(trustStorePassword);
-					ksl
-							.setKeyStorePasswordCallbackHandler(this.trustStorePasswordCallbackHandler);
-					this.trustStore = ksl.loadKeyStore();
-				}
+				KeyStoreLoader ksl = new KeyStoreLoader();
+				ksl.setKeyStorePath(properties
+						.getProperty(TRUSTSTORE_FILE_PROP));
+				ksl.setKeyStoreType(properties
+						.getProperty(TRUSTSTORE_TYPE_PROP));
+				ksl.setKeyStoreProvider(properties
+						.getProperty(TRUSTSTORE_PROVIDER_PROP));
+				ksl.setKeyStorePassword(properties
+						.getProperty(TRUSTSTORE_PASSWORD_PROP));
+				ksl
+						.setKeyStorePasswordCallbackHandler(this.trustStorePasswordCallbackHandler);
+				this.trustStore = ksl.loadKeyStore();
 			}
 		} catch (KeyStoreException e) {
 			throw new SSLContextFactoryException(e);
@@ -295,8 +276,8 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	 * 
 	 * @return Key managers corresponding to the key store.
 	 */
-	@Override
-	public KeyManager[] getKeyManagers() throws SSLContextFactoryException {
+	protected KeyManager[] getRawKeyManagers()
+			throws SSLContextFactoryException {
 		if (this.keyStore != null) {
 			try {
 				KeyManagerFactory kmf = KeyManagerFactory
@@ -335,6 +316,49 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	}
 
 	/**
+	 * Sets the key manager wrapper.
+	 * 
+	 * @param keyManagerWrapper
+	 */
+	public void setKeyManagerWrapper(X509KeyManagerWrapper keyManagerWrapper) {
+		this.keyManagerWrapper = keyManagerWrapper;
+	}
+
+	/**
+	 * Gets the trust managers. If a trust manager wrapper has been set, the
+	 * "raw" trust managers will be wrapped.
+	 * 
+	 * @return trust managers.
+	 */
+	@Override
+	public KeyManager[] getKeyManagers() throws SSLContextFactoryException {
+		KeyManager[] keyManagers = getRawKeyManagers();
+		X509KeyManagerWrapper wrapper = this.keyManagerWrapper;
+		if ((wrapper != null) && (keyManagers != null)) {
+			try {
+				for (int i = 0; i < keyManagers.length; i++) {
+					if (keyManagers[i] instanceof X509KeyManager)
+						keyManagers[i] = wrapper
+								.wrapKeyManager((X509KeyManager) keyManagers[i]);
+				}
+			} catch (SecurityException e) {
+				LOGGER
+						.log(
+								Level.WARNING,
+								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
+								e);
+			} catch (IllegalArgumentException e) {
+				LOGGER
+						.log(
+								Level.WARNING,
+								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
+								e);
+			}
+		}
+		return keyManagers;
+	}
+
+	/**
 	 * Builds TrustManagers from the trust store provided in the constructor,
 	 * using a SunX509 TrustManagerFactory.
 	 * 
@@ -364,7 +388,7 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	 * @param trustManagerWrapper
 	 */
 	public void setTrustManagerWrapper(
-			Class<? extends X509WrappingTrustManager> trustManagerWrapper) {
+			X509TrustManagerWrapper trustManagerWrapper) {
 		this.trustManagerWrapper = trustManagerWrapper;
 	}
 
@@ -377,13 +401,13 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	@Override
 	public TrustManager[] getTrustManagers() throws SSLContextFactoryException {
 		TrustManager[] trustManagers = getRawTrustManagers();
-		if (this.trustManagerWrapper != null) {
+		X509TrustManagerWrapper wrapper = this.trustManagerWrapper;
+		if ((wrapper != null) && (trustManagers != null)) {
 			try {
-				Constructor<? extends X509WrappingTrustManager> constructor = this.trustManagerWrapper
-						.getConstructor(X509TrustManager.class);
 				for (int i = 0; i < trustManagers.length; i++) {
-					trustManagers[i] = constructor
-							.newInstance(trustManagers[i]);
+					if (trustManagers[i] instanceof X509TrustManager)
+						trustManagers[i] = wrapper
+								.wrapTrustManager((X509TrustManager) trustManagers[i]);
 				}
 			} catch (SecurityException e) {
 				LOGGER
@@ -392,30 +416,6 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
 								e);
 			} catch (IllegalArgumentException e) {
-				LOGGER
-						.log(
-								Level.WARNING,
-								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
-								e);
-			} catch (NoSuchMethodException e) {
-				LOGGER
-						.log(
-								Level.WARNING,
-								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
-								e);
-			} catch (InstantiationException e) {
-				LOGGER
-						.log(
-								Level.WARNING,
-								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
-								e);
-			} catch (IllegalAccessException e) {
-				LOGGER
-						.log(
-								Level.WARNING,
-								"Error when instantiating the wrapping trust manager. Falling back to unwrapped manager.",
-								e);
-			} catch (InvocationTargetException e) {
 				LOGGER
 						.log(
 								Level.WARNING,

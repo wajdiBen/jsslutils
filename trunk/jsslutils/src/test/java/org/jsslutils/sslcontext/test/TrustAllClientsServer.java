@@ -2,7 +2,7 @@
 
   This file is part of the jSSLutils library.
   
-Copyright (c) 2008, The University of Manchester, United Kingdom.
+Copyright (c) 2008-2009, The University of Manchester, United Kingdom.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -33,51 +33,36 @@ POSSIBILITY OF SUCH DAMAGE.
 
 -----------------------------------------------------------------------*/
 
-package org.jsslutils.sslcontext;
+package org.jsslutils.sslcontext.test;
 
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLServerSocket;
 
-import javax.net.ssl.X509TrustManager;
+import org.jsslutils.sslcontext.X509SSLContextFactory;
+import org.jsslutils.sslcontext.test.MiniSslClientServer;
+import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManager;
 
 /**
- * Abstract Trust Manager that wraps another one.
+ * Mini server that should accept any client certificate.
  * 
- * @author Bruno Harbulot.
+ * @author Bruno Harbulot
  */
-public abstract class X509WrappingTrustManager implements X509TrustManager {
-	protected final X509TrustManager trustManager;
-
-	/**
-	 * Creates a new instance from an existing X509TrustManager.
-	 * 
-	 * @param trustManager
-	 *            X509TrustManager to wrap.
-	 */
-	public X509WrappingTrustManager(X509TrustManager trustManager) {
-		this.trustManager = trustManager;
+public class TrustAllClientsServer extends MiniSslClientServer {
+	public void run() throws Exception {
+		X509SSLContextFactory sslContextFactory = new X509SSLContextFactory(
+				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+				getCaKeyStore());
+		sslContextFactory
+				.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
+		SSLServerSocket socket = prepareServerSocket(sslContextFactory
+				.buildSSLContext());
+		System.out
+				.println("Server listening on port: " + socket.getLocalPort());
+		setServerRequestNumber(0);
+		runServer(socket);
 	}
 
-	/**
-	 * Delegates call to wrapped X509TrustManager.
-	 */
-	public void checkClientTrusted(X509Certificate[] chain, String authType)
-			throws CertificateException {
-		this.trustManager.checkClientTrusted(chain, authType);
-	}
-
-	/**
-	 * Delegates call to wrapped X509TrustManager.
-	 */
-	public void checkServerTrusted(X509Certificate[] chain, String authType)
-			throws CertificateException {
-		this.trustManager.checkServerTrusted(chain, authType);
-	}
-
-	/**
-	 * Delegates call to wrapped X509TrustManager.
-	 */
-	public X509Certificate[] getAcceptedIssuers() {
-		return this.trustManager.getAcceptedIssuers();
+	public static void main(String[] args) throws Exception {
+		TrustAllClientsServer test = new TrustAllClientsServer();
+		test.run();
 	}
 }

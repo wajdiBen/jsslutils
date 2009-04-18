@@ -2,7 +2,7 @@
 
   This file is part of the jSSLutils library.
   
-Copyright (c) 2008, The University of Manchester, United Kingdom.
+Copyright (c) 2008-2009, The University of Manchester, United Kingdom.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -59,7 +59,7 @@ public class PKIXTestNoCrl extends SimpleX509Test {
 		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
 				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
 				getCaKeyStore());
-		
+
 		this.serverSSLContextFactory = serverSSLContextFactory;
 		return true;
 	}
