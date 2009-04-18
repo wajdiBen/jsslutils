@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>0.5</version>
+			<version>0.6-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
