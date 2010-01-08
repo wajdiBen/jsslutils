@@ -20,6 +20,8 @@ To use it, place the [http://jsslutils.googlecode.com/files/jsslutils-extra-apac
 
 == Configuration to accept any certificate ==
 
+This will accept *any* certificate for which the client has the private key. It doesn't even check the time validity. Effectively, the truststore settings are useless here.
+The point of this is to let the webapp do the verification.
 In the same way as you would configure the SSL connector in the server configuration file, add the `SSLImplementation` and `acceptAnyCert` as follows:
 
 {{{
@@ -29,8 +31,6 @@ In the same way as you would configure the SSL connector in the server configura
                truststoreType="..." truststoreFile="..." truststorePass="..." SSLImplementation="org.jsslutils.extra.apachetomcat6.JSSLutilsImplementation"
 acceptAnyCert="true" clientAuth="want" sslProtocol="TLS" />
 }}}
-
-(When this says, "any certificate", the client still needs the corresponding private key.)
 
 == Configuration to accept GSI proxy certificates ==
 
