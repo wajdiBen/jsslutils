@@ -1,23 +1,25 @@
 #summary Using jSSLutils in conjunction with Jetty.
 #labels Featured
 
-= Jetty Configuration =
+= Jetty SSL Configuration =
 
 The `setSslContext` method was added to the [http://www.mortbay.org/ Jetty] SSL connectors (see [http://jira.codehaus.org/browse/JETTY-554 JETTY-554]) in version 7.0.0pre4, so it is possible to use jSSLutils with Jetty. This can be used for configuring Certificate Revocation Lists (CRLs).
 
-For the following examples to work, jsslutils-0.5.jar needs to be on the classpath:
+The following configuration is for Jetty 7.0.1. For these examples to work, `jsslutils-0.5.jar` needs to be on Jetty's classpath. One way to do this is to put `jsslutils-0.5.jar` in `$JETTY_HOME/lib/ext` and use the `ext` option:
+
 
 {{{
-java -Djetty.class.path=/path/to/jsslutils-0.5.jar \
-   -jar start.jar etc/jetty.xml etc/jetty-sslcontext.xml
+java -jar start.jar OPTIONS=ext,default etc/jetty.xml etc/jetty-ssl.xml
 }}}
+
+Note that you may need further options in the `OPTIONS` list depending on what you wish to run. Please refer to the Jetty documentation for this; some sensible values can be found in the `start.ini` file that can be found in the Jetty bundle (main directory).
 
 Further details about this configuration syntax can be found on the [http://docs.codehaus.org/display/JETTY/Syntax+Reference Jetty Wiki].
 
 == Example jetty-sslcontext.xml, using jsslutils.keystores.!KeyStoreLoader ==
 
 {{{
-<Configure id="Server" class="org.mortbay.jetty.Server">
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
   <!-- Use the KeyStoreLoader to load the key store into "keystore" -->
   <New class="org.jsslutils.keystores.KeyStoreLoader">
     <Set name="keyStoreType">PKCS12</Set>
@@ -54,10 +56,11 @@ Further details about this configuration syntax can be found on the [http://docs
   <!-- Adds a connector that uses this SSLContext -->
   <Call name="addConnector">
     <Arg>
-      <New class="org.mortbay.jetty.security.SslSocketConnector">
-        <Set name="Port">8443</Set>
-        <Set name="maxIdleTime">30000</Set>
-        <Set name="handshakeTimeout">10000</Set>
+      <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+	<Set name="Port">8443</Set>
+	<Set name="maxIdleTime">30000</Set>
+        <Set name="Acceptors">2</Set>
+        <Set name="AcceptQueueSize">100</Set>
         <Set name="sslContext">
           <Ref id="context" />
         </Set>
@@ -72,7 +75,7 @@ Further details about this configuration syntax can be found on the [http://docs
 == Example jetty-sslcontext.xml, using !KeyStore and !FileInputStream ==
 
 {{{
-<Configure id="Server" class="org.mortbay.jetty.Server">
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
   <New class="java.lang.String"><Arg>THE_TRUSTSTORE_PASSWORD</Arg><Call id="tspassword" name="toCharArray" /></New>
   <!-- For PKCS#12 KeyStores, the key password and the keystore password are the same. -->
   <New class="java.lang.String"><Arg>THE_KEY_AND_KEYSTORE_PASSWORD</Arg><Call id="kspassword" name="toCharArray" /></New>
@@ -110,10 +113,11 @@ Further details about this configuration syntax can be found on the [http://docs
 
   <Call name="addConnector">
     <Arg>
-      <New class="org.mortbay.jetty.security.SslSocketConnector">
-        <Set name="Port">8443</Set>
-        <Set name="maxIdleTime">30000</Set>
-        <Set name="handshakeTimeout">10000</Set>
+      <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+	<Set name="Port">8443</Set>
+	<Set name="maxIdleTime">30000</Set>
+        <Set name="Acceptors">2</Set>
+        <Set name="AcceptQueueSize">100</Set>
         <Set name="sslContext">
           <Ref id="context" />
         </Set>
