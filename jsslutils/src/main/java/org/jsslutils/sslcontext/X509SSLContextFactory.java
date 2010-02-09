@@ -2,7 +2,7 @@
 
   This file is part of the jSSLutils library.
   
-Copyright (c) 2008-2009, The University of Manchester, United Kingdom.
+Copyright (c) 2008-2010, The University of Manchester, United Kingdom.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -77,6 +77,9 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	public final static String KEYSTORE_TYPE_PROP = "org.jsslutils.prop.keyStoreType";
 	public final static String KEYSTORE_PROVIDER_PROP = "org.jsslutils.prop.keyStoreProvider";
 	public final static String KEYSTORE_PASSWORD_PROP = "org.jsslutils.prop.keyStorePassword";
+	public final static String KEYSTORE_PROVIDER_CLASS_PROP = "org.jsslutils.prop.keyStoreProviderClass";
+	public final static String KEYSTORE_PROVIDER_ARGFILE_PROP = "org.jsslutils.prop.keyStoreProviderArgFile";
+	public final static String KEYSTORE_PROVIDER_ARGTEXT_PROP = "org.jsslutils.prop.keyStoreProviderArgFile";
 
 	public final static String KEY_PASSWORD_PROP = "org.jsslutils.prop.keyPassword";
 
@@ -84,6 +87,9 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	public final static String TRUSTSTORE_TYPE_PROP = "org.jsslutils.prop.trustStoreType";
 	public final static String TRUSTSTORE_PROVIDER_PROP = "org.jsslutils.prop.trustStoreProvider";
 	public final static String TRUSTSTORE_PASSWORD_PROP = "org.jsslutils.prop.trustStorePassword";
+	public final static String TRUSTSTORE_PROVIDER_CLASS_PROP = "org.jsslutils.prop.trustStoreProviderClass";
+	public final static String TRUSTSTORE_PROVIDER_ARGFILE_PROP = "org.jsslutils.prop.trustStoreProviderArgFile";
+	public final static String TRUSTSTORE_PROVIDER_ARGTEXT_PROP = "org.jsslutils.prop.trustStoreProviderArgFile";
 
 	private KeyStore keyStore;
 	private char[] keyPassword;
@@ -155,6 +161,12 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 						.getProperty(KEYSTORE_PASSWORD_PROP));
 				ksl
 						.setKeyStorePasswordCallbackHandler(this.keyStorePasswordCallbackHandler);
+				ksl.setKeyStoreProviderClass(properties
+						.getProperty(KEYSTORE_PROVIDER_CLASS_PROP));
+				ksl.setKeyStoreProviderArgFile(properties
+						.getProperty(KEYSTORE_PROVIDER_ARGFILE_PROP));
+				ksl.setKeyStoreProviderArgText(properties
+						.getProperty(KEYSTORE_PROVIDER_ARGTEXT_PROP));
 				this.keyStore = ksl.loadKeyStore();
 			}
 
@@ -170,6 +182,12 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 						.getProperty(TRUSTSTORE_PASSWORD_PROP));
 				ksl
 						.setKeyStorePasswordCallbackHandler(this.trustStorePasswordCallbackHandler);
+				ksl.setKeyStoreProviderClass(properties
+						.getProperty(TRUSTSTORE_PROVIDER_CLASS_PROP));
+				ksl.setKeyStoreProviderArgFile(properties
+						.getProperty(TRUSTSTORE_PROVIDER_ARGFILE_PROP));
+				ksl.setKeyStoreProviderArgText(properties
+						.getProperty(TRUSTSTORE_PROVIDER_ARGTEXT_PROP));
 				this.trustStore = ksl.loadKeyStore();
 			}
 		} catch (KeyStoreException e) {
