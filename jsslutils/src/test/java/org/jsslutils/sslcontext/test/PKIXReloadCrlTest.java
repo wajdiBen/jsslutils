@@ -55,6 +55,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.CRLException;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -66,6 +67,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLServerSocket;
 import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -479,5 +483,139 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				MiniSslClientServer.KEYSTORE_PASSWORD, caKeyStore, true);
 		assertTrue("Loaded keystore", true);
 		assertTrue(!runTest());
+	}
+
+	@Test
+	public void testWithRemoteCrlReloadedSameListeningSocket() throws Exception {
+		X509CRL crl = generateCRL(caName, Arrays.asList(new BigInteger[] {}),
+				caPublicKey, caPrivateKey);
+		synchronized (PKIXReloadCrlTest.class) {
+			PKIXReloadCrlTest.crl = crl;
+		}
+
+		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
+				serverKeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+				caKeyStore, true);
+		serverSSLContextFactory.addCrl("http://localhost.example/crl", 2);
+		SSLContext sslServerContext = serverSSLContextFactory.buildSSLContext();
+
+		this.requestException = null;
+		boolean result = false;
+		SSLServerSocket serverSocket = prepareServerSocket(sslServerContext);
+		assertNotNull("Server socket not null", serverSocket);
+		assertTrue("Server socket is bound", serverSocket.isBound());
+
+		final SSLServerSocket fServerSocket = serverSocket;
+		if (fServerSocket != null) {
+			setServerRequestNumber(4);
+			runServer(fServerSocket);
+
+			try {
+				PKIXSSLContextFactory clientSSLContextFactory;
+				SSLContext sslClientContext;
+				this.serverTimeout = 8000;
+
+				clientSSLContextFactory = new PKIXSSLContextFactory(
+						client1KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+						caKeyStore, true);
+				sslClientContext = clientSSLContextFactory.buildSSLContext();
+				doClientRequest(sslClientContext);
+				result = true;
+				if (this.requestException != null) {
+					System.out.println("Exception: " + this.requestException);
+					assertTrue(this.requestException instanceof SSLException);
+					SSLException sslException = (SSLException) this.requestException;
+					Throwable cause = printSslException("! Server: ",
+							sslException, null);
+					result = (cause == null)
+							|| !(cause instanceof CertPathValidatorException);
+					if (result == true) {
+						throw new RuntimeException(sslException);
+					}
+				}
+				System.out.println();
+				assertTrue(result);
+
+				clientSSLContextFactory = new PKIXSSLContextFactory(
+						client2KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+						caKeyStore, true);
+				sslClientContext = clientSSLContextFactory.buildSSLContext();
+				doClientRequest(sslClientContext);
+				result = true;
+				if (this.requestException != null) {
+					System.out.println("Exception: " + this.requestException);
+					assertTrue(this.requestException instanceof SSLException);
+					SSLException sslException = (SSLException) this.requestException;
+					Throwable cause = printSslException("! Server: ",
+							sslException, null);
+					result = (cause == null)
+							|| !(cause instanceof CertPathValidatorException);
+					if (result == true) {
+						throw new RuntimeException(sslException);
+					}
+				}
+				System.out.println();
+				assertTrue(result);
+
+				crl = generateCRL(caName, Arrays
+						.asList(new BigInteger[] { client2Certificate
+								.getSerialNumber() }), caPublicKey,
+						caPrivateKey);
+				synchronized (PKIXReloadCrlTest.class) {
+					PKIXReloadCrlTest.crl = crl;
+				}
+				Thread.sleep(5000);
+
+				clientSSLContextFactory = new PKIXSSLContextFactory(
+						client1KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+						caKeyStore, true);
+				sslClientContext = clientSSLContextFactory.buildSSLContext();
+				doClientRequest(sslClientContext);
+				result = true;
+				if (this.requestException != null) {
+					System.out.println("Exception: " + this.requestException);
+					assertTrue(this.requestException instanceof SSLException);
+					SSLException sslException = (SSLException) this.requestException;
+					Throwable cause = printSslException("! Server: ",
+							sslException, null);
+					result = (cause == null)
+							|| !(cause instanceof CertPathValidatorException);
+					if (result == true) {
+						throw new RuntimeException(sslException);
+					}
+				}
+				System.out.println();
+				assertTrue(result);
+
+				clientSSLContextFactory = new PKIXSSLContextFactory(
+						client2KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+						caKeyStore, true);
+				sslClientContext = clientSSLContextFactory.buildSSLContext();
+				doClientRequest(sslClientContext);
+				result = true;
+				if (this.requestException != null) {
+					System.out.println("Exception: " + this.requestException);
+					assertTrue(this.requestException instanceof SSLException);
+					SSLException sslException = (SSLException) this.requestException;
+					Throwable cause = printSslException("! Server: ",
+							sslException, null);
+					result = (cause == null)
+							|| !(cause instanceof CertPathValidatorException);
+					if (result == true) {
+						throw new RuntimeException(sslException);
+					}
+				}
+				System.out.println();
+				assertTrue(!result);
+			} finally {
+				synchronized (fServerSocket) {
+					if (!fServerSocket.isClosed())
+						fServerSocket.close();
+				}
+			}
+			synchronized (fServerSocket) {
+				assertTrue(fServerSocket.isClosed());
+			}
+		}
 	}
 }
