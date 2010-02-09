@@ -39,6 +39,7 @@
 		<module>jsslutils</module>
 		<module>certificates</module>
 		<module>extra/apachehttpclient</module>
+		<module>extra/apachetomcat5</module>
 		<module>extra/apachetomcat6</module>
 		<module>testhelpers</module>
 	</modules>
