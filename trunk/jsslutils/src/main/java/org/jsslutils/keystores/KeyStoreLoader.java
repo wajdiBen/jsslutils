@@ -2,7 +2,7 @@
 
   This file is part of the jSSLutils library.
   
-Copyright (c) 2008-2009, The University of Manchester, United Kingdom.
+Copyright (c) 2008-2010, The University of Manchester, United Kingdom.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -34,13 +34,18 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 package org.jsslutils.keystores;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.Security;
 import java.security.cert.CertificateException;
 
 import javax.security.auth.callback.Callback;
@@ -59,6 +64,9 @@ public final class KeyStoreLoader {
 	private volatile InputStream keyStoreInputStream;
 	private volatile String keyStoreType;
 	private volatile String keyStoreProvider;
+	private volatile String keyStoreProviderClass;
+	private volatile String keyStoreProviderArgFile;
+	private volatile String keyStoreProviderArgText;
 	private volatile char[] keyStorePassword;
 	private volatile CallbackHandler keyStorePasswordCallbackHandler;
 
@@ -102,6 +110,36 @@ public final class KeyStoreLoader {
 	 */
 	public void setKeyStoreProvider(String keyStoreProvider) {
 		this.keyStoreProvider = keyStoreProvider;
+	}
+
+	/**
+	 * Sets the KeyStore provider class name.
+	 * 
+	 * @param keyStoreProviderClass
+	 *            the KeyStore provider class name
+	 */
+	public void setKeyStoreProviderClass(String keyStoreProviderClass) {
+		this.keyStoreProviderClass = keyStoreProviderClass;
+	}
+
+	/**
+	 * Sets the KeyStore provider argument file name.
+	 * 
+	 * @param keyStoreProviderArgFile
+	 *            the KeyStore provider argument file name
+	 */
+	public void setKeyStoreProviderArgFile(String keyStoreProviderArgFile) {
+		this.keyStoreProviderArgFile = keyStoreProviderArgFile;
+	}
+
+	/**
+	 * Sets the KeyStore provider argument text content (UTF-8).
+	 * 
+	 * @param keyStoreProviderArgText
+	 *            the KeyStore provider argument text content (UTF-8)
+	 */
+	public void setKeyStoreProviderArgText(String keyStoreProviderArgText) {
+		this.keyStoreProviderArgText = keyStoreProviderArgText;
 	}
 
 	/**
@@ -154,10 +192,182 @@ public final class KeyStoreLoader {
 	 */
 	public KeyStore loadKeyStore(char[] password) throws KeyStoreException,
 			NoSuchProviderException, IOException, NoSuchAlgorithmException,
-			CertificateException, UnsupportedCallbackException {
+			CertificateException, UnsupportedCallbackException,
+			SecurityException {
 		KeyStore keyStore = null;
 		if (this.keyStorePath != null) {
-			if (this.keyStoreProvider != null) {
+			if (this.keyStoreProviderClass != null) {
+				Provider provider;
+				try {
+					@SuppressWarnings("unchecked")
+					Class<Provider> providerClass = (Class<Provider>) Class
+							.forName(this.keyStoreProviderClass);
+
+					if (this.keyStoreProviderArgText != null) {
+						InputStream configInputStream = new ByteArrayInputStream(
+								this.keyStoreProviderArgText.getBytes("UTF-8"));
+
+						try {
+							Constructor<Provider> constructor = providerClass
+									.getConstructor(InputStream.class);
+							try {
+								provider = constructor
+										.newInstance(configInputStream);
+							} catch (IllegalArgumentException e) {
+								throw new NoSuchProviderException(
+										"Unable to build the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (InstantiationException e) {
+								throw new NoSuchProviderException(
+										"Unable to instantiate the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (IllegalAccessException e) {
+								throw new NoSuchProviderException(
+										"Unable to access the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (InvocationTargetException e) {
+								throw new NoSuchProviderException(
+										"Unable to invoke the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							}
+						} catch (NoSuchMethodException e) {
+							try {
+								Constructor<Provider> constructor = providerClass
+										.getConstructor();
+								try {
+									provider = constructor.newInstance();
+									provider.load(configInputStream);
+								} catch (IllegalArgumentException e1) {
+									throw new NoSuchProviderException(
+											"Unable to build the provider with a text argument: "
+													+ this.keyStoreProviderClass);
+								} catch (InstantiationException e1) {
+									throw new NoSuchProviderException(
+											"Unable to instantiate the provider with a text argument: "
+													+ this.keyStoreProviderClass);
+								} catch (IllegalAccessException e1) {
+									throw new NoSuchProviderException(
+											"Unable to access the provider with a text argument: "
+													+ this.keyStoreProviderClass);
+								} catch (InvocationTargetException e1) {
+									throw new NoSuchProviderException(
+											"Unable to invoke the provider with a text argument: "
+													+ this.keyStoreProviderClass);
+								}
+							} catch (NoSuchMethodException e1) {
+								throw new NoSuchProviderException(
+										"Provider class doesn't seem to have a suitable constructor: "
+												+ this.keyStoreProviderClass);
+							}
+						}
+					} else if (this.keyStoreProviderArgFile != null) {
+						try {
+							Constructor<Provider> constructor = providerClass
+									.getConstructor(String.class);
+							try {
+								provider = constructor
+										.newInstance(this.keyStoreProviderArgFile);
+							} catch (IllegalArgumentException e) {
+								throw new NoSuchProviderException(
+										"Unable to build the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (InstantiationException e) {
+								throw new NoSuchProviderException(
+										"Unable to instantiate the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (IllegalAccessException e) {
+								throw new NoSuchProviderException(
+										"Unable to access the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (InvocationTargetException e) {
+								throw new NoSuchProviderException(
+										"Unable to invoke the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							}
+						} catch (NoSuchMethodException e) {
+							try {
+								Constructor<Provider> constructor = providerClass
+										.getConstructor();
+								try {
+									provider = constructor.newInstance();
+									InputStream configInputStream = null;
+									try {
+										configInputStream = new FileInputStream(
+												this.keyStoreProviderArgFile);
+										provider.load(configInputStream);
+									} finally {
+										if (configInputStream != null) {
+											configInputStream.close();
+										}
+									}
+								} catch (IllegalArgumentException e1) {
+									throw new NoSuchProviderException(
+											"Unable to build the provider with a text argument: "
+													+ this.keyStoreProviderClass);
+								} catch (InstantiationException e1) {
+									throw new NoSuchProviderException(
+											"Unable to instantiate the provider with a text argument: "
+													+ this.keyStoreProviderClass);
+								} catch (IllegalAccessException e1) {
+									throw new NoSuchProviderException(
+											"Unable to access the provider with a text argument: "
+													+ this.keyStoreProviderClass);
+								} catch (InvocationTargetException e1) {
+									throw new NoSuchProviderException(
+											"Unable to invoke the provider with a text argument: "
+													+ this.keyStoreProviderClass);
+								}
+							} catch (NoSuchMethodException e1) {
+								throw new NoSuchProviderException(
+										"Provider class doesn't seem to have a suitable constructor: "
+												+ this.keyStoreProviderClass);
+							}
+						}
+					} else {
+						try {
+							Constructor<Provider> constructor = providerClass
+									.getConstructor();
+							try {
+								provider = constructor.newInstance();
+							} catch (IllegalArgumentException e1) {
+								throw new NoSuchProviderException(
+										"Unable to build the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (InstantiationException e1) {
+								throw new NoSuchProviderException(
+										"Unable to instantiate the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (IllegalAccessException e1) {
+								throw new NoSuchProviderException(
+										"Unable to access the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							} catch (InvocationTargetException e1) {
+								throw new NoSuchProviderException(
+										"Unable to invoke the provider with a text argument: "
+												+ this.keyStoreProviderClass);
+							}
+						} catch (NoSuchMethodException e1) {
+							throw new NoSuchProviderException(
+									"Provider class doesn't seem to have a suitable constructor: "
+											+ this.keyStoreProviderClass);
+						}
+					}
+				} catch (ClassNotFoundException e) {
+					throw new NoSuchProviderException(
+							"KeyStoreLoader unable to load class: "
+									+ this.keyStoreProviderClass);
+				} catch (ClassCastException e) {
+					throw new NoSuchProviderException(
+							"KeyStoreLoader unable to load provider class: "
+									+ this.keyStoreProviderClass);
+				}
+
+				Security.addProvider(provider);
+
+				keyStore = KeyStore.getInstance(
+						this.keyStoreType != null ? this.keyStoreType
+								: KeyStore.getDefaultType(), provider);
+			} else if (this.keyStoreProvider != null) {
 				keyStore = KeyStore.getInstance(
 						this.keyStoreType != null ? this.keyStoreType
 								: KeyStore.getDefaultType(),
