@@ -57,6 +57,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.CertPathTrustManagerParameters;
 import javax.net.ssl.ManagerFactoryParameters;
@@ -74,9 +77,13 @@ import javax.net.ssl.TrustManagerFactory;
  * 
  */
 public class PKIXSSLContextFactory extends X509SSLContextFactory {
+	public final static String CRL_RELOAD_INTERVAL_PROP = "org.jsslutils.prop.crlReloadInterval";
+
 	protected boolean enableRevocation;
 	protected Set<CRL> crlCollection = new HashSet<CRL>();
 	private CertificateFactory certificateFactory = null;
+	private ScheduledThreadPoolExecutor crlReloaderScheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
+			2);
 
 	public PKIXSSLContextFactory() {
 		this(null, (char[]) null, null, true);
@@ -328,7 +335,66 @@ public class PKIXSSLContextFactory extends X509SSLContextFactory {
 	 */
 	public void addCrl(String crlUrl) throws SSLContextFactoryException,
 			MalformedURLException, IOException {
-		this.crlCollection.add(loadCrl(crlUrl));
+		long reloadInterval = 0;
+		try {
+			reloadInterval = Long.valueOf(System.getProperty(
+					CRL_RELOAD_INTERVAL_PROP, "0"));
+		} catch (NumberFormatException e) {
+		}
+		addCrl(crlUrl, reloadInterval);
+	}
+
+	/**
+	 * Adds a CRL from a URL to the collection used by getCrlCollection() (and
+	 * thus the trust manager by default); this CRL will be reloaded
+	 * periodically.
+	 * 
+	 * @param crlUrl
+	 *            URL of the CRL to fetch.
+	 * @param reloadInterval
+	 *            number of seconds between reloads.
+	 * @throws SSLContextFactoryException
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
+	public void addCrl(String crlUrl, long reloadInterval)
+			throws SSLContextFactoryException, MalformedURLException,
+			IOException {
+		if (reloadInterval > 0) {
+			Callable<X509CRL> reloader = addReloadableCrl(crlUrl);
+			crlReloaderScheduledThreadPoolExecutor.schedule(reloader,
+					reloadInterval, TimeUnit.SECONDS);
+		} else {
+			this.crlCollection.add(loadCrl(crlUrl));
+		}
+	}
+
+	/**
+	 * Adds a CRL from a URL to the collection used by getCrlCollection() (and
+	 * thus the trust manager by default). This CRL will be reloaded by the
+	 * Callable returned; this callable is not scheduled in an executor at this
+	 * stage (up to the user of this method).
+	 * 
+	 * @param crlUrl
+	 *            URL of the CRL to fetch.
+	 * @return Callable<X509CRL> that reloads the CRL (call() will return the
+	 *         new CRL).
+	 * @throws SSLContextFactoryException
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
+	public Callable<X509CRL> addReloadableCrl(String crlUrl)
+			throws SSLContextFactoryException, MalformedURLException,
+			IOException {
+		ReloadableX509CRL crl = new ReloadableX509CRL(crlUrl);
+		Callable<X509CRL> reloader = crl.getReloaderCallable();
+		try {
+			reloader.call();
+		} catch (Exception e) {
+			throw new SSLContextFactoryException(e);
+		}
+		this.crlCollection.add(crl);
+		return reloader;
 	}
 
 	/**
