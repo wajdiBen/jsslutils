@@ -385,7 +385,7 @@ public abstract class MiniSslClientServer {
 		return serverSocket;
 	}
 
-	protected Exception requestException;
+	protected volatile Exception requestException;
 
 	/**
 	 * Small class that handles a server request.
@@ -471,7 +471,7 @@ public abstract class MiniSslClientServer {
 	 * @param socket
 	 * @return
 	 */
-	private Throwable printSslException(String prefix,
+	protected Throwable printSslException(String prefix,
 			SSLException sslException, SSLSocket socket) {
 		Throwable cause = sslException;
 		while ((cause = cause.getCause()) != null) {
@@ -511,7 +511,7 @@ public abstract class MiniSslClientServer {
 	 * 
 	 * @param socket
 	 */
-	private void printSslSocketInfo(SSLSocket socket) {
+	protected void printSslSocketInfo(SSLSocket socket) {
 		System.out.println("Socket: " + socket);
 		SSLSession session = socket.getSession();
 		if (session != null) {
