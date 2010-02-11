@@ -52,12 +52,12 @@ public class GsiVerificationTest {
 
 	public final static char[] KEYSTORE_PASSWORD = "testtest".toCharArray();
 
-	private X509Certificate[] gt4ProxyCert;
+	private X509Certificate[] preRfcProxyCert;
 	private X509Certificate[] rfc3820ProxyCert;
 	private X509Certificate[] legacyProxyCert;
 	private X509Certificate[] limitedLegacyProxyCert;
 
-	private Date gt4ProxyCertDate;
+	private Date preRfcProxyCertDate;
 	private Date rfc3820ProxyCertDate;
 	private Date legacyProxyCertDate;
 	private Date limitedLegacyProxyCertDate;
@@ -70,10 +70,10 @@ public class GsiVerificationTest {
 		cal.set(2010, 01, 10, 19, 00);
 		Date date = cal.getTime();
 
-		gt4ProxyCert = certificateFactory.generateCertificates(
-				GsiVerificationTest.class.getResourceAsStream("gt4_cert.pem"))
+		preRfcProxyCert = certificateFactory.generateCertificates(
+				GsiVerificationTest.class.getResourceAsStream("prerfc_cert.pem"))
 				.toArray(new X509Certificate[] {});
-		gt4ProxyCertDate = date;
+		preRfcProxyCertDate = date;
 		legacyProxyCert = certificateFactory.generateCertificates(
 				GsiVerificationTest.class
 						.getResourceAsStream("legacy_cert.pem")).toArray(
@@ -105,8 +105,8 @@ public class GsiVerificationTest {
 		displayException(e);
 		assertNull(e);
 
-		e = GsiWrappingTrustManager.verifyProxyCertificate(gt4ProxyCert, 1,
-				gt4ProxyCertDate);
+		e = GsiWrappingTrustManager.verifyProxyCertificate(preRfcProxyCert, 1,
+				preRfcProxyCertDate);
 		displayException(e);
 		assertNull(e);
 
@@ -131,8 +131,8 @@ public class GsiVerificationTest {
 		displayException(e);
 		assertNull(e);
 
-		e = GsiWrappingTrustManager.verifyProxyCertificate(gt4ProxyCert, 1,
-				true, false, false, gt4ProxyCertDate);
+		e = GsiWrappingTrustManager.verifyProxyCertificate(preRfcProxyCert, 1,
+				true, false, false, preRfcProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 
@@ -156,8 +156,8 @@ public class GsiVerificationTest {
 		displayException(e);
 		assertNull(e);
 
-		e = GsiWrappingTrustManager.verifyLegacyProxyCertificate(gt4ProxyCert,
-				1, gt4ProxyCertDate);
+		e = GsiWrappingTrustManager.verifyLegacyProxyCertificate(preRfcProxyCert,
+				1, preRfcProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 
@@ -181,8 +181,8 @@ public class GsiVerificationTest {
 		displayException(e);
 		assertNotNull(e);
 
-		e = GsiWrappingTrustManager.verifyRfc3820ProxyCertificate(gt4ProxyCert,
-				1, gt4ProxyCertDate);
+		e = GsiWrappingTrustManager.verifyRfc3820ProxyCertificate(preRfcProxyCert,
+				1, preRfcProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 
@@ -196,22 +196,22 @@ public class GsiVerificationTest {
 	public void testVerifyGt4ProxyCert() throws Exception {
 		CertificateException e;
 
-		e = GsiWrappingTrustManager.verifyGt4ProxyCertificate(legacyProxyCert,
+		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(legacyProxyCert,
 				1, legacyProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 
-		e = GsiWrappingTrustManager.verifyGt4ProxyCertificate(
+		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(
 				limitedLegacyProxyCert, 1, limitedLegacyProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 
-		e = GsiWrappingTrustManager.verifyGt4ProxyCertificate(gt4ProxyCert, 1,
-				gt4ProxyCertDate);
+		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(preRfcProxyCert, 1,
+				preRfcProxyCertDate);
 		displayException(e);
 		assertNull(e);
 
-		e = GsiWrappingTrustManager.verifyGt4ProxyCertificate(rfc3820ProxyCert,
+		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(rfc3820ProxyCert,
 				1, rfc3820ProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
