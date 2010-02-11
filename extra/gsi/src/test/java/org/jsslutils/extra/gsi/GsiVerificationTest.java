@@ -34,13 +34,30 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 package org.jsslutils.extra.gsi;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+
+import org.jsslutils.keystores.KeyStoreLoader;
+import org.jsslutils.sslcontext.PKIXSSLContextFactory;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -71,8 +88,9 @@ public class GsiVerificationTest {
 		Date date = cal.getTime();
 
 		preRfcProxyCert = certificateFactory.generateCertificates(
-				GsiVerificationTest.class.getResourceAsStream("prerfc_cert.pem"))
-				.toArray(new X509Certificate[] {});
+				GsiVerificationTest.class
+						.getResourceAsStream("prerfc_cert.pem")).toArray(
+				new X509Certificate[] {});
 		preRfcProxyCertDate = date;
 		legacyProxyCert = certificateFactory.generateCertificates(
 				GsiVerificationTest.class
@@ -156,8 +174,8 @@ public class GsiVerificationTest {
 		displayException(e);
 		assertNull(e);
 
-		e = GsiWrappingTrustManager.verifyLegacyProxyCertificate(preRfcProxyCert,
-				1, preRfcProxyCertDate);
+		e = GsiWrappingTrustManager.verifyLegacyProxyCertificate(
+				preRfcProxyCert, 1, preRfcProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 
@@ -181,8 +199,8 @@ public class GsiVerificationTest {
 		displayException(e);
 		assertNotNull(e);
 
-		e = GsiWrappingTrustManager.verifyRfc3820ProxyCertificate(preRfcProxyCert,
-				1, preRfcProxyCertDate);
+		e = GsiWrappingTrustManager.verifyRfc3820ProxyCertificate(
+				preRfcProxyCert, 1, preRfcProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 
@@ -196,8 +214,8 @@ public class GsiVerificationTest {
 	public void testVerifyGt4ProxyCert() throws Exception {
 		CertificateException e;
 
-		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(legacyProxyCert,
-				1, legacyProxyCertDate);
+		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(
+				legacyProxyCert, 1, legacyProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 
@@ -206,13 +224,13 @@ public class GsiVerificationTest {
 		displayException(e);
 		assertNotNull(e);
 
-		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(preRfcProxyCert, 1,
-				preRfcProxyCertDate);
+		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(
+				preRfcProxyCert, 1, preRfcProxyCertDate);
 		displayException(e);
 		assertNull(e);
 
-		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(rfc3820ProxyCert,
-				1, rfc3820ProxyCertDate);
+		e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(
+				rfc3820ProxyCert, 1, rfc3820ProxyCertDate);
 		displayException(e);
 		assertNotNull(e);
 	}
@@ -223,6 +241,157 @@ public class GsiVerificationTest {
 		} else {
 			System.out.print("* ");
 			e.printStackTrace(System.out);
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		try {
+			int port = Integer.parseInt(args[0]);
+
+			PKIXSSLContextFactory sslContextFactory = new PKIXSSLContextFactory();
+
+			KeyStoreLoader keyStoreLoader = KeyStoreLoader
+					.getKeyStoreDefaultLoader();
+			keyStoreLoader.setKeyStoreProviderClass(System
+					.getProperty("org.jsslutils.params.keyStoreProviderClass"));
+			keyStoreLoader.setKeyStoreProviderArgFile(System
+					.getProperty("org.jsslutils.params.keyStoreProviderArg"));
+			sslContextFactory.setKeyStore(keyStoreLoader.loadKeyStore());
+
+			KeyStoreLoader trustStoreLoader = KeyStoreLoader
+					.getKeyStoreDefaultLoader();
+			trustStoreLoader
+					.setKeyStoreProviderClass(System
+							.getProperty("org.jsslutils.params.trustStoreProviderClass"));
+			trustStoreLoader.setKeyStoreProviderArgFile(System
+					.getProperty("org.jsslutils.params.trustStoreProviderArg"));
+			sslContextFactory.setTrustStore(trustStoreLoader.loadKeyStore());
+
+			String password = System.getProperty("javax.net.ssl.keyPassword");
+			if (password != null) {
+				sslContextFactory.setKeyPassword(password.toCharArray());
+			}
+
+			if (args.length > 1) {
+				boolean allowLegacy = false;
+				boolean allowPreRfc = false;
+				boolean allowRfc3820 = false;
+				String[] acceptProxyTypes = args[1].split(",");
+				for (int i = 0; i < acceptProxyTypes.length; i++) {
+					if ("legacy".equalsIgnoreCase(acceptProxyTypes[i].trim())) {
+						allowLegacy = true;
+					}
+					if ("prerfc".equalsIgnoreCase(acceptProxyTypes[i].trim())) {
+						allowPreRfc = true;
+					}
+					if ("rfc3820".equalsIgnoreCase(acceptProxyTypes[i].trim())) {
+						allowRfc3820 = true;
+					}
+				}
+				System.out.println("legacy/prerfc/rfc3820: " + allowLegacy
+						+ "/" + allowPreRfc + "/" + allowRfc3820);
+				sslContextFactory
+						.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper(
+								allowLegacy, allowPreRfc, allowRfc3820));
+			} else {
+				sslContextFactory
+						.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper());
+			}
+
+			SSLContext sslServerContext = sslContextFactory.buildSSLContext();
+
+			SSLServerSocketFactory sslServerSocketFactory = sslServerContext
+					.getServerSocketFactory();
+
+			SSLServerSocket serverSocket = (SSLServerSocket) sslServerSocketFactory
+					.createServerSocket(port);
+			serverSocket.setNeedClientAuth(true);
+
+			final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+					2, 10, 60, TimeUnit.SECONDS,
+					new LinkedBlockingQueue<Runnable>());
+
+			while (true) {
+				Socket acceptedSocket = null;
+				try {
+					acceptedSocket = serverSocket.accept();
+					threadPoolExecutor.execute(new RequestHandler(
+							acceptedSocket));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.err.println("The first argument must be the port number.");
+		} catch (NumberFormatException e) {
+			System.err.println("The first argument must be the port number.");
+		}
+	}
+
+	protected static class RequestHandler implements Runnable {
+		private final Socket acceptedSocket;
+
+		public RequestHandler(Socket clientSocket) {
+			this.acceptedSocket = clientSocket;
+		}
+
+		public void run() {
+			System.out.println("Accepted connection.");
+			try {
+				PrintWriter out = new PrintWriter(acceptedSocket
+						.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						acceptedSocket.getInputStream()));
+				String inputLine;
+
+				while ((inputLine = in.readLine()) != null) {
+					System.out.println("Client says: " + inputLine);
+					if (inputLine.length() == 0)
+						break;
+				}
+
+				String theOutput = "HTTP/1.0 200 OK\r\n";
+				theOutput += "Content-type: text/plain\r\n";
+				theOutput += "\r\n";
+				theOutput += "Hello World\r\n";
+				if (this.acceptedSocket instanceof SSLSocket) {
+					SSLSocket sslSocket = (SSLSocket) this.acceptedSocket;
+					SSLSession sslSession = sslSocket.getSession();
+					if (sslSession != null) {
+						System.out.println("Cipher suite: "
+								+ sslSession.getCipherSuite());
+						theOutput += "Cipher suite: "
+								+ sslSession.getCipherSuite() + "\r\n";
+						theOutput += "Client certificates: \r\n";
+
+						X509Certificate[] certs = null;
+						try {
+							certs = (X509Certificate[]) sslSession
+									.getPeerCertificates();
+						} catch (SSLPeerUnverifiedException e) {
+						}
+						if (certs != null) {
+							for (X509Certificate cert : certs) {
+								theOutput += " - "
+										+ cert.getSubjectX500Principal()
+												.getName() + "\r\n";
+							}
+						}
+					}
+				}
+				out.print(theOutput);
+
+				out.close();
+				in.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					acceptedSocket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 }
