@@ -70,17 +70,13 @@ import org.jsslutils.sslcontext.X509TrustManagerWrapper;
  * @author Bruno Harbulot.
  */
 public class GsiWrappingTrustManager implements X509TrustManager {
-	public final static String GT4_EXTENSION_OID_STRING = "1.3.6.1.4.1.3536.1.222";
-	public final static DERObjectIdentifier GT4_EXTENSION_OID = new DERObjectIdentifier(
-			GT4_EXTENSION_OID_STRING);
+	public final static String PRERFC_EXTENSION_OID_STRING = "1.3.6.1.4.1.3536.1.222";
 
 	public final static String RFC3820_EXTENSION_OID_STRING = "1.3.6.1.5.5.7.1.14";
-	public final static DERObjectIdentifier RFC3820_EXTENSION_OID = new DERObjectIdentifier(
-			RFC3820_EXTENSION_OID_STRING);
 
 	private final X509TrustManager trustManager;
 	private final boolean allowLegacy;
-	private final boolean allowGt4;
+	private final boolean allowPreRfc;
 	private final boolean allowRfc3820;
 
 	/**
@@ -90,9 +86,9 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 	 *            X509TrustManager to wrap.
 	 */
 	public GsiWrappingTrustManager(X509TrustManager trustManager,
-			boolean allowLegacy, boolean allowGt4, boolean allowRfc3820) {
+			boolean allowLegacy, boolean allowPreRfc, boolean allowRfc3820) {
 		this.trustManager = trustManager;
-		this.allowGt4 = allowGt4;
+		this.allowPreRfc = allowPreRfc;
 		this.allowLegacy = allowLegacy;
 		this.allowRfc3820 = allowRfc3820;
 	}
@@ -124,7 +120,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 		trustManager.checkClientTrusted(normalChain, authType);
 
 		verifyProxyCertificate(chain, eecCertIndex, this.allowLegacy,
-				this.allowGt4, this.allowRfc3820, null);
+				this.allowPreRfc, this.allowRfc3820, null);
 	}
 
 	/**
@@ -152,16 +148,16 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 	 */
 	public static class Wrapper implements X509TrustManagerWrapper {
 		private final boolean allowLegacy;
-		private final boolean allowGt4;
+		private final boolean allowPreRfc;
 		private final boolean allowRfc3820;
 
 		public Wrapper() {
 			this(true, true, true);
 		}
 
-		public Wrapper(boolean allowLegacy, boolean allowGt4,
+		public Wrapper(boolean allowLegacy, boolean allowPreRfc,
 				boolean allowRfc3820) {
-			this.allowGt4 = allowGt4;
+			this.allowPreRfc = allowPreRfc;
 			this.allowLegacy = allowLegacy;
 			this.allowRfc3820 = allowRfc3820;
 		}
@@ -175,7 +171,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 		 */
 		public X509TrustManager wrapTrustManager(X509TrustManager trustManager) {
 			return new GsiWrappingTrustManager((X509TrustManager) trustManager,
-					this.allowLegacy, this.allowGt4, this.allowRfc3820);
+					this.allowLegacy, this.allowPreRfc, this.allowRfc3820);
 		}
 	}
 
@@ -187,7 +183,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 
 	public static CertificateException verifyProxyCertificate(
 			X509Certificate[] chain, int eecCertIndex, boolean allowLegacy,
-			boolean allowGt4, boolean allowRfc3820, Date date) {
+			boolean allowPreRfc, boolean allowRfc3820, Date date) {
 		try {
 			X509Certificate proxyCert = chain[0];
 			X509Principal subjectPrincipal = new X509Principal(proxyCert
@@ -220,7 +216,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 						new BigInteger(cn);
 					} catch (NumberFormatException e) {
 						return new CertificateException(
-								"Not a GT4 or RFC3820 proxy certificate."
+								"Not a Pre-RFC or RFC3820 proxy certificate."
 										+ subjectPrincipal);
 					}
 					Set<String> criticalExtensionOIDs = proxyCert
@@ -235,17 +231,17 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 						return verifyRfc3820ProxyCertificate(chain,
 								eecCertIndex, date);
 					} else if (criticalExtensionOIDs
-							.contains(GT4_EXTENSION_OID_STRING)) {
-						if (!allowGt4) {
+							.contains(PRERFC_EXTENSION_OID_STRING)) {
+						if (!allowPreRfc) {
 							return new CertificateException(
-									"Found what could be at best a GT4 certificate, not accepted in this configuration: "
+									"Found what could be at best a Pre-RFC proxy certificate, not accepted in this configuration: "
 											+ subjectPrincipal);
 						}
-						return verifyGt4ProxyCertificate(chain, eecCertIndex,
-								date);
+						return verifyPreRfcProxyCertificate(chain,
+								eecCertIndex, date);
 					} else {
 						return new CertificateException(
-								"Couldn't find extension OID is what could be a GT4 or RFC3820 proxy certificate: "
+								"Couldn't find extension OID is what could be a Pre-RFC or RFC3820 proxy certificate: "
 										+ criticalExtensionOIDs);
 					}
 				}
@@ -392,7 +388,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 		}
 	}
 
-	public static CertificateException verifyGt4ProxyCertificate(
+	public static CertificateException verifyPreRfcProxyCertificate(
 			X509Certificate[] chain, int eecCertIndex, Date date) {
 		try {
 			X509Certificate cert = chain[eecCertIndex];
@@ -452,7 +448,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 					new BigInteger(cn);
 				} catch (NumberFormatException e) {
 					return new CertificateException(
-							"GT4 proxy certificate must start with 'CN=<some number>', got 'CN="
+							"Pre-RFC proxy certificate must start with 'CN=<some number>', got 'CN="
 									+ cn + "'!");
 				}
 
@@ -512,10 +508,10 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 				 */
 				Set<String> criticalExtensionOIDs = cert
 						.getCriticalExtensionOIDs();
-				if (criticalExtensionOIDs.contains(GT4_EXTENSION_OID_STRING)) {
-					criticalExtensionOIDs.remove(GT4_EXTENSION_OID_STRING);
+				if (criticalExtensionOIDs.contains(PRERFC_EXTENSION_OID_STRING)) {
+					criticalExtensionOIDs.remove(PRERFC_EXTENSION_OID_STRING);
 					byte[] proxyCertInfoExtension = cert
-							.getExtensionValue(GT4_EXTENSION_OID_STRING);
+							.getExtensionValue(PRERFC_EXTENSION_OID_STRING);
 
 					ASN1InputStream asn1InputStream = new ASN1InputStream(
 							proxyCertInfoExtension);
@@ -542,7 +538,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 									.getObjects();
 							if (!proxyCertInfoSeqEnum.hasMoreElements()) {
 								return new CertificateException(
-										"Invalid GT4 ProxyCertInfo extension in this certificate.");
+										"Invalid Pre-RFC ProxyCertInfo extension in this certificate.");
 							}
 							ASN1Object proxyCertInfoObj = proxyCertInfoSeqEnum
 									.nextElement();
@@ -557,7 +553,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 										.getObjects();
 								if (!proxyPolicySeqEnum.hasMoreElements()) {
 									return new CertificateException(
-											"Invalid GT4 ProxyCertInfo extension in this certificate.");
+											"Invalid Pre-RFC ProxyCertInfo extension in this certificate.");
 								}
 								ASN1Object proxyPolicyObj = proxyPolicySeqEnum
 										.nextElement();
@@ -567,7 +563,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 								 */
 								if (!(proxyPolicyObj instanceof DERObjectIdentifier)) {
 									return new CertificateException(
-											"Invalid GT4 ProxyCertInfo extension in this certificate.");
+											"Invalid Pre-RFC ProxyCertInfo extension in this certificate.");
 								}
 								if (proxyPolicySeqEnum.hasMoreElements()) {
 									proxyPolicyObj = proxyPolicySeqEnum
@@ -578,7 +574,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 									 */
 									if (!(proxyPolicyObj instanceof DEROctetString)) {
 										return new CertificateException(
-												"Invalid GT4 ProxyCertInfo extension in this certificate.");
+												"Invalid Pre-RFC ProxyCertInfo extension in this certificate.");
 									}
 								}
 								/*
@@ -586,7 +582,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 								 */
 								if (proxyPolicySeqEnum.hasMoreElements()) {
 									return new CertificateException(
-											"Invalid GT4 ProxyCertInfo extension in this certificate.");
+											"Invalid Pre-RFC ProxyCertInfo extension in this certificate.");
 								}
 
 								if (proxyCertInfoSeqEnum.hasMoreElements()) {
@@ -618,19 +614,19 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 							 */
 							if (proxyCertInfoSeqEnum.hasMoreElements()) {
 								return new CertificateException(
-										"Invalid GT4 ProxyCertInfo extension in this certificate.");
+										"Invalid Pre-RFC ProxyCertInfo extension in this certificate.");
 							}
 						} else {
 							return new CertificateException(
-									"Invalid GT4 ProxyCertInfo extension in this certificate.");
+									"Invalid Pre-RFC ProxyCertInfo extension in this certificate.");
 						}
 					} else {
 						return new CertificateException(
-								"Invalid GT4 ProxyCertInfo extension in this certificate.");
+								"Invalid Pre-RFC ProxyCertInfo extension in this certificate.");
 					}
 				} else {
 					return new CertificateException(
-							"No GT4 ProxyCertInfo extension found in this certificate (must be critical).");
+							"No Pre-RFC ProxyCertInfo extension found in this certificate (must be critical).");
 				}
 
 				if (!criticalExtensionOIDs.isEmpty()) {
@@ -707,7 +703,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 					new BigInteger(cn);
 				} catch (NumberFormatException e) {
 					return new CertificateException(
-							"GT4 proxy certificate must start with 'CN=<some number>', got 'CN="
+							"RFC3820 proxy certificate must start with 'CN=<some number>', got 'CN="
 									+ cn + "'!");
 				}
 
