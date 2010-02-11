@@ -119,8 +119,12 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 		}
 		trustManager.checkClientTrusted(normalChain, authType);
 
-		verifyProxyCertificate(chain, eecCertIndex, this.allowLegacy,
-				this.allowPreRfc, this.allowRfc3820, null);
+		CertificateException exception = verifyProxyCertificate(chain,
+				eecCertIndex, this.allowLegacy, this.allowPreRfc,
+				this.allowRfc3820, null);
+		if (exception != null) {
+			throw exception;
+		}
 	}
 
 	/**
