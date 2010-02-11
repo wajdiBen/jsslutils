@@ -299,7 +299,7 @@ public class JSSLutilsJSSESocketFactory extends
 				if ((acceptProxyCertsAttr != null)
 						&& (acceptProxyCertsAttr.length() > 0)) {
 					boolean allowLegacy = false;
-					boolean allowGt4 = false;
+					boolean allowPreRfc = false;
 					boolean allowRfc3820 = false;
 					String[] acceptProxyTypes = acceptProxyCertsAttr.split(",");
 					for (int i = 0; i < acceptProxyTypes.length; i++) {
@@ -307,8 +307,9 @@ public class JSSLutilsJSSESocketFactory extends
 								.trim())) {
 							allowLegacy = true;
 						}
-						if ("gt4".equalsIgnoreCase(acceptProxyTypes[i].trim())) {
-							allowGt4 = true;
+						if ("prerfc".equalsIgnoreCase(acceptProxyTypes[i]
+								.trim())) {
+							allowPreRfc = true;
 						}
 						if ("rfc3820".equalsIgnoreCase(acceptProxyTypes[i]
 								.trim())) {
@@ -316,7 +317,7 @@ public class JSSLutilsJSSESocketFactory extends
 						}
 					}
 
-					if (allowLegacy || allowGt4 || allowRfc3820) {
+					if (allowLegacy || allowPreRfc || allowRfc3820) {
 						try {
 							Class<?> wrapperClass = Class
 									.forName("org.jsslutils.extra.gsi.GsiWrappingTrustManager");
@@ -324,7 +325,7 @@ public class JSSLutilsJSSESocketFactory extends
 									.getConstructor(Boolean.TYPE, Boolean.TYPE,
 											Boolean.TYPE);
 							X509TrustManagerWrapper wrapper = (X509TrustManagerWrapper) constructor
-									.newInstance(allowLegacy, allowGt4,
+									.newInstance(allowLegacy, allowPreRfc,
 											allowRfc3820);
 							sslContextFactory.setTrustManagerWrapper(wrapper);
 						} catch (ClassNotFoundException e) {
