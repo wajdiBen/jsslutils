@@ -71,8 +71,8 @@ import org.jsslutils.sslcontext.X509TrustManagerWrapper;
  */
 public class GsiWrappingTrustManager implements X509TrustManager {
 	public final static String PRERFC_EXTENSION_OID_STRING = "1.3.6.1.4.1.3536.1.222";
-
 	public final static String RFC3820_EXTENSION_OID_STRING = "1.3.6.1.5.5.7.1.14";
+	public final static String KEY_USAGE_EXTENSION_OID_STRING = "2.5.29.15";
 
 	private final X509TrustManager trustManager;
 	private final boolean allowLegacy;
@@ -416,6 +416,42 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 						.getIssuerX500Principal().getEncoded());
 
 				/*
+				 * Check the time validity of the current certificate.
+				 */
+				if (date != null) {
+					cert.checkValidity(date);
+				} else {
+					cert.checkValidity();
+				}
+
+				/*
+				 * Check signature.
+				 */
+				try {
+					cert.verify(prevCert.getPublicKey());
+				} catch (InvalidKeyException e) {
+					return new CertificateException(
+							"Failed to verify certificate '" + subjectPrincipal
+									+ "' issued by '" + issuerPrincipal + "'.",
+							e);
+				} catch (NoSuchAlgorithmException e) {
+					return new CertificateException(
+							"Failed to verify certificate '" + subjectPrincipal
+									+ "' issued by '" + issuerPrincipal + "'.",
+							e);
+				} catch (NoSuchProviderException e) {
+					return new CertificateException(
+							"Failed to verify certificate '" + subjectPrincipal
+									+ "' issued by '" + issuerPrincipal + "'.",
+							e);
+				} catch (SignatureException e) {
+					return new CertificateException(
+							"Failed to verify certificate '" + subjectPrincipal
+									+ "' issued by '" + issuerPrincipal + "'.",
+							e);
+				}
+
+				/*
 				 * Verify the issuer's name.
 				 */
 				if (!issuerPrincipal.equals(prevCertSubjectPrincipal)) {
@@ -423,6 +459,22 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 							"Issuer's Subject DN doesn't match Issuer DN.");
 				}
 
+				/*
+				 * Assuming same as RFC here.
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.1
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.6
+				 */
+				boolean[] issuerKeyUsage = prevCert.getKeyUsage();
+				if (issuerKeyUsage != null) {
+					if (!issuerKeyUsage[0]) {
+						return new CertificateException(
+								"Proxy issuer has KeyUsage extension but Digital Signature not set!");
+					}
+				}
+
+				/*
+				 * Verifying subject.
+				 */
 				Vector<DERObjectIdentifier> issuerDnOids = subjectDnOids;
 				Vector<String> issuerDnValues = subjectDnValues;
 
@@ -472,46 +524,15 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 				}
 
 				/*
-				 * Check the time validity of the current certificate.
-				 */
-				if (date != null) {
-					cert.checkValidity(date);
-				} else {
-					cert.checkValidity();
-				}
-
-				/*
-				 * Check signature.
-				 */
-				try {
-					cert.verify(prevCert.getPublicKey());
-				} catch (InvalidKeyException e) {
-					return new CertificateException(
-							"Failed to verify certificate '" + subjectPrincipal
-									+ "' issued by '" + issuerPrincipal + "'.",
-							e);
-				} catch (NoSuchAlgorithmException e) {
-					return new CertificateException(
-							"Failed to verify certificate '" + subjectPrincipal
-									+ "' issued by '" + issuerPrincipal + "'.",
-							e);
-				} catch (NoSuchProviderException e) {
-					return new CertificateException(
-							"Failed to verify certificate '" + subjectPrincipal
-									+ "' issued by '" + issuerPrincipal + "'.",
-							e);
-				} catch (SignatureException e) {
-					return new CertificateException(
-							"Failed to verify certificate '" + subjectPrincipal
-									+ "' issued by '" + issuerPrincipal + "'.",
-							e);
-				}
-
-				/*
 				 * Verify proxy extensions.
 				 */
 				Set<String> criticalExtensionOIDs = cert
 						.getCriticalExtensionOIDs();
+				if (criticalExtensionOIDs
+						.contains(KEY_USAGE_EXTENSION_OID_STRING)) {
+					criticalExtensionOIDs
+							.remove(KEY_USAGE_EXTENSION_OID_STRING);
+				}
 				if (criticalExtensionOIDs.contains(PRERFC_EXTENSION_OID_STRING)) {
 					criticalExtensionOIDs.remove(PRERFC_EXTENSION_OID_STRING);
 					byte[] proxyCertInfoExtension = cert
@@ -671,62 +692,6 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 						.getIssuerX500Principal().getEncoded());
 
 				/*
-				 * Verify the issuer's name.
-				 */
-				if (!issuerPrincipal.equals(prevCertSubjectPrincipal)) {
-					return new CertificateException(
-							"Issuer's Subject DN doesn't match Issuer DN.");
-				}
-
-				Vector<DERObjectIdentifier> issuerDnOids = subjectDnOids;
-				Vector<String> issuerDnValues = subjectDnValues;
-
-				@SuppressWarnings("unchecked")
-				Vector<DERObjectIdentifier> uncheckedSubjectDnOids = subjectPrincipal
-						.getOIDs();
-				@SuppressWarnings("unchecked")
-				Vector<String> uncheckedSubjectDnValues = subjectPrincipal
-						.getValues();
-				subjectDnOids = uncheckedSubjectDnOids;
-				subjectDnValues = uncheckedSubjectDnValues;
-
-				/*
-				 * Verify all issuer's DN fields.
-				 */
-				int fieldCount = subjectDnOids.size();
-				if (!subjectDnOids.get(fieldCount - 1).equals(X509Name.CN)) {
-					return new CertificateException(
-							"Proxy must start with 'CN=', got '"
-									+ X509Name.DefaultSymbols.get(subjectDnOids
-											.get(fieldCount - 1)) + "="
-									+ subjectDnValues.get(fieldCount - 1)
-									+ "'!");
-				}
-				String cn = subjectDnValues.get(fieldCount - 1);
-				try {
-					new BigInteger(cn);
-				} catch (NumberFormatException e) {
-					return new CertificateException(
-							"RFC3820 proxy certificate must start with 'CN=<some number>', got 'CN="
-									+ cn + "'!");
-				}
-
-				if (issuerDnOids.size() != subjectDnOids.size() - 1) {
-					return new CertificateException(
-							"Subject DN must extend the Issuer DN by one field.");
-				}
-				for (int j = 0; j < issuerDnOids.size(); j++) {
-					if (!issuerDnOids.get(j).equals(subjectDnOids.get(j))) {
-						return new CertificateException(
-								"Mismatch in Subject DN extension of Issuer DN.");
-					}
-					if (!issuerDnValues.get(j).equals(subjectDnValues.get(j))) {
-						return new CertificateException(
-								"Mismatch in Subject DN extension of Issuer DN.");
-					}
-				}
-
-				/*
 				 * Check the time validity of the current certificate.
 				 */
 				if (date != null) {
@@ -762,11 +727,120 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 							e);
 				}
 
+				Vector<DERObjectIdentifier> issuerDnOids = subjectDnOids;
+				Vector<String> issuerDnValues = subjectDnValues;
+
+				@SuppressWarnings("unchecked")
+				Vector<DERObjectIdentifier> uncheckedSubjectDnOids = subjectPrincipal
+						.getOIDs();
+				@SuppressWarnings("unchecked")
+				Vector<String> uncheckedSubjectDnValues = subjectPrincipal
+						.getValues();
+				subjectDnOids = uncheckedSubjectDnOids;
+				subjectDnValues = uncheckedSubjectDnValues;
+
+				/*
+				 * Verify that the issuer's DN isn't empty.
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.1
+				 */
+				if (issuerDnOids.size() <= 0) {
+					return new CertificateException(
+							"Proxy must not not have empty DN!");
+				}
+
+				/*
+				 * Verify the issuer's name.
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.1
+				 */
+				if (!issuerPrincipal.equals(prevCertSubjectPrincipal)) {
+					return new CertificateException(
+							"Issuer's Subject DN doesn't match Issuer DN.");
+				}
+
+				/*
+				 * Check Digital Signature bit of issuer.
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.1
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.6
+				 */
+				boolean[] issuerKeyUsage = prevCert.getKeyUsage();
+				if (issuerKeyUsage != null) {
+					if (!issuerKeyUsage[0]) {
+						return new CertificateException(
+								"Proxy issuer has KeyUsage extension but Digital Signature not set!");
+					}
+				}
+
+				/*
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.2
+				 */
+				if (cert.getIssuerAlternativeNames() != null) {
+					return new CertificateException(
+							"Proxy cert must not have an issuer alternative name <http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.2>");
+				}
+
+				/*
+				 * Verify all issuer's DN fields.
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.3
+				 */
+				int fieldCount = subjectDnOids.size();
+				if (!subjectDnOids.get(fieldCount - 1).equals(X509Name.CN)) {
+					return new CertificateException(
+							"Proxy must start with 'CN=', got '"
+									+ X509Name.DefaultSymbols.get(subjectDnOids
+											.get(fieldCount - 1)) + "="
+									+ subjectDnValues.get(fieldCount - 1)
+									+ "'!");
+				}
+				String cn = subjectDnValues.get(fieldCount - 1);
+				try {
+					new BigInteger(cn);
+				} catch (NumberFormatException e) {
+					return new CertificateException(
+							"RFC3820 proxy certificate must start with 'CN=<some number>', got 'CN="
+									+ cn + "'!");
+				}
+
+				if (issuerDnOids.size() != subjectDnOids.size() - 1) {
+					return new CertificateException(
+							"Subject DN must extend the Issuer DN by one field.");
+				}
+				for (int j = 0; j < issuerDnOids.size(); j++) {
+					if (!issuerDnOids.get(j).equals(subjectDnOids.get(j))) {
+						return new CertificateException(
+								"Mismatch in Subject DN extension of Issuer DN.");
+					}
+					if (!issuerDnValues.get(j).equals(subjectDnValues.get(j))) {
+						return new CertificateException(
+								"Mismatch in Subject DN extension of Issuer DN.");
+					}
+				}
+
+				/*
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.5
+				 */
+				if (cert.getSubjectAlternativeNames() != null) {
+					return new CertificateException(
+							"Proxy cert must not have a subject alternative name <http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.5>");
+				}
+
+				/*
+				 * http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.7
+				 */
+				if (cert.getBasicConstraints() != -1) {
+					return new CertificateException(
+							"Proxy cert must not CA field in basic constraints extension set to true <http://www.apps.ietf.org/rfc/rfc3820.html#sec-3.7>");
+				}
+
 				/*
 				 * Verify proxy extensions.
 				 */
 				Set<String> criticalExtensionOIDs = cert
 						.getCriticalExtensionOIDs();
+				if (criticalExtensionOIDs
+						.contains(KEY_USAGE_EXTENSION_OID_STRING)) {
+					criticalExtensionOIDs
+							.remove(KEY_USAGE_EXTENSION_OID_STRING);
+				}
 				if (criticalExtensionOIDs
 						.contains(RFC3820_EXTENSION_OID_STRING)) {
 					criticalExtensionOIDs.remove(RFC3820_EXTENSION_OID_STRING);
@@ -950,6 +1024,11 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 
 		public Set<String> getUnsupportedCriticalExtensionOIDs() {
 			return this.unsupportedCriticalExtensionOIDs;
+		}
+
+		public String toString() {
+			return super.toString() + " Unknown extensions: "
+					+ getUnsupportedCriticalExtensionOIDs();
 		}
 	}
 }
