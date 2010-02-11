@@ -18,6 +18,7 @@
 package org.jsslutils.extra.apachetomcat6;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -34,7 +35,7 @@ import javax.net.ssl.SSLSocket;
 
 import org.jsslutils.keystores.KeyStoreLoader;
 import org.jsslutils.sslcontext.PKIXSSLContextFactory;
-import org.jsslutils.sslcontext.trustmanagers.GsiWrappingTrustManager;
+import org.jsslutils.sslcontext.X509TrustManagerWrapper;
 import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManager;
 
 /**
@@ -294,10 +295,56 @@ public class JSSLutilsJSSESocketFactory extends
 			} else {
 				String acceptProxyCertsAttr = (String) attributes
 						.get("acceptProxyCerts");
-				if ("true".equalsIgnoreCase(acceptProxyCertsAttr)
-						|| "yes".equalsIgnoreCase(acceptProxyCertsAttr)) {
-					sslContextFactory
-							.setTrustManagerWrapper(new GsiWrappingTrustManager.Wrapper());
+
+				if ((acceptProxyCertsAttr != null)
+						&& (acceptProxyCertsAttr.length() > 0)) {
+					boolean allowLegacy = false;
+					boolean allowGt4 = false;
+					boolean allowRfc3820 = false;
+					String[] acceptProxyTypes = acceptProxyCertsAttr.split(",");
+					for (int i = 0; i < acceptProxyTypes.length; i++) {
+						if ("legacy".equalsIgnoreCase(acceptProxyTypes[i]
+								.trim())) {
+							allowLegacy = true;
+						}
+						if ("gt4".equalsIgnoreCase(acceptProxyTypes[i].trim())) {
+							allowGt4 = true;
+						}
+						if ("rfc3820".equalsIgnoreCase(acceptProxyTypes[i]
+								.trim())) {
+							allowRfc3820 = true;
+						}
+					}
+
+					if (allowLegacy || allowGt4 || allowRfc3820) {
+						try {
+							Class<?> wrapperClass = Class
+									.forName("org.jsslutils.extra.gsi.GsiWrappingTrustManager");
+							Constructor<?> constructor = wrapperClass
+									.getConstructor(Boolean.TYPE, Boolean.TYPE,
+											Boolean.TYPE);
+							X509TrustManagerWrapper wrapper = (X509TrustManagerWrapper) constructor
+									.newInstance(allowLegacy, allowGt4,
+											allowRfc3820);
+							sslContextFactory.setTrustManagerWrapper(wrapper);
+						} catch (ClassNotFoundException e) {
+							throw new Exception(
+									"Unable to load org.jsslutils.extra.gsi.GsiWrappingTrustManager, please put the required files on the class path.",
+									e);
+						} catch (NoSuchMethodException e) {
+							throw new Exception(
+									"Unable to load org.jsslutils.extra.gsi.GsiWrappingTrustManager, please put the required files on the class path.",
+									e);
+						} catch (SecurityException e) {
+							throw new Exception(
+									"Unable to load org.jsslutils.extra.gsi.GsiWrappingTrustManager, please put the required files on the class path.",
+									e);
+						} catch (ClassCastException e) {
+							throw new Exception(
+									"Unable to load org.jsslutils.extra.gsi.GsiWrappingTrustManager, please put the required files on the class path.",
+									e);
+						}
+					}
 				}
 			}
 

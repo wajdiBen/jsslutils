@@ -35,16 +35,13 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package org.jsslutils.extra.gsi;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -65,8 +62,6 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509Principal;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.jsslutils.sslcontext.X509TrustManagerWrapper;
 
 /**
@@ -84,6 +79,9 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 			RFC3820_EXTENSION_OID_STRING);
 
 	private final X509TrustManager trustManager;
+	private final boolean allowLegacy;
+	private final boolean allowGt4;
+	private final boolean allowRfc3820;
 
 	/**
 	 * Creates a new instance from an existing X509TrustManager.
@@ -91,8 +89,12 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 	 * @param trustManager
 	 *            X509TrustManager to wrap.
 	 */
-	public GsiWrappingTrustManager(X509TrustManager trustManager) {
+	public GsiWrappingTrustManager(X509TrustManager trustManager,
+			boolean allowLegacy, boolean allowGt4, boolean allowRfc3820) {
 		this.trustManager = trustManager;
+		this.allowGt4 = allowGt4;
+		this.allowLegacy = allowLegacy;
+		this.allowRfc3820 = allowRfc3820;
 	}
 
 	/**
@@ -121,7 +123,8 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 		}
 		trustManager.checkClientTrusted(normalChain, authType);
 
-		verifyProxyCertificate(chain, eecCertIndex, null);
+		verifyProxyCertificate(chain, eecCertIndex, this.allowLegacy,
+				this.allowGt4, this.allowRfc3820, null);
 	}
 
 	/**
@@ -148,6 +151,21 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 	 * @author Bruno Harbulot.
 	 */
 	public static class Wrapper implements X509TrustManagerWrapper {
+		private final boolean allowLegacy;
+		private final boolean allowGt4;
+		private final boolean allowRfc3820;
+
+		public Wrapper() {
+			this(true, true, true);
+		}
+
+		public Wrapper(boolean allowLegacy, boolean allowGt4,
+				boolean allowRfc3820) {
+			this.allowGt4 = allowGt4;
+			this.allowLegacy = allowLegacy;
+			this.allowRfc3820 = allowRfc3820;
+		}
+
 		/**
 		 * Builds an X509TrustManager from another X509TrustManager.
 		 * 
@@ -156,34 +174,8 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 		 * @return wrapped X509TrustManager.
 		 */
 		public X509TrustManager wrapTrustManager(X509TrustManager trustManager) {
-			return new GsiWrappingTrustManager((X509TrustManager) trustManager);
-		}
-	}
-
-	protected static X509CertificateObject[] convertChain(
-			X509Certificate[] initialChain) throws CertificateException {
-		try {
-			CertificateFactory certificateFactory = CertificateFactory
-					.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME);
-
-			X509CertificateObject[] convertedChain = new X509CertificateObject[initialChain.length];
-
-			for (int i = 0; i < initialChain.length; i++) {
-				InputStream is = new ByteArrayInputStream(initialChain[i]
-						.getEncoded());
-				convertedChain[i] = (X509CertificateObject) certificateFactory
-						.generateCertificate(is);
-				is.close();
-			}
-
-			return convertedChain;
-		} catch (NoSuchProviderException e) {
-			throw new CertificateParsingException(
-					"Unable to load BouncyCastle provider to read certificate.",
-					e);
-		} catch (IOException e) {
-			throw new CertificateParsingException(
-					"Error during parsing of encoded certificate.", e);
+			return new GsiWrappingTrustManager((X509TrustManager) trustManager,
+					this.allowLegacy, this.allowGt4, this.allowRfc3820);
 		}
 	}
 
