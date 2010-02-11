@@ -1,0 +1,83 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.jsslutils</groupId>
+	<artifactId>jsslutils-extra-gsi</artifactId>
+	<version>0.6-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>jSSLutils :: Extra :: GSI</name>
+	<url>http://www.jsslutils.org/</url>
+	<description>This is a set of SSL-related utilities for Java.</description>
+	<licenses>
+		<license>
+			<name>BSD</name>
+			<url>LICENSE.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/trunk</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://code.google.com/p/jsslutils/source/browse</url>
+	</scm>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemProperties>
+						<property>
+							<name>java.security.debug</name>
+							<value>certpath</value>
+						</property>
+					</systemProperties>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>org.jsslutils</groupId>
+			<artifactId>jsslutils</artifactId>
+			<version>0.6-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15</artifactId>
+			<version>1.44</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jsslutils</groupId>
+			<artifactId>jsslutils-test-certificates</artifactId>
+			<version>2.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+	<developers>
+		<developer>
+			<id>bruno.harbulot</id>
+			<name>Bruno Harbulot</name>
+			<email>Bruno.Harbulot@manchester.ac.uk</email>
+			<organization>The University of Manchester</organization>
+			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
+			<timezone>0</timezone>
+		</developer>
+	</developers>
+</project>

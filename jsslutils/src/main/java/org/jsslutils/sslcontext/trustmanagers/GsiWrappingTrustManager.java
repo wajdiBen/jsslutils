@@ -2,7 +2,7 @@
 
   This file is part of the jSSLutils library.
   
-Copyright (c) 2008-2009, The University of Manchester, United Kingdom.
+Copyright (c) 2008-2010, The University of Manchester, United Kingdom.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -53,6 +53,7 @@ import org.jsslutils.sslcontext.X509TrustManagerWrapper;
  * 
  * @author Bruno Harbulot.
  */
+@Deprecated
 public class GsiWrappingTrustManager implements X509TrustManager {
 	private final X509TrustManager trustManager;
 
@@ -205,6 +206,7 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 	 * 
 	 * @author Bruno Harbulot.
 	 */
+	@Deprecated
 	public static class Wrapper implements X509TrustManagerWrapper {
 		/**
 		 * Builds an X509TrustManager from another X509TrustManager.
