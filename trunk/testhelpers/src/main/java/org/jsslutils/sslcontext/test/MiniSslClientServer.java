@@ -83,12 +83,18 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  */
 public abstract class MiniSslClientServer {
-	protected boolean verboseExceptions = false;
-	protected int serverTimeout = 4000;
-	protected int testPort = 31050;
 
 	public final static String CERTIFICATES_DIRECTORY = "org/jsslutils/certificates/";
 	public final static char[] KEYSTORE_PASSWORD = "testtest".toCharArray();
+
+	protected volatile boolean stopServer = false;
+	protected boolean verboseExceptions = false;
+	protected volatile int serverTimeout = 4000;
+	protected int testPort = 31050;
+	private int serverRequestNumber = 1;
+
+	protected volatile Exception serverRequestException;
+	protected volatile Exception listeningServerException;
 
 	protected String getCertificatesDirectory() {
 		return CERTIFICATES_DIRECTORY + "local/";
@@ -209,6 +215,96 @@ public abstract class MiniSslClientServer {
 	}
 
 	/**
+	 * Sets the number of requests the mini server is supposed to accept. This
+	 * defaults to 1, with a 4-second timeout.
+	 * 
+	 * @param serverRequestNumber
+	 */
+	protected void setServerRequestNumber(int serverRequestNumber) {
+		this.serverRequestNumber = serverRequestNumber;
+	}
+
+	/**
+	 * Creates and binds the SSLServerSocket to a port after trying a few port
+	 * numbers.
+	 * 
+	 * @param sslServerContext
+	 *            SSLContext from which to build the socket and its
+	 *            SSLSocketFactory.
+	 * @return Bound SSLServerSocket.
+	 */
+	protected SSLServerSocket prepareServerSocket(SSLContext sslServerContext) {
+		SSLServerSocketFactory sslServerSocketFactory = sslServerContext
+				.getServerSocketFactory();
+
+		SSLServerSocket serverSocket = null;
+		int attempts = 10;
+		while (attempts > 0) {
+			try {
+				serverSocket = (SSLServerSocket) sslServerSocketFactory
+						.createServerSocket(++testPort);
+				serverSocket.setWantClientAuth(true);
+				System.out.println("Server listening at: https://localhost:"
+						+ testPort + "/");
+				break;
+			} catch (IOException e) {
+				System.err.println("Could not listen on port: " + testPort);
+			}
+			serverSocket = null;
+			attempts--;
+		}
+		return serverSocket;
+	}
+
+	/**
+	 * Starts the mini server.
+	 * 
+	 * @param serverSocket
+	 *            bound SSLServerSocket for this server.
+	 */
+	protected Thread runServer(final SSLServerSocket serverSocket) {
+		Thread serverThread = new Thread(new Runnable() {
+			public void run() {
+				ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+						2, 10, 60, TimeUnit.SECONDS,
+						new LinkedBlockingQueue<Runnable>());
+				try {
+					int max = MiniSslClientServer.this.serverRequestNumber;
+					for (int i = max; (i > 0 || max == 0) && (!stopServer); i--) {
+						Socket acceptedSocket = null;
+						try {
+							serverSocket.setSoTimeout(serverTimeout);
+							acceptedSocket = serverSocket.accept();
+							threadPoolExecutor.execute(new RequestHandler(
+									acceptedSocket));
+						} catch (IOException e) {
+							MiniSslClientServer.this.listeningServerException = e;
+						}
+					}
+					threadPoolExecutor.shutdown();
+					try {
+						threadPoolExecutor.awaitTermination(20,
+								TimeUnit.SECONDS);
+						synchronized (serverSocket) {
+							if (!serverSocket.isClosed()) {
+								serverSocket.close();
+							}
+						}
+					} catch (IOException e) {
+						MiniSslClientServer.this.listeningServerException = e;
+					} catch (InterruptedException e) {
+						MiniSslClientServer.this.listeningServerException = e;
+					}
+				} catch (RuntimeException e) {
+					MiniSslClientServer.this.listeningServerException = e;
+				}
+			}
+		});
+		serverThread.start();
+		return serverThread;
+	}
+
+	/**
 	 * This runs the main test: it runs a client and a server.
 	 * 
 	 * @param sslClientContext
@@ -221,34 +317,48 @@ public abstract class MiniSslClientServer {
 	 */
 	public boolean runTest(SSLContext sslClientContext,
 			SSLContext sslServerContext) throws IOException {
-		this.requestException = null;
+		this.serverRequestException = null;
+		this.listeningServerException = null;
 		boolean result = false;
 
-		SSLServerSocket serverSocket = prepareServerSocket(sslServerContext);
+		final SSLServerSocket serverSocket = prepareServerSocket(sslServerContext);
 
 		assertNotNull("Server socket not null", serverSocket);
 		assertTrue("Server socket is bound", serverSocket.isBound());
 
-		final SSLServerSocket fServerSocket = serverSocket;
-		if (fServerSocket != null) {
-			runServer(fServerSocket);
+		Thread serverThread = runServer(serverSocket);
 
-			try {
-				doClientRequest(sslClientContext);
-			} finally {
-				synchronized (fServerSocket) {
-					if (!fServerSocket.isClosed())
-						fServerSocket.close();
-				}
-			}
-			synchronized (fServerSocket) {
-				assertTrue(fServerSocket.isClosed());
+		Exception clientException = null;
+
+		try {
+			clientException = makeClientRequest(sslClientContext);
+		} finally {
+			synchronized (serverSocket) {
+				if (!serverSocket.isClosed())
+					serverSocket.close();
 			}
 		}
+		synchronized (serverSocket) {
+			assertTrue(serverSocket.isClosed());
+		}
+
+		try {
+			serverThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println();
+		System.out.println("Server request exception: "
+				+ this.serverRequestException);
+		System.out.println("Client exception: " + clientException);
+		System.out.println("Listening server exception: "
+				+ this.listeningServerException);
+
 		result = true;
-		if (this.requestException != null) {
-			assertTrue(this.requestException instanceof SSLException);
-			SSLException sslException = (SSLException) this.requestException;
+		if (this.serverRequestException != null) {
+			assertTrue(this.serverRequestException instanceof SSLException);
+			SSLException sslException = (SSLException) this.serverRequestException;
 			Throwable cause = printSslException("! Server: ", sslException,
 					null);
 			result = (cause == null)
@@ -257,6 +367,7 @@ public abstract class MiniSslClientServer {
 				throw new RuntimeException(sslException);
 			}
 		}
+		System.out.println("SSL connection succeeeded? " + result);
 		System.out.println();
 
 		return result;
@@ -266,7 +377,7 @@ public abstract class MiniSslClientServer {
 	 * @param sslClientSocketFactory
 	 * @throws IOException
 	 */
-	protected void doClientRequest(SSLContext sslClientContext)
+	protected Exception makeClientRequest(SSLContext sslClientContext)
 			throws IOException {
 		SSLSocketFactory sslClientSocketFactory = sslClientContext
 				.getSocketFactory();
@@ -291,119 +402,41 @@ public abstract class MiniSslClientServer {
 			while ((inputLine = cin.readLine()) != null) {
 				System.out.println("Server says: " + inputLine);
 			}
+			return null;
 		} catch (SSLException e) {
 			printSslException("! Client: ", e, sslClientSocket);
+			return e;
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail();
+			return e;
 		} finally {
-			if (cin != null)
+			if (cin != null) {
 				cin.close();
-			if (cout != null)
+			}
+			if (cout != null) {
 				cout.close();
+			}
 		}
 	}
-
-	/**
-	 * Sets the number of requests the mini server is supposed to accept. This
-	 * defaults to 1, with a 4-second timeout.
-	 * 
-	 * @param serverRequestNumber
-	 */
-	protected void setServerRequestNumber(int serverRequestNumber) {
-		this.serverRequestNumber = serverRequestNumber;
-	}
-
-	private int serverRequestNumber = 1;
-
-	/**
-	 * Starts the mini server.
-	 * 
-	 * @param fServerSocket
-	 *            bound SSLServerSocket for this server.
-	 */
-	protected void runServer(final SSLServerSocket fServerSocket) {
-		final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(2,
-				10, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-		Thread serverThread = new Thread(new Runnable() {
-			public void run() {
-				int max = MiniSslClientServer.this.serverRequestNumber;
-				for (int i = max; i > 0 || max == 0; i--) {
-					Socket acceptedSocket = null;
-					try {
-						fServerSocket.setSoTimeout(serverTimeout);
-						acceptedSocket = fServerSocket.accept();
-						threadPoolExecutor.execute(new RequestHandler(
-								acceptedSocket));
-					} catch (IOException e) {
-						MiniSslClientServer.this.requestException = e;
-					}
-				}
-				try {
-					synchronized (fServerSocket) {
-						if (!fServerSocket.isClosed())
-							fServerSocket.close();
-					}
-				} catch (IOException e) {
-					MiniSslClientServer.this.requestException = e;
-				}
-			}
-		});
-		serverThread.start();
-	}
-
-	/**
-	 * Creates and binds the SSLServerSocket to a port after trying a few port
-	 * numbers.
-	 * 
-	 * @param sslServerContext
-	 *            SSLContext from which to build the socket and its
-	 *            SSLSocketFactory.
-	 * @return Bound SSLServerSocket.
-	 */
-	protected SSLServerSocket prepareServerSocket(SSLContext sslServerContext) {
-		SSLServerSocketFactory sslServerSocketFactory = sslServerContext
-				.getServerSocketFactory();
-
-		SSLServerSocket serverSocket = null;
-		int attempts = 10;
-		while (attempts > 0) {
-
-			try {
-				serverSocket = (SSLServerSocket) sslServerSocketFactory
-						.createServerSocket(++testPort);
-				serverSocket.setWantClientAuth(true);
-				System.out.println("Server listening at: https://localhost:"
-						+ testPort + "/");
-				break;
-			} catch (IOException e) {
-				System.err.println("Could not listen on port: " + testPort);
-			}
-			serverSocket = null;
-			attempts--;
-		}
-		return serverSocket;
-	}
-
-	protected volatile Exception requestException;
 
 	/**
 	 * Small class that handles a server request.
 	 */
 	protected class RequestHandler implements Runnable {
-		private final Socket clientSocket;
+		private final Socket acceptedSocket;
 
-		public RequestHandler(Socket clientSocket) {
-			this.clientSocket = clientSocket;
+		public RequestHandler(Socket acceptedSocket) {
+			this.acceptedSocket = acceptedSocket;
 		}
 
 		public void run() {
 			System.out.println("Accepted connection.");
 			try {
-				PrintWriter out = new PrintWriter(clientSocket
+				PrintWriter out = new PrintWriter(acceptedSocket
 						.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(
-						clientSocket.getInputStream()));
+						acceptedSocket.getInputStream()));
 				String inputLine;
 
 				while ((inputLine = in.readLine()) != null) {
@@ -416,8 +449,8 @@ public abstract class MiniSslClientServer {
 				theOutput += "Content-type: text/plain\r\n";
 				theOutput += "\r\n";
 				theOutput += "Hello World\r\n";
-				if (this.clientSocket instanceof SSLSocket) {
-					SSLSocket sslSocket = (SSLSocket) this.clientSocket;
+				if (this.acceptedSocket instanceof SSLSocket) {
+					SSLSocket sslSocket = (SSLSocket) this.acceptedSocket;
 					SSLSession sslSession = sslSocket.getSession();
 					if (sslSession != null) {
 						System.out.println("Cipher suite: "
@@ -449,10 +482,10 @@ public abstract class MiniSslClientServer {
 				if (MiniSslClientServer.this.verboseExceptions) {
 					e.printStackTrace();
 				}
-				MiniSslClientServer.this.requestException = e;
+				MiniSslClientServer.this.serverRequestException = e;
 			} finally {
 				try {
-					clientSocket.close();
+					acceptedSocket.close();
 				} catch (IOException e) {
 					if (MiniSslClientServer.this.verboseExceptions) {
 						e.printStackTrace();

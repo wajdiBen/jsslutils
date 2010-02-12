@@ -97,8 +97,8 @@ public class SimpleX509Test extends MiniSslClientServer {
 						.buildSSLContext());
 		test.serverTimeout = 20000;
 		test.runServer(serverSocket);
-		if (test.requestException != null) {
-			test.requestException.printStackTrace();
+		if (test.serverRequestException != null) {
+			test.serverRequestException.printStackTrace();
 		}
 	}
 }
