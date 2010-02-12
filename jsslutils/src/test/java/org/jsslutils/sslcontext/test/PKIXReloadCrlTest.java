@@ -499,7 +499,7 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 		serverSSLContextFactory.addCrl("http://localhost.example/crl", 2);
 		SSLContext sslServerContext = serverSSLContextFactory.buildSSLContext();
 
-		this.requestException = null;
+		this.serverRequestException = null;
 		boolean result = false;
 		SSLServerSocket serverSocket = prepareServerSocket(sslServerContext);
 		assertNotNull("Server socket not null", serverSocket);
@@ -515,16 +515,16 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				SSLContext sslClientContext;
 				this.serverTimeout = 8000;
 
+				this.serverRequestException = null;
 				clientSSLContextFactory = new PKIXSSLContextFactory(
 						client1KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
-				doClientRequest(sslClientContext);
+				makeClientRequest(sslClientContext);
 				result = true;
-				if (this.requestException != null) {
-					System.out.println("Exception: " + this.requestException);
-					assertTrue(this.requestException instanceof SSLException);
-					SSLException sslException = (SSLException) this.requestException;
+				if (this.serverRequestException != null) {
+					assertTrue(this.serverRequestException instanceof SSLException);
+					SSLException sslException = (SSLException) this.serverRequestException;
 					Throwable cause = printSslException("! Server: ",
 							sslException, null);
 					result = (cause == null)
@@ -536,16 +536,16 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				System.out.println();
 				assertTrue(result);
 
+				this.serverRequestException = null;
 				clientSSLContextFactory = new PKIXSSLContextFactory(
 						client2KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
-				doClientRequest(sslClientContext);
+				makeClientRequest(sslClientContext);
 				result = true;
-				if (this.requestException != null) {
-					System.out.println("Exception: " + this.requestException);
-					assertTrue(this.requestException instanceof SSLException);
-					SSLException sslException = (SSLException) this.requestException;
+				if (this.serverRequestException != null) {
+					assertTrue(this.serverRequestException instanceof SSLException);
+					SSLException sslException = (SSLException) this.serverRequestException;
 					Throwable cause = printSslException("! Server: ",
 							sslException, null);
 					result = (cause == null)
@@ -566,16 +566,16 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				}
 				Thread.sleep(5000);
 
+				this.serverRequestException = null;
 				clientSSLContextFactory = new PKIXSSLContextFactory(
 						client1KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
-				doClientRequest(sslClientContext);
+				makeClientRequest(sslClientContext);
 				result = true;
-				if (this.requestException != null) {
-					System.out.println("Exception: " + this.requestException);
-					assertTrue(this.requestException instanceof SSLException);
-					SSLException sslException = (SSLException) this.requestException;
+				if (this.serverRequestException != null) {
+					assertTrue(this.serverRequestException instanceof SSLException);
+					SSLException sslException = (SSLException) this.serverRequestException;
 					Throwable cause = printSslException("! Server: ",
 							sslException, null);
 					result = (cause == null)
@@ -587,16 +587,16 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				System.out.println();
 				assertTrue(result);
 
+				this.serverRequestException = null;
 				clientSSLContextFactory = new PKIXSSLContextFactory(
 						client2KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
-				doClientRequest(sslClientContext);
+				makeClientRequest(sslClientContext);
 				result = true;
-				if (this.requestException != null) {
-					System.out.println("Exception: " + this.requestException);
-					assertTrue(this.requestException instanceof SSLException);
-					SSLException sslException = (SSLException) this.requestException;
+				if (this.serverRequestException != null) {
+					assertTrue(this.serverRequestException instanceof SSLException);
+					SSLException sslException = (SSLException) this.serverRequestException;
 					Throwable cause = printSslException("! Server: ",
 							sslException, null);
 					result = (cause == null)
