@@ -513,6 +513,8 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 			try {
 				PKIXSSLContextFactory clientSSLContextFactory;
 				SSLContext sslClientContext;
+				Exception clientException;
+
 				this.serverTimeout = 8000;
 
 				this.serverRequestException = null;
@@ -520,7 +522,7 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 						client1KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
-				makeClientRequest(sslClientContext);
+				clientException = makeClientRequest(sslClientContext);
 				result = true;
 				if (this.serverRequestException != null) {
 					assertTrue(this.serverRequestException instanceof SSLException);
@@ -534,6 +536,12 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 					}
 				}
 				System.out.println();
+				System.out.println("Server request exception: "
+						+ this.serverRequestException);
+				System.out.println("Client exception: " + clientException);
+				System.out.println("Listening server exception: "
+						+ this.listeningServerException);
+				System.out.println();
 				assertTrue(result);
 
 				this.serverRequestException = null;
@@ -541,7 +549,7 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 						client2KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
-				makeClientRequest(sslClientContext);
+				clientException = makeClientRequest(sslClientContext);
 				result = true;
 				if (this.serverRequestException != null) {
 					assertTrue(this.serverRequestException instanceof SSLException);
@@ -554,6 +562,12 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 						throw new RuntimeException(sslException);
 					}
 				}
+				System.out.println();
+				System.out.println("Server request exception: "
+						+ this.serverRequestException);
+				System.out.println("Client exception: " + clientException);
+				System.out.println("Listening server exception: "
+						+ this.listeningServerException);
 				System.out.println();
 				assertTrue(result);
 
@@ -571,7 +585,7 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 						client1KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
-				makeClientRequest(sslClientContext);
+				clientException = makeClientRequest(sslClientContext);
 				result = true;
 				if (this.serverRequestException != null) {
 					assertTrue(this.serverRequestException instanceof SSLException);
@@ -585,6 +599,12 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 					}
 				}
 				System.out.println();
+				System.out.println("Server request exception: "
+						+ this.serverRequestException);
+				System.out.println("Client exception: " + clientException);
+				System.out.println("Listening server exception: "
+						+ this.listeningServerException);
+				System.out.println();
 				assertTrue(result);
 
 				this.serverRequestException = null;
@@ -592,7 +612,7 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 						client2KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
-				makeClientRequest(sslClientContext);
+				clientException = makeClientRequest(sslClientContext);
 				result = true;
 				if (this.serverRequestException != null) {
 					assertTrue(this.serverRequestException instanceof SSLException);
@@ -605,6 +625,12 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 						throw new RuntimeException(sslException);
 					}
 				}
+				System.out.println();
+				System.out.println("Server request exception: "
+						+ this.serverRequestException);
+				System.out.println("Client exception: " + clientException);
+				System.out.println("Listening server exception: "
+						+ this.listeningServerException);
 				System.out.println();
 				assertTrue(!result);
 			} finally {
