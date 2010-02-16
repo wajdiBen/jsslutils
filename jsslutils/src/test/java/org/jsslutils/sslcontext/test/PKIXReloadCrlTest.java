@@ -66,6 +66,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -499,7 +501,6 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 		serverSSLContextFactory.addCrl("http://localhost.example/crl", 2);
 		SSLContext sslServerContext = serverSSLContextFactory.buildSSLContext();
 
-		this.serverRequestException = null;
 		boolean result = false;
 		SSLServerSocket serverSocket = prepareServerSocket(sslServerContext);
 		assertNotNull("Server socket not null", serverSocket);
@@ -514,19 +515,30 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				PKIXSSLContextFactory clientSSLContextFactory;
 				SSLContext sslClientContext;
 				Exception clientException;
+				Throwable serverRequestException;
+				Future<?> serverRequestFuture;
 
 				this.serverTimeout = 8000;
 
-				this.serverRequestException = null;
+				/*
+				 * Test connection 1.
+				 */
 				clientSSLContextFactory = new PKIXSSLContextFactory(
 						client1KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
 				clientException = makeClientRequest(sslClientContext);
+				serverRequestException = null;
+				serverRequestFuture = serverRequestsFutures.poll();
+				try {
+					serverRequestFuture.get();
+				} catch (ExecutionException e) {
+					serverRequestException = e.getCause();
+				}
 				result = true;
-				if (this.serverRequestException != null) {
-					assertTrue(this.serverRequestException instanceof SSLException);
-					SSLException sslException = (SSLException) this.serverRequestException;
+				if (serverRequestException != null) {
+					assertTrue(serverRequestException instanceof SSLException);
+					SSLException sslException = (SSLException) serverRequestException;
 					Throwable cause = printSslException("! Server: ",
 							sslException, null);
 					result = (cause == null)
@@ -537,23 +549,33 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				}
 				System.out.println();
 				System.out.println("Server request exception: "
-						+ this.serverRequestException);
+						+ serverRequestException);
 				System.out.println("Client exception: " + clientException);
 				System.out.println("Listening server exception: "
 						+ this.listeningServerException);
+				System.out.println("SSL connection succeeeded? " + result);
 				System.out.println();
 				assertTrue(result);
 
-				this.serverRequestException = null;
+				/*
+				 * Test connection 2.
+				 */
 				clientSSLContextFactory = new PKIXSSLContextFactory(
 						client2KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
 				clientException = makeClientRequest(sslClientContext);
+				serverRequestException = null;
+				serverRequestFuture = serverRequestsFutures.poll();
+				try {
+					serverRequestFuture.get();
+				} catch (ExecutionException e) {
+					serverRequestException = e.getCause();
+				}
 				result = true;
-				if (this.serverRequestException != null) {
-					assertTrue(this.serverRequestException instanceof SSLException);
-					SSLException sslException = (SSLException) this.serverRequestException;
+				if (serverRequestException != null) {
+					assertTrue(serverRequestException instanceof SSLException);
+					SSLException sslException = (SSLException) serverRequestException;
 					Throwable cause = printSslException("! Server: ",
 							sslException, null);
 					result = (cause == null)
@@ -564,13 +586,17 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				}
 				System.out.println();
 				System.out.println("Server request exception: "
-						+ this.serverRequestException);
+						+ serverRequestException);
 				System.out.println("Client exception: " + clientException);
 				System.out.println("Listening server exception: "
 						+ this.listeningServerException);
+				System.out.println("SSL connection succeeeded? " + result);
 				System.out.println();
 				assertTrue(result);
 
+				/*
+				 * Re-set the CRL.
+				 */
 				crl = generateCRL(caName, Arrays
 						.asList(new BigInteger[] { client2Certificate
 								.getSerialNumber() }), caPublicKey,
@@ -580,16 +606,25 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				}
 				Thread.sleep(5000);
 
-				this.serverRequestException = null;
+				/*
+				 * Test connection 3.
+				 */
 				clientSSLContextFactory = new PKIXSSLContextFactory(
 						client1KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
 				clientException = makeClientRequest(sslClientContext);
+				serverRequestException = null;
+				serverRequestFuture = serverRequestsFutures.poll();
+				try {
+					serverRequestFuture.get();
+				} catch (ExecutionException e) {
+					serverRequestException = e.getCause();
+				}
 				result = true;
-				if (this.serverRequestException != null) {
-					assertTrue(this.serverRequestException instanceof SSLException);
-					SSLException sslException = (SSLException) this.serverRequestException;
+				if (serverRequestException != null) {
+					assertTrue(serverRequestException instanceof SSLException);
+					SSLException sslException = (SSLException) serverRequestException;
 					Throwable cause = printSslException("! Server: ",
 							sslException, null);
 					result = (cause == null)
@@ -600,23 +635,33 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				}
 				System.out.println();
 				System.out.println("Server request exception: "
-						+ this.serverRequestException);
+						+ serverRequestException);
 				System.out.println("Client exception: " + clientException);
 				System.out.println("Listening server exception: "
 						+ this.listeningServerException);
+				System.out.println("SSL connection succeeeded? " + result);
 				System.out.println();
 				assertTrue(result);
 
-				this.serverRequestException = null;
+				/*
+				 * Test connection 4.
+				 */
 				clientSSLContextFactory = new PKIXSSLContextFactory(
 						client2KeyStore, MiniSslClientServer.KEYSTORE_PASSWORD,
 						caKeyStore, true);
 				sslClientContext = clientSSLContextFactory.buildSSLContext();
 				clientException = makeClientRequest(sslClientContext);
+				serverRequestException = null;
+				serverRequestFuture = serverRequestsFutures.poll();
+				try {
+					serverRequestFuture.get();
+				} catch (ExecutionException e) {
+					serverRequestException = e.getCause();
+				}
 				result = true;
-				if (this.serverRequestException != null) {
-					assertTrue(this.serverRequestException instanceof SSLException);
-					SSLException sslException = (SSLException) this.serverRequestException;
+				if (serverRequestException != null) {
+					assertTrue(serverRequestException instanceof SSLException);
+					SSLException sslException = (SSLException) serverRequestException;
 					Throwable cause = printSslException("! Server: ",
 							sslException, null);
 					result = (cause == null)
@@ -627,10 +672,11 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 				}
 				System.out.println();
 				System.out.println("Server request exception: "
-						+ this.serverRequestException);
+						+ serverRequestException);
 				System.out.println("Client exception: " + clientException);
 				System.out.println("Listening server exception: "
 						+ this.listeningServerException);
+				System.out.println("SSL connection succeeeded? " + result);
 				System.out.println();
 				assertTrue(!result);
 			} finally {
