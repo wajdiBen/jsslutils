@@ -57,6 +57,9 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -93,7 +96,7 @@ public abstract class MiniSslClientServer {
 	protected int testPort = 31050;
 	private int serverRequestNumber = 1;
 
-	protected volatile Exception serverRequestException;
+	protected final LinkedBlockingQueue<Future<Object>> serverRequestsFutures = new LinkedBlockingQueue<Future<Object>>();
 	protected volatile Exception listeningServerException;
 
 	protected String getCertificatesDirectory() {
@@ -264,6 +267,7 @@ public abstract class MiniSslClientServer {
 	 */
 	protected Thread runServer(final SSLServerSocket serverSocket) {
 		Thread serverThread = new Thread(new Runnable() {
+
 			public void run() {
 				ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
 						2, 10, 60, TimeUnit.SECONDS,
@@ -275,25 +279,14 @@ public abstract class MiniSslClientServer {
 						try {
 							serverSocket.setSoTimeout(serverTimeout);
 							acceptedSocket = serverSocket.accept();
-							threadPoolExecutor.execute(new RequestHandler(
-									acceptedSocket));
+							Future<Object> f = threadPoolExecutor
+									.submit(new RequestHandler(acceptedSocket));
+							serverRequestsFutures.put(f);
 						} catch (IOException e) {
 							MiniSslClientServer.this.listeningServerException = e;
+						} catch (InterruptedException e) {
+							MiniSslClientServer.this.listeningServerException = e;
 						}
-					}
-					threadPoolExecutor.shutdown();
-					try {
-						threadPoolExecutor.awaitTermination(20,
-								TimeUnit.SECONDS);
-						synchronized (serverSocket) {
-							if (!serverSocket.isClosed()) {
-								serverSocket.close();
-							}
-						}
-					} catch (IOException e) {
-						MiniSslClientServer.this.listeningServerException = e;
-					} catch (InterruptedException e) {
-						MiniSslClientServer.this.listeningServerException = e;
 					}
 				} catch (RuntimeException e) {
 					MiniSslClientServer.this.listeningServerException = e;
@@ -316,8 +309,8 @@ public abstract class MiniSslClientServer {
 	 * @throws IOException
 	 */
 	public boolean runTest(SSLContext sslClientContext,
-			SSLContext sslServerContext) throws IOException {
-		this.serverRequestException = null;
+			SSLContext sslServerContext) throws IOException,
+			InterruptedException {
 		this.listeningServerException = null;
 		boolean result = false;
 
@@ -348,17 +341,25 @@ public abstract class MiniSslClientServer {
 			e.printStackTrace();
 		}
 
+		Throwable serverRequestException = null;
+		Future<?> serverRequestFuture = serverRequestsFutures.poll();
+		try {
+			serverRequestFuture.get();
+		} catch (ExecutionException e) {
+			serverRequestException = e.getCause();
+		}
+
 		System.out.println();
 		System.out.println("Server request exception: "
-				+ this.serverRequestException);
+				+ serverRequestException);
 		System.out.println("Client exception: " + clientException);
 		System.out.println("Listening server exception: "
 				+ this.listeningServerException);
 
 		result = true;
-		if (this.serverRequestException != null) {
-			assertTrue(this.serverRequestException instanceof SSLException);
-			SSLException sslException = (SSLException) this.serverRequestException;
+		if (serverRequestException != null) {
+			assertTrue(serverRequestException instanceof SSLException);
+			SSLException sslException = (SSLException) serverRequestException;
 			Throwable cause = printSslException("! Server: ", sslException,
 					null);
 			result = (cause == null)
@@ -423,14 +424,14 @@ public abstract class MiniSslClientServer {
 	/**
 	 * Small class that handles a server request.
 	 */
-	protected class RequestHandler implements Runnable {
+	protected class RequestHandler implements Callable<Object> {
 		private final Socket acceptedSocket;
 
 		public RequestHandler(Socket acceptedSocket) {
 			this.acceptedSocket = acceptedSocket;
 		}
 
-		public void run() {
+		public Object call() throws Exception {
 			System.out.println("Accepted connection.");
 			try {
 				PrintWriter out = new PrintWriter(acceptedSocket
@@ -478,21 +479,10 @@ public abstract class MiniSslClientServer {
 
 				out.close();
 				in.close();
-			} catch (Exception e) {
-				if (MiniSslClientServer.this.verboseExceptions) {
-					e.printStackTrace();
-				}
-				MiniSslClientServer.this.serverRequestException = e;
 			} finally {
-				try {
-					acceptedSocket.close();
-				} catch (IOException e) {
-					if (MiniSslClientServer.this.verboseExceptions) {
-						e.printStackTrace();
-					}
-					throw new RuntimeException(e);
-				}
+				acceptedSocket.close();
 			}
+			return null;
 		}
 	}
 
