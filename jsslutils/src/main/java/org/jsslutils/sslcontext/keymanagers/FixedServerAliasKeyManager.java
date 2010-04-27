@@ -136,7 +136,7 @@ public class FixedServerAliasKeyManager implements X509KeyManager {
 	 * @author Bruno Harbulot.
 	 */
 	public static class Wrapper implements X509KeyManagerWrapper {
-		private String alias;
+		private final String alias;
 
 		/**
 		 * Creates a new FixedServerAliasKeyManager wrapper, using the alias
