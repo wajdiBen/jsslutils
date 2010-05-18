@@ -48,33 +48,33 @@ import org.junit.Test;
  * 
  */
 public class NoTrustStoreTest extends MiniSslClientServer {
-	protected KeyStore clientStore = null;
-	protected SSLContextFactory clientSSLContextFactory;
-	protected SSLContextFactory serverSSLContextFactory;
+    protected KeyStore clientStore = null;
+    protected SSLContextFactory clientSSLContextFactory;
+    protected SSLContextFactory serverSSLContextFactory;
 
-	public boolean prepareSSLContextFactories() throws Exception {
-		PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
-				null, (String) null, getCaKeyStore());
-		this.clientSSLContextFactory = clientSSLContextFactory;
+    public boolean prepareSSLContextFactories() throws Exception {
+        PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
+                null, (String) null, getCaKeyStore());
+        this.clientSSLContextFactory = clientSSLContextFactory;
 
-		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
-				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
-				null);
-		this.serverSSLContextFactory = serverSSLContextFactory;
+        PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
+                getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+                null);
+        this.serverSSLContextFactory = serverSSLContextFactory;
 
-		return true;
-	}
+        return true;
+    }
 
-	public boolean runTest() throws Exception {
-		assertTrue(prepareSSLContextFactories());
-		return runTest(clientSSLContextFactory.buildSSLContext(),
-				serverSSLContextFactory.buildSSLContext());
-	}
+    public boolean runTest() throws Exception {
+        assertTrue(prepareSSLContextFactories());
+        return runTest(clientSSLContextFactory.buildSSLContext(),
+                serverSSLContextFactory.buildSSLContext());
+    }
 
-	@Test
-	public void testNonAuthenticatedClient() throws Exception {
-		this.clientStore = null;
-		assertTrue("Loaded keystore", true);
-		assertTrue(runTest());
-	}
+    @Test
+    public void testNonAuthenticatedClient() throws Exception {
+        this.clientStore = null;
+        assertTrue("Loaded keystore", true);
+        assertTrue(runTest());
+    }
 }

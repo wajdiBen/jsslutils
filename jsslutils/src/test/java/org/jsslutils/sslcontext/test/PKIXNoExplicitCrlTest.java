@@ -50,32 +50,32 @@ import org.junit.Test;
  * 
  */
 public class PKIXNoExplicitCrlTest extends SimpleX509Test {
-	@Override
-	public boolean prepareSSLContextFactories() throws Exception {
-		PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
-				this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
-				getCaKeyStore());
-		this.clientSSLContextFactory = clientSSLContextFactory;
-		
-		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
-				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
-				getCaKeyStore());
-		this.serverSSLContextFactory = serverSSLContextFactory;
-		
-		return true;
-	}
+    @Override
+    public boolean prepareSSLContextFactories() throws Exception {
+        PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
+                this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+                getCaKeyStore());
+        this.clientSSLContextFactory = clientSSLContextFactory;
 
-	@Test
-	public void testGoodClient() throws Exception {
-		this.clientStore = getGoodClientCertKeyStore();
-		assertTrue("Loaded keystore", true);
-		assertTrue(runTest());
-	}
+        PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
+                getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+                getCaKeyStore());
+        this.serverSSLContextFactory = serverSSLContextFactory;
 
-	@Test
-	public void testBadClient() throws Exception {
-		this.clientStore = getBadClientCertKeyStore();
-		assertTrue("Loaded keystore", true);
-		assertTrue(runTest());
-	}
+        return true;
+    }
+
+    @Test
+    public void testGoodClient() throws Exception {
+        this.clientStore = getGoodClientCertKeyStore();
+        assertTrue("Loaded keystore", true);
+        assertTrue(runTest());
+    }
+
+    @Test
+    public void testBadClient() throws Exception {
+        this.clientStore = getBadClientCertKeyStore();
+        assertTrue("Loaded keystore", true);
+        assertTrue(runTest());
+    }
 }

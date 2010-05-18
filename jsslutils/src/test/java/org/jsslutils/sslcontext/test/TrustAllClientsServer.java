@@ -47,22 +47,22 @@ import org.jsslutils.sslcontext.trustmanagers.TrustAllClientsWrappingTrustManage
  * @author Bruno Harbulot
  */
 public class TrustAllClientsServer extends MiniSslClientServer {
-	public void run() throws Exception {
-		X509SSLContextFactory sslContextFactory = new X509SSLContextFactory(
-				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
-				getCaKeyStore());
-		sslContextFactory
-				.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
-		SSLServerSocket socket = prepareServerSocket(sslContextFactory
-				.buildSSLContext());
-		System.out
-				.println("Server listening on port: " + socket.getLocalPort());
-		setServerRequestNumber(0);
-		runServer(socket);
-	}
+    public void run() throws Exception {
+        X509SSLContextFactory sslContextFactory = new X509SSLContextFactory(
+                getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+                getCaKeyStore());
+        sslContextFactory
+                .setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
+        SSLServerSocket socket = prepareServerSocket(sslContextFactory
+                .buildSSLContext());
+        System.out
+                .println("Server listening on port: " + socket.getLocalPort());
+        setServerRequestNumber(0);
+        runServer(socket);
+    }
 
-	public static void main(String[] args) throws Exception {
-		TrustAllClientsServer test = new TrustAllClientsServer();
-		test.run();
-	}
+    public static void main(String[] args) throws Exception {
+        TrustAllClientsServer test = new TrustAllClientsServer();
+        test.run();
+    }
 }

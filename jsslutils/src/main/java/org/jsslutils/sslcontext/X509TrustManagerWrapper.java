@@ -45,12 +45,12 @@ import javax.net.ssl.X509TrustManager;
  * @author Bruno Harbulot.
  */
 public interface X509TrustManagerWrapper {
-	/**
-	 * Builds an X509TrustManager from another X509TrustManager.
-	 * 
-	 * @param trustManager
-	 *            original X509TrustManager.
-	 * @return wrapped X509TrustManager.
-	 */
-	public X509TrustManager wrapTrustManager(X509TrustManager trustManager);
+    /**
+     * Builds an X509TrustManager from another X509TrustManager.
+     * 
+     * @param trustManager
+     *            original X509TrustManager.
+     * @return wrapped X509TrustManager.
+     */
+    public X509TrustManager wrapTrustManager(X509TrustManager trustManager);
 }

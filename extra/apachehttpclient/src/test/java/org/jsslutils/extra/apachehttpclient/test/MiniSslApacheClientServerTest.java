@@ -60,38 +60,38 @@ import static org.junit.Assert.*;
  * 
  */
 public abstract class MiniSslApacheClientServerTest extends MiniSslClientServer {
-	protected HttpClient httpClient;
-	protected SslContextedSecureProtocolSocketFactory secureProtocolSocketFactory;
+    protected HttpClient httpClient;
+    protected SslContextedSecureProtocolSocketFactory secureProtocolSocketFactory;
 
-	public MiniSslApacheClientServerTest() {
-		MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-		this.httpClient = new HttpClient(connectionManager);
-	}
+    public MiniSslApacheClientServerTest() {
+        MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
+        this.httpClient = new HttpClient(connectionManager);
+    }
 
-	@Override
-	protected Exception makeClientRequest(SSLContext sslClientContext)
-			throws IOException {
-		this.secureProtocolSocketFactory = new SslContextedSecureProtocolSocketFactory(
-				sslClientContext);
+    @Override
+    protected Exception makeClientRequest(SSLContext sslClientContext)
+            throws IOException {
+        this.secureProtocolSocketFactory = new SslContextedSecureProtocolSocketFactory(
+                sslClientContext);
 
-		Protocol.registerProtocol("https", new Protocol("https",
-				(ProtocolSocketFactory) this.secureProtocolSocketFactory, 443));
+        Protocol.registerProtocol("https", new Protocol("https",
+                (ProtocolSocketFactory) this.secureProtocolSocketFactory, 443));
 
-		GetMethod method = new GetMethod("https://localhost:" + testPort + "/");
-		method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
-				new DefaultHttpMethodRetryHandler(0, false));
-		InputStream is = null;
-		try {
-			int statusCode = httpClient.executeMethod(method);
-			assertEquals("Request successful", 200, statusCode);
-			is = method.getResponseBodyAsStream();
-		} catch (SSLException e) {
-			return e;
-		} finally {
-			if (is != null) {
-				is.close();
-			}
-		}
-		return null;
-	}
+        GetMethod method = new GetMethod("https://localhost:" + testPort + "/");
+        method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
+                new DefaultHttpMethodRetryHandler(0, false));
+        InputStream is = null;
+        try {
+            int statusCode = httpClient.executeMethod(method);
+            assertEquals("Request successful", 200, statusCode);
+            is = method.getResponseBodyAsStream();
+        } catch (SSLException e) {
+            return e;
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+        return null;
+    }
 }

@@ -51,113 +51,113 @@ import org.jsslutils.sslcontext.X509KeyManagerWrapper;
  * @author Bruno Harbulot.
  */
 public class FixedServerAliasKeyManager implements X509KeyManager {
-	private final X509KeyManager keyManager;
-	private final String alias;
+    private final X509KeyManager keyManager;
+    private final String alias;
 
-	/**
-	 * Creates a new instance from an existing X509KeyManager.
-	 * 
-	 * @param keyManager
-	 *            X509KeyManager to wrap.
-	 * @param alias
-	 *            alias to use to choose a key for the server sockets.
-	 */
-	public FixedServerAliasKeyManager(X509KeyManager keyManager, String alias) {
-		this.keyManager = keyManager;
-		this.alias = alias;
-	}
+    /**
+     * Creates a new instance from an existing X509KeyManager.
+     * 
+     * @param keyManager
+     *            X509KeyManager to wrap.
+     * @param alias
+     *            alias to use to choose a key for the server sockets.
+     */
+    public FixedServerAliasKeyManager(X509KeyManager keyManager, String alias) {
+        this.keyManager = keyManager;
+        this.alias = alias;
+    }
 
-	/**
-	 * Relays the call to the wrapped X509KeyManager.
-	 * 
-	 * @see javax.net.ssl.X509KeyManager#chooseClientAlias(java.lang.String[],
-	 *      java.security.Principal[], java.net.Socket)
-	 */
-	public String chooseClientAlias(String[] keyType, Principal[] issuers,
-			Socket socket) {
-		return this.keyManager.chooseClientAlias(keyType, issuers, socket);
-	}
+    /**
+     * Relays the call to the wrapped X509KeyManager.
+     * 
+     * @see javax.net.ssl.X509KeyManager#chooseClientAlias(java.lang.String[],
+     *      java.security.Principal[], java.net.Socket)
+     */
+    public String chooseClientAlias(String[] keyType, Principal[] issuers,
+            Socket socket) {
+        return this.keyManager.chooseClientAlias(keyType, issuers, socket);
+    }
 
-	/**
-	 * Returns the alias this instance has been constructed with, regardless of
-	 * any other parameters.
-	 * 
-	 * @return The alias passed to the constructor.
-	 * @see javax.net.ssl.X509KeyManager#chooseServerAlias(java.lang.String,
-	 *      java.security.Principal[], java.net.Socket)
-	 */
-	public String chooseServerAlias(String keyType, Principal[] issuers,
-			Socket socket) {
-		return this.alias;
-	}
+    /**
+     * Returns the alias this instance has been constructed with, regardless of
+     * any other parameters.
+     * 
+     * @return The alias passed to the constructor.
+     * @see javax.net.ssl.X509KeyManager#chooseServerAlias(java.lang.String,
+     *      java.security.Principal[], java.net.Socket)
+     */
+    public String chooseServerAlias(String keyType, Principal[] issuers,
+            Socket socket) {
+        return this.alias;
+    }
 
-	/**
-	 * Relays the call to the wrapped X509KeyManager.
-	 * 
-	 * @see javax.net.ssl.X509KeyManager#getCertificateChain(java.lang.String)
-	 */
-	public X509Certificate[] getCertificateChain(String alias) {
-		return this.keyManager.getCertificateChain(alias);
-	}
+    /**
+     * Relays the call to the wrapped X509KeyManager.
+     * 
+     * @see javax.net.ssl.X509KeyManager#getCertificateChain(java.lang.String)
+     */
+    public X509Certificate[] getCertificateChain(String alias) {
+        return this.keyManager.getCertificateChain(alias);
+    }
 
-	/**
-	 * Relays the call to the wrapped X509KeyManager.
-	 * 
-	 * @see javax.net.ssl.X509KeyManager#getClientAliases(java.lang.String,
-	 *      java.security.Principal[])
-	 */
-	public String[] getClientAliases(String keyType, Principal[] issuers) {
-		return this.keyManager.getClientAliases(keyType, issuers);
-	}
+    /**
+     * Relays the call to the wrapped X509KeyManager.
+     * 
+     * @see javax.net.ssl.X509KeyManager#getClientAliases(java.lang.String,
+     *      java.security.Principal[])
+     */
+    public String[] getClientAliases(String keyType, Principal[] issuers) {
+        return this.keyManager.getClientAliases(keyType, issuers);
+    }
 
-	/**
-	 * Relays the call to the wrapped X509KeyManager.
-	 * 
-	 * @see javax.net.ssl.X509KeyManager#getPrivateKey(java.lang.String)
-	 */
-	public PrivateKey getPrivateKey(String alias) {
-		return this.keyManager.getPrivateKey(alias);
-	}
+    /**
+     * Relays the call to the wrapped X509KeyManager.
+     * 
+     * @see javax.net.ssl.X509KeyManager#getPrivateKey(java.lang.String)
+     */
+    public PrivateKey getPrivateKey(String alias) {
+        return this.keyManager.getPrivateKey(alias);
+    }
 
-	/**
-	 * Relays the call to the wrapped X509KeyManager.
-	 * 
-	 * @see javax.net.ssl.X509KeyManager#getServerAliases(java.lang.String,
-	 *      java.security.Principal[])
-	 */
-	public String[] getServerAliases(String keyType, Principal[] issuers) {
-		return this.keyManager.getServerAliases(keyType, issuers);
-	}
+    /**
+     * Relays the call to the wrapped X509KeyManager.
+     * 
+     * @see javax.net.ssl.X509KeyManager#getServerAliases(java.lang.String,
+     *      java.security.Principal[])
+     */
+    public String[] getServerAliases(String keyType, Principal[] issuers) {
+        return this.keyManager.getServerAliases(keyType, issuers);
+    }
 
-	/**
-	 * Wrapper factory class that wraps existing X509KeyManagers into
-	 * FixedServerAliasKeyManager, with the alias passed to the constructor.
-	 * 
-	 * @author Bruno Harbulot.
-	 */
-	public static class Wrapper implements X509KeyManagerWrapper {
-		private final String alias;
+    /**
+     * Wrapper factory class that wraps existing X509KeyManagers into
+     * FixedServerAliasKeyManager, with the alias passed to the constructor.
+     * 
+     * @author Bruno Harbulot.
+     */
+    public static class Wrapper implements X509KeyManagerWrapper {
+        private final String alias;
 
-		/**
-		 * Creates a new FixedServerAliasKeyManager wrapper, using the alias
-		 * passed to this constructor.
-		 * 
-		 * @param alias
-		 *            alias to choose for the server socket.
-		 */
-		public Wrapper(String alias) {
-			this.alias = alias;
-		}
+        /**
+         * Creates a new FixedServerAliasKeyManager wrapper, using the alias
+         * passed to this constructor.
+         * 
+         * @param alias
+         *            alias to choose for the server socket.
+         */
+        public Wrapper(String alias) {
+            this.alias = alias;
+        }
 
-		/**
-		 * Builds an X509KeyManager from another X509KeyManager.
-		 * 
-		 * @param keyManager
-		 *            original X509KeyManager.
-		 * @return wrapped X509KeyManager.
-		 */
-		public X509KeyManager wrapKeyManager(X509KeyManager keyManager) {
-			return new FixedServerAliasKeyManager(keyManager, alias);
-		}
-	}
+        /**
+         * Builds an X509KeyManager from another X509KeyManager.
+         * 
+         * @param keyManager
+         *            original X509KeyManager.
+         * @return wrapped X509KeyManager.
+         */
+        public X509KeyManager wrapKeyManager(X509KeyManager keyManager) {
+            return new FixedServerAliasKeyManager(keyManager, alias);
+        }
+    }
 }
