@@ -54,91 +54,91 @@ import org.junit.Test;
  * 
  */
 public class DefaultStoreTest {
-	public final static String KNOWN_CA_URL = "https://jsslutils.googlecode.com/";
-	public final static String UNKNOWN_CA_URL = "https://ca.grid-support.ac.uk/";
+    public final static String KNOWN_CA_URL = "https://jsslutils.googlecode.com/";
+    public final static String UNKNOWN_CA_URL = "https://ca.grid-support.ac.uk/";
 
-	public void connect(SSLContext sslContext, String address) throws Exception {
-		URL url = new URL(address);
-		HttpsURLConnection connection = (HttpsURLConnection) url
-				.openConnection();
-		if (sslContext != null) {
-			connection.setSSLSocketFactory(sslContext.getSocketFactory());
-		}
-		connection.connect();
-		connection.disconnect();
-	}
+    public void connect(SSLContext sslContext, String address) throws Exception {
+        URL url = new URL(address);
+        HttpsURLConnection connection = (HttpsURLConnection) url
+                .openConnection();
+        if (sslContext != null) {
+            connection.setSSLSocketFactory(sslContext.getSocketFactory());
+        }
+        connection.connect();
+        connection.disconnect();
+    }
 
-	@Test
-	public void testKnownCA() throws Exception {
-		connect(null, KNOWN_CA_URL);
-	}
+    @Test
+    public void testKnownCA() throws Exception {
+        connect(null, KNOWN_CA_URL);
+    }
 
-	@Test
-	public void testUnknownCA() throws Exception {
-		try {
-			connect(null, UNKNOWN_CA_URL);
-			fail();
-		} catch (SSLHandshakeException e) {
-		}
-	}
+    @Test
+    public void testUnknownCA() throws Exception {
+        try {
+            connect(null, UNKNOWN_CA_URL);
+            fail();
+        } catch (SSLHandshakeException e) {
+        }
+    }
 
-	@Test
-	public void testDefaultFactoryKnownCA() throws Exception {
-		SSLContextFactory sslContextFactory = new DefaultSSLContextFactory();
-		SSLContext sslContext = sslContextFactory.buildSSLContext();
+    @Test
+    public void testDefaultFactoryKnownCA() throws Exception {
+        SSLContextFactory sslContextFactory = new DefaultSSLContextFactory();
+        SSLContext sslContext = sslContextFactory.buildSSLContext();
 
-		connect(sslContext, KNOWN_CA_URL);
-	}
+        connect(sslContext, KNOWN_CA_URL);
+    }
 
-	@Test
-	public void testDefaultFactoryUnKnownCA() throws Exception {
-		SSLContextFactory sslContextFactory = new DefaultSSLContextFactory();
-		SSLContext sslContext = sslContextFactory.buildSSLContext();
+    @Test
+    public void testDefaultFactoryUnKnownCA() throws Exception {
+        SSLContextFactory sslContextFactory = new DefaultSSLContextFactory();
+        SSLContext sslContext = sslContextFactory.buildSSLContext();
 
-		try {
-			connect(sslContext, UNKNOWN_CA_URL);
-			fail();
-		} catch (SSLHandshakeException e) {
-		}
-	}
+        try {
+            connect(sslContext, UNKNOWN_CA_URL);
+            fail();
+        } catch (SSLHandshakeException e) {
+        }
+    }
 
-	@Test
-	public void testX509FactoryKnownCA() throws Exception {
-		SSLContextFactory sslContextFactory = new X509SSLContextFactory();
-		SSLContext sslContext = sslContextFactory.buildSSLContext();
+    @Test
+    public void testX509FactoryKnownCA() throws Exception {
+        SSLContextFactory sslContextFactory = new X509SSLContextFactory();
+        SSLContext sslContext = sslContextFactory.buildSSLContext();
 
-		connect(sslContext, KNOWN_CA_URL);
-	}
+        connect(sslContext, KNOWN_CA_URL);
+    }
 
-	@Test
-	public void testX509FactoryUnKnownCA() throws Exception {
-		SSLContextFactory sslContextFactory = new X509SSLContextFactory();
-		SSLContext sslContext = sslContextFactory.buildSSLContext();
+    @Test
+    public void testX509FactoryUnKnownCA() throws Exception {
+        SSLContextFactory sslContextFactory = new X509SSLContextFactory();
+        SSLContext sslContext = sslContextFactory.buildSSLContext();
 
-		try {
-			connect(sslContext, UNKNOWN_CA_URL);
-			fail();
-		} catch (SSLHandshakeException e) {
-		}
-	}
+        try {
+            connect(sslContext, UNKNOWN_CA_URL);
+            fail();
+        } catch (SSLHandshakeException e) {
+        }
+    }
 
-	@Test
-	public void testPKIXFactoryKnownCA() throws Exception {
-		SSLContextFactory sslContextFactory = new PKIXSSLContextFactory();
-		SSLContext sslContext = sslContextFactory.buildSSLContext();
+    @Test
+    public void testPKIXFactoryKnownCA() throws Exception {
+        SSLContextFactory sslContextFactory = new PKIXSSLContextFactory();
+        SSLContext sslContext = sslContextFactory.buildSSLContext();
 
-		connect(sslContext, KNOWN_CA_URL);
-	}
+        connect(sslContext, KNOWN_CA_URL);
+    }
 
-	@Test
-	public void testPKIXFactoryUnKnownCA() throws Exception {
-		SSLContextFactory sslContextFactory = new PKIXSSLContextFactory();
-		SSLContext sslContext = sslContextFactory.buildSSLContext();
+    @Test
+    public void testPKIXFactoryUnKnownCA() throws Exception {
+        SSLContextFactory sslContextFactory = new PKIXSSLContextFactory();
+        SSLContext sslContext = sslContextFactory.buildSSLContext();
 
-		try {
-			connect(sslContext, UNKNOWN_CA_URL);
-			fail();
-		} catch (SSLHandshakeException e) {
-		}
-	}
+        try {
+            connect(sslContext, UNKNOWN_CA_URL);
+            fail();
+        } catch (SSLHandshakeException e) {
+        }
+    }
 }

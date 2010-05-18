@@ -50,33 +50,33 @@ import org.junit.Test;
  * 
  */
 public class PKIXTest extends SimpleX509Test {
-	@Override
-	public boolean prepareSSLContextFactories() throws Exception {
-		PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
-				this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
-				getCaKeyStore());
-		clientSSLContextFactory.addCrlCollection(getLocalCRLs());
-		this.clientSSLContextFactory = clientSSLContextFactory;
-		PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
-				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
-				getCaKeyStore());
-		serverSSLContextFactory.addCrlCollection(getLocalCRLs());
+    @Override
+    public boolean prepareSSLContextFactories() throws Exception {
+        PKIXSSLContextFactory clientSSLContextFactory = new PKIXSSLContextFactory(
+                this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+                getCaKeyStore());
+        clientSSLContextFactory.addCrlCollection(getLocalCRLs());
+        this.clientSSLContextFactory = clientSSLContextFactory;
+        PKIXSSLContextFactory serverSSLContextFactory = new PKIXSSLContextFactory(
+                getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+                getCaKeyStore());
+        serverSSLContextFactory.addCrlCollection(getLocalCRLs());
 
-		this.serverSSLContextFactory = serverSSLContextFactory;
-		return true;
-	}
+        this.serverSSLContextFactory = serverSSLContextFactory;
+        return true;
+    }
 
-	@Test
-	public void testGoodClient() throws Exception {
-		this.clientStore = getGoodClientCertKeyStore();
-		assertTrue("Loaded keystore", true);
-		assertTrue(runTest());
-	}
+    @Test
+    public void testGoodClient() throws Exception {
+        this.clientStore = getGoodClientCertKeyStore();
+        assertTrue("Loaded keystore", true);
+        assertTrue(runTest());
+    }
 
-	@Test
-	public void testBadClient() throws Exception {
-		this.clientStore = getBadClientCertKeyStore();
-		assertTrue("Loaded keystore", true);
-		assertTrue(!runTest());
-	}
+    @Test
+    public void testBadClient() throws Exception {
+        this.clientStore = getBadClientCertKeyStore();
+        assertTrue("Loaded keystore", true);
+        assertTrue(!runTest());
+    }
 }

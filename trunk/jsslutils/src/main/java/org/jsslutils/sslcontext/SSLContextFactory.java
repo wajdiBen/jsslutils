@@ -43,32 +43,32 @@ import javax.net.ssl.SSLContext;
  * 
  */
 public interface SSLContextFactory {
-	public void configure(Properties properties)
-			throws SSLContextFactoryException;
+    public void configure(Properties properties)
+            throws SSLContextFactoryException;
 
-	public SSLContext buildSSLContext() throws SSLContextFactoryException;
+    public SSLContext buildSSLContext() throws SSLContextFactoryException;
 
-	/**
-	 * This class is a wrapper exception for most exceptions that can occur when
-	 * using an SSLContextFactory.
-	 * 
-	 * @author Bruno Harbulot (Bruno.Harbulot@manchester.ac.uk)
-	 * 
-	 */
-	public class SSLContextFactoryException extends Exception {
-		private static final long serialVersionUID = 1L;
-		public static final String message = "Exception in SSLContextFactory";
+    /**
+     * This class is a wrapper exception for most exceptions that can occur when
+     * using an SSLContextFactory.
+     * 
+     * @author Bruno Harbulot (Bruno.Harbulot@manchester.ac.uk)
+     * 
+     */
+    public class SSLContextFactoryException extends Exception {
+        private static final long serialVersionUID = 1L;
+        public static final String message = "Exception in SSLContextFactory";
 
-		public SSLContextFactoryException(Exception e) {
-			super(SSLContextFactoryException.message, e);
-		}
+        public SSLContextFactoryException(Exception e) {
+            super(SSLContextFactoryException.message, e);
+        }
 
-		public SSLContextFactoryException(String message) {
-			super(SSLContextFactoryException.message + " " + message);
-		}
+        public SSLContextFactoryException(String message) {
+            super(SSLContextFactoryException.message + " " + message);
+        }
 
-		public SSLContextFactoryException(String message, Exception e) {
-			super(SSLContextFactoryException.message + " " + message, e);
-		}
-	}
+        public SSLContextFactoryException(String message, Exception e) {
+            super(SSLContextFactoryException.message + " " + message, e);
+        }
+    }
 }

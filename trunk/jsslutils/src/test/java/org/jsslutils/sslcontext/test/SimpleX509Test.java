@@ -54,48 +54,48 @@ import org.junit.Test;
  * 
  */
 public class SimpleX509Test extends MiniSslClientServer {
-	protected KeyStore clientStore = null;
-	protected SSLContextFactory clientSSLContextFactory;
-	protected SSLContextFactory serverSSLContextFactory;
+    protected KeyStore clientStore = null;
+    protected SSLContextFactory clientSSLContextFactory;
+    protected SSLContextFactory serverSSLContextFactory;
 
-	@Test
-	public void testGoodClient() throws Exception {
-		this.clientStore = getGoodClientCertKeyStore();
-		assertTrue("Loaded keystore", true);
-		assertTrue(runTest());
-	}
+    @Test
+    public void testGoodClient() throws Exception {
+        this.clientStore = getGoodClientCertKeyStore();
+        assertTrue("Loaded keystore", true);
+        assertTrue(runTest());
+    }
 
-	@Test
-	public void testBadClient() throws Exception {
-		this.clientStore = getBadClientCertKeyStore();
-		assertTrue("Loaded keystore", true);
-		assertTrue(runTest());
-	}
+    @Test
+    public void testBadClient() throws Exception {
+        this.clientStore = getBadClientCertKeyStore();
+        assertTrue("Loaded keystore", true);
+        assertTrue(runTest());
+    }
 
-	public boolean prepareSSLContextFactories() throws Exception {
-		this.clientSSLContextFactory = new X509SSLContextFactory(
-				this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
-				getCaKeyStore());
-		this.serverSSLContextFactory = new X509SSLContextFactory(
-				getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
-				getCaKeyStore());
-		return true;
-	}
+    public boolean prepareSSLContextFactories() throws Exception {
+        this.clientSSLContextFactory = new X509SSLContextFactory(
+                this.clientStore, MiniSslClientServer.KEYSTORE_PASSWORD,
+                getCaKeyStore());
+        this.serverSSLContextFactory = new X509SSLContextFactory(
+                getServerCertKeyStore(), MiniSslClientServer.KEYSTORE_PASSWORD,
+                getCaKeyStore());
+        return true;
+    }
 
-	public boolean runTest() throws Exception {
-		assertTrue(prepareSSLContextFactories());
-		return runTest(clientSSLContextFactory.buildSSLContext(),
-				serverSSLContextFactory.buildSSLContext());
-	}
+    public boolean runTest() throws Exception {
+        assertTrue(prepareSSLContextFactories());
+        return runTest(clientSSLContextFactory.buildSSLContext(),
+                serverSSLContextFactory.buildSSLContext());
+    }
 
-	public static void main(String[] args) throws Exception {
-		SimpleX509Test test = new SimpleX509Test();
-		test.verboseExceptions = true;
-		test.prepareSSLContextFactories();
-		SSLServerSocket serverSocket = test
-				.prepareServerSocket(test.serverSSLContextFactory
-						.buildSSLContext());
-		test.serverTimeout = 20000;
-		test.runServer(serverSocket);
-	}
+    public static void main(String[] args) throws Exception {
+        SimpleX509Test test = new SimpleX509Test();
+        test.verboseExceptions = true;
+        test.prepareSSLContextFactories();
+        SSLServerSocket serverSocket = test
+                .prepareServerSocket(test.serverSSLContextFactory
+                        .buildSSLContext());
+        test.serverTimeout = 20000;
+        test.runServer(serverSocket);
+    }
 }

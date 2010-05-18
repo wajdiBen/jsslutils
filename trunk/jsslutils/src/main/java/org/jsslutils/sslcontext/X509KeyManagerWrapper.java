@@ -49,12 +49,12 @@ import javax.net.ssl.X509KeyManager;
  * @see javax.net.ssl.X509ExtendedKeyManager
  */
 public interface X509KeyManagerWrapper {
-	/**
-	 * Builds an X509KeyManager from another X509KeyManager.
-	 * 
-	 * @param keyManager
-	 *            original X509KeyManager.
-	 * @return wrapped X509KeyManager.
-	 */
-	public X509KeyManager wrapKeyManager(X509KeyManager keyManager);
+    /**
+     * Builds an X509KeyManager from another X509KeyManager.
+     * 
+     * @param keyManager
+     *            original X509KeyManager.
+     * @return wrapped X509KeyManager.
+     */
+    public X509KeyManager wrapKeyManager(X509KeyManager keyManager);
 }

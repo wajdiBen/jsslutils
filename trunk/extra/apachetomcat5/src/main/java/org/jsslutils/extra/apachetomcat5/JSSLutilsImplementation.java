@@ -26,15 +26,15 @@ import org.apache.tomcat.util.net.jsse.*;
  * @author Bruno Harbulot
  */
 public class JSSLutilsImplementation extends JSSEImplementation {
-	public JSSLutilsImplementation() throws ClassNotFoundException {
+    public JSSLutilsImplementation() throws ClassNotFoundException {
 
-	}
+    }
 
-	public String getImplementationName() {
-		return "jsslutils";
-	}
+    public String getImplementationName() {
+        return "jsslutils";
+    }
 
-	public ServerSocketFactory getServerSocketFactory() {
-		return new JSSLutilsJSSESocketFactory();
-	}
+    public ServerSocketFactory getServerSocketFactory() {
+        return new JSSLutilsJSSESocketFactory();
+    }
 }
