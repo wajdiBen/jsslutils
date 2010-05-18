@@ -41,7 +41,6 @@ import java.security.KeyStore;
 
 import javax.net.ssl.SSLServerSocket;
 
-
 import org.jsslutils.sslcontext.SSLContextFactory;
 import org.jsslutils.sslcontext.X509SSLContextFactory;
 import org.jsslutils.sslcontext.test.MiniSslClientServer;
@@ -98,8 +97,8 @@ public class SimpleX509Test extends MiniSslApacheClientServerTest {
 						.buildSSLContext());
 		test.serverTimeout = 20000;
 		test.runServer(serverSocket);
-		if (test.requestException != null) {
-			test.requestException.printStackTrace();
+		if (test.listeningServerException != null) {
+			test.listeningServerException.printStackTrace();
 		}
 	}
 }

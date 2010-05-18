@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils-extra-gsi</artifactId>
-	<version>0.6-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>jSSLutils :: Extra :: GSI</name>
 	<url>http://www.jsslutils.org/</url>
@@ -47,12 +47,12 @@
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils</artifactId>
-			<version>0.6-SNAPSHOT</version>
+			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15</artifactId>
-			<version>1.44</version>
+			<version>1.45</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
