@@ -154,6 +154,7 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	 * {@link DefaultSSLContextFactory#configure(Properties)}, the following
 	 * properties are used:
 	 * 
+	 * <table>
 	 * <tbody>
 	 * <tr>
 	 * <th>Property name</th>
@@ -233,6 +234,7 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	 * {@link Provider} via its class name.</td>
 	 * </tr>
 	 * </tbody>
+	 * </table>
 	 * 
 	 * @param properties
 	 *            properties to use for the configuration.
