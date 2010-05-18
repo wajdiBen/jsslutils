@@ -35,20 +35,22 @@ POSSIBILITY OF SUCH DAMAGE.
 package org.jsslutils.extra.apachehttpclient.test;
 
 import java.io.IOException;
-import java.net.ConnectException;
+import java.io.InputStream;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 
+import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.jsslutils.extra.apachehttpclient.SslContextedSecureProtocolSocketFactory;
 import org.jsslutils.sslcontext.test.MiniSslClientServer;
 
 import static org.junit.Assert.*;
-
 
 /**
  * This class is a small test based on MiniSslClientServer which uses the Apache
@@ -67,7 +69,7 @@ public abstract class MiniSslApacheClientServerTest extends MiniSslClientServer 
 	}
 
 	@Override
-	protected void doClientRequest(SSLContext sslClientContext)
+	protected Exception makeClientRequest(SSLContext sslClientContext)
 			throws IOException {
 		this.secureProtocolSocketFactory = new SslContextedSecureProtocolSocketFactory(
 				sslClientContext);
@@ -76,11 +78,20 @@ public abstract class MiniSslApacheClientServerTest extends MiniSslClientServer 
 				(ProtocolSocketFactory) this.secureProtocolSocketFactory, 443));
 
 		GetMethod method = new GetMethod("https://localhost:" + testPort + "/");
+		method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
+				new DefaultHttpMethodRetryHandler(0, false));
+		InputStream is = null;
 		try {
 			int statusCode = httpClient.executeMethod(method);
 			assertEquals("Request successful", 200, statusCode);
-			method.getResponseBodyAsStream();
-		} catch (ConnectException e) {
+			is = method.getResponseBodyAsStream();
+		} catch (SSLException e) {
+			return e;
+		} finally {
+			if (is != null) {
+				is.close();
+			}
 		}
+		return null;
 	}
 }
