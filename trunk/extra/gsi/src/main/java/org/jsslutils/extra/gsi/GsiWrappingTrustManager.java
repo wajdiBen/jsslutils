@@ -217,7 +217,8 @@ public class GsiWrappingTrustManager implements X509TrustManager {
                             date);
                 } else {
                     try {
-                        new BigInteger(cn);
+                        @SuppressWarnings("unused")
+                        BigInteger bi = new BigInteger(cn);
                     } catch (NumberFormatException e) {
                         return new CertificateException(
                                 "Not a Pre-RFC or RFC3820 proxy certificate."
@@ -501,7 +502,8 @@ public class GsiWrappingTrustManager implements X509TrustManager {
                 }
                 String cn = subjectDnValues.get(fieldCount - 1);
                 try {
-                    new BigInteger(cn);
+                    @SuppressWarnings("unused")
+                    BigInteger bi = new BigInteger(cn);
                 } catch (NumberFormatException e) {
                     return new CertificateException(
                             "Pre-RFC proxy certificate must start with 'CN=<some number>', got 'CN="
@@ -540,8 +542,12 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 
                     ASN1InputStream asn1InputStream = new ASN1InputStream(
                             proxyCertInfoExtension);
-                    DERObject derObject = asn1InputStream.readObject();
-                    asn1InputStream.close();
+                    DERObject derObject;
+                    try {
+                        derObject = asn1InputStream.readObject();
+                    } finally {
+                        asn1InputStream.close();
+                    }
 
                     /*
                      * Read the extension, which is stored as an OCTET STRING.
@@ -793,7 +799,8 @@ public class GsiWrappingTrustManager implements X509TrustManager {
                 }
                 String cn = subjectDnValues.get(fieldCount - 1);
                 try {
-                    new BigInteger(cn);
+                    @SuppressWarnings("unused")
+                    BigInteger bi = new BigInteger(cn);
                 } catch (NumberFormatException e) {
                     return new CertificateException(
                             "RFC3820 proxy certificate must start with 'CN=<some number>', got 'CN="
@@ -849,8 +856,12 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 
                     ASN1InputStream asn1InputStream = new ASN1InputStream(
                             proxyCertInfoExtension);
-                    DERObject derObject = asn1InputStream.readObject();
-                    asn1InputStream.close();
+                    DERObject derObject;
+                    try {
+                        derObject = asn1InputStream.readObject();
+                    } finally {
+                        asn1InputStream.close();
+                    }
 
                     /*
                      * Read the extension, which is stored as an OCTET STRING.

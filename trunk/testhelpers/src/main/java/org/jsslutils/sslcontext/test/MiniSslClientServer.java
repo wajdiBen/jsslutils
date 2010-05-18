@@ -424,7 +424,7 @@ public abstract class MiniSslClientServer {
     /**
      * Small class that handles a server request.
      */
-    protected class RequestHandler implements Callable<Object> {
+    protected static class RequestHandler implements Callable<Object> {
         private final Socket acceptedSocket;
 
         public RequestHandler(Socket acceptedSocket) {

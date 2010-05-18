@@ -167,7 +167,6 @@ public final class KeyStoreLoader {
             this.keyStorePassword = new char[keyStorePassword.length];
             System.arraycopy(keyStorePassword, 0, this.keyStorePassword, 0,
                     keyStorePassword.length);
-            this.keyStorePassword = keyStorePassword;
         } else {
             if (this.keyStorePassword != null) {
                 Arrays.fill(this.keyStorePassword, ' ');
