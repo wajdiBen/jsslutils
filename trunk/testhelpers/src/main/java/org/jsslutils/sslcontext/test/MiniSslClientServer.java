@@ -55,6 +55,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -540,7 +541,7 @@ public abstract class MiniSslClientServer {
         if (session != null) {
             System.out.println("Session: " + session);
             System.out.println("  Local certificates: "
-                    + session.getLocalCertificates());
+                    + Arrays.asList(session.getLocalCertificates()));
             System.out.println("  Local principal: "
                     + session.getLocalPrincipal());
             SSLSessionContext context = session.getSessionContext();
