@@ -73,6 +73,10 @@ import javax.net.ssl.TrustManagerFactory;
  * from the KeyStores passed to the constructor. This implementation build a
  * trust store that supports revocation and CRLs, see the CRL-related methods.
  * 
+ * The "org.jsslutils.prop.crlReloadInterval" system property may be used to
+ * configure the reload interval for CRLs (when re-loaded automatically), in
+ * seconds (0 won't reload them).
+ * 
  * @author Bruno Harbulot
  * 
  */

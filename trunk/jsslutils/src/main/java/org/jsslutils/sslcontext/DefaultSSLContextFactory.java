@@ -70,7 +70,35 @@ public class DefaultSSLContextFactory implements SSLContextFactory {
 	private SecureRandom secureRandom = null;
 
 	/**
+	 * Configures some this factory based on values in the properties.
 	 * 
+	 * <tbody>
+	 * <tr>
+	 * <th>Property name</th>
+	 * <th>Description</th>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.contextProvider</td>
+	 * <td>Name of the security {@link Provider} to use to instantiate the
+	 * {@link SSLContext}.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.contextProtocol</td>
+	 * <td>Name of the protocol for the {@link SSLContext}, defaults to TLS.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.secureRandomProvider</td>
+	 * <td>Name of the security {@link Provider} to use to instantiate the
+	 * {@link SecureRandom}.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.secureRandomAlgorithm</td>
+	 * <td>Name of the {@link SecureRandom} algorithm, defaults to null.</td>
+	 * </tr>
+	 * </tbody>
+	 * 
+	 * @param properties
+	 *            properties to use for the configuration.
 	 */
 	public void configure(Properties properties)
 			throws SSLContextFactoryException {

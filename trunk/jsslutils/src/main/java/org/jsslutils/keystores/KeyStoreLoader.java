@@ -47,6 +47,7 @@ import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -154,13 +155,24 @@ public final class KeyStoreLoader {
 	}
 
 	/**
-	 * Set the KeyStore password.
+	 * Set the KeyStore password. This makes a copy of the char[] into an
+	 * internal char[], which will be cleared either when you use
+	 * {@link KeyStoreLoader#loadKeyStore()} or set it to null.
 	 * 
 	 * @param keyStorePassword
 	 *            the KeyStore password
 	 */
 	public void setKeyStorePassword(char[] keyStorePassword) {
-		this.keyStorePassword = keyStorePassword;
+		if (keyStorePassword != null) {
+			this.keyStorePassword = new char[keyStorePassword.length];
+			System.arraycopy(keyStorePassword, 0, this.keyStorePassword, 0,
+					keyStorePassword.length);
+			this.keyStorePassword = keyStorePassword;
+		} else {
+			if (this.keyStorePassword != null) {
+				Arrays.fill(this.keyStorePassword, ' ');
+			}
+		}
 	}
 
 	/**
@@ -405,7 +417,7 @@ public final class KeyStoreLoader {
 
 	/**
 	 * Loads a KeyStore according to the parameters initialised using the
-	 * setters.
+	 * setters. The stored password will be cleared after calling this method.
 	 * 
 	 * @return KeyStore loaded from the value initialised with the setters.
 	 * @throws KeyStoreException
@@ -418,7 +430,13 @@ public final class KeyStoreLoader {
 	public KeyStore loadKeyStore() throws KeyStoreException,
 			NoSuchProviderException, IOException, NoSuchAlgorithmException,
 			CertificateException, UnsupportedCallbackException {
-		return loadKeyStore(this.keyStorePassword);
+		try {
+			return loadKeyStore(this.keyStorePassword);
+		} finally {
+			if (this.keyStorePassword != null) {
+				Arrays.fill(this.keyStorePassword, ' ');
+			}
+		}
 	}
 
 	/**
