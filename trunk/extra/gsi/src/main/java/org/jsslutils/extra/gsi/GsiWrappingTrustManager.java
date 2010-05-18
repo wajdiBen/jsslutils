@@ -216,14 +216,17 @@ public class GsiWrappingTrustManager implements X509TrustManager {
                     return verifyLegacyProxyCertificate(chain, eecCertIndex,
                             date);
                 } else {
+                    BigInteger bi = null;
                     try {
-                        @SuppressWarnings("unused")
-                        BigInteger bi = new BigInteger(cn);
+                        bi = new BigInteger(cn);
                     } catch (NumberFormatException e) {
+                    }
+                    if (bi == null) {
                         return new CertificateException(
                                 "Not a Pre-RFC or RFC3820 proxy certificate."
                                         + subjectPrincipal);
                     }
+
                     Set<String> criticalExtensionOIDs = proxyCert
                             .getCriticalExtensionOIDs();
                     if (criticalExtensionOIDs
@@ -501,10 +504,12 @@ public class GsiWrappingTrustManager implements X509TrustManager {
                                     + "'!");
                 }
                 String cn = subjectDnValues.get(fieldCount - 1);
+                BigInteger bi = null;
                 try {
-                    @SuppressWarnings("unused")
-                    BigInteger bi = new BigInteger(cn);
+                    bi = new BigInteger(cn);
                 } catch (NumberFormatException e) {
+                }
+                if (bi == null) {
                     return new CertificateException(
                             "Pre-RFC proxy certificate must start with 'CN=<some number>', got 'CN="
                                     + cn + "'!");
@@ -556,8 +561,11 @@ public class GsiWrappingTrustManager implements X509TrustManager {
                         ASN1OctetString proxyCertInfoOctetString = (ASN1OctetString) derObject;
                         asn1InputStream = new ASN1InputStream(
                                 proxyCertInfoOctetString.getOctetStream());
-                        derObject = asn1InputStream.readObject();
-                        asn1InputStream.close();
+                        try {
+                            derObject = asn1InputStream.readObject();
+                        } finally {
+                            asn1InputStream.close();
+                        }
 
                         /*
                          * This must be a SEQUENCE.
@@ -798,10 +806,12 @@ public class GsiWrappingTrustManager implements X509TrustManager {
                                     + "'!");
                 }
                 String cn = subjectDnValues.get(fieldCount - 1);
+                BigInteger bi = null;
                 try {
-                    @SuppressWarnings("unused")
-                    BigInteger bi = new BigInteger(cn);
+                    bi = new BigInteger(cn);
                 } catch (NumberFormatException e) {
+                }
+                if (bi == null) {
                     return new CertificateException(
                             "RFC3820 proxy certificate must start with 'CN=<some number>', got 'CN="
                                     + cn + "'!");
@@ -871,8 +881,11 @@ public class GsiWrappingTrustManager implements X509TrustManager {
                         ASN1OctetString proxyCertInfoOctetString = (ASN1OctetString) derObject;
                         asn1InputStream = new ASN1InputStream(
                                 proxyCertInfoOctetString.getOctetStream());
-                        derObject = asn1InputStream.readObject();
-                        asn1InputStream.close();
+                        try {
+                            derObject = asn1InputStream.readObject();
+                        } finally {
+                            asn1InputStream.close();
+                        }
 
                         /*
                          * ProxyCertInfo ::= SEQUENCE { pCPathLenConstraint
