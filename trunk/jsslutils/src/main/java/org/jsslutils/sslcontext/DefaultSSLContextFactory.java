@@ -72,6 +72,7 @@ public class DefaultSSLContextFactory implements SSLContextFactory {
 	/**
 	 * Configures some this factory based on values in the properties.
 	 * 
+	 * <table>
 	 * <tbody>
 	 * <tr>
 	 * <th>Property name</th>
@@ -96,6 +97,7 @@ public class DefaultSSLContextFactory implements SSLContextFactory {
 	 * <td>Name of the {@link SecureRandom} algorithm, defaults to null.</td>
 	 * </tr>
 	 * </tbody>
+	 * </table>
 	 * 
 	 * @param properties
 	 *            properties to use for the configuration.
