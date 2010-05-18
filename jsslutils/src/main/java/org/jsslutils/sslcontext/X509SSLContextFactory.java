@@ -40,8 +40,10 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Provider;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,7 +81,7 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	public final static String KEYSTORE_PASSWORD_PROP = "org.jsslutils.prop.keyStorePassword";
 	public final static String KEYSTORE_PROVIDER_CLASS_PROP = "org.jsslutils.prop.keyStoreProviderClass";
 	public final static String KEYSTORE_PROVIDER_ARGFILE_PROP = "org.jsslutils.prop.keyStoreProviderArgFile";
-	public final static String KEYSTORE_PROVIDER_ARGTEXT_PROP = "org.jsslutils.prop.keyStoreProviderArgFile";
+	public final static String KEYSTORE_PROVIDER_ARGTEXT_PROP = "org.jsslutils.prop.keyStoreProviderArgText";
 
 	public final static String KEY_PASSWORD_PROP = "org.jsslutils.prop.keyPassword";
 
@@ -89,7 +91,7 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	public final static String TRUSTSTORE_PASSWORD_PROP = "org.jsslutils.prop.trustStorePassword";
 	public final static String TRUSTSTORE_PROVIDER_CLASS_PROP = "org.jsslutils.prop.trustStoreProviderClass";
 	public final static String TRUSTSTORE_PROVIDER_ARGFILE_PROP = "org.jsslutils.prop.trustStoreProviderArgFile";
-	public final static String TRUSTSTORE_PROVIDER_ARGTEXT_PROP = "org.jsslutils.prop.trustStoreProviderArgFile";
+	public final static String TRUSTSTORE_PROVIDER_ARGTEXT_PROP = "org.jsslutils.prop.trustStoreProviderArgText";
 
 	private KeyStore keyStore;
 	private char[] keyPassword;
@@ -142,10 +144,99 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	public X509SSLContextFactory(KeyStore keyStore, char[] keyPassword,
 			KeyStore trustStore) {
 		this.keyStore = keyStore;
-		this.keyPassword = keyPassword;
 		this.trustStore = trustStore;
+		setKeyPassword(keyPassword);
 	}
 
+	/**
+	 * Configures some this factory based on values in the properties. In
+	 * addition to the properties described in
+	 * {@link DefaultSSLContextFactory#configure(Properties)}, the following
+	 * properties are used:
+	 * 
+	 * <tbody>
+	 * <tr>
+	 * <th>Property name</th>
+	 * <th>Description</th>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.keyStore</td>
+	 * <td>Path to the {@link KeyStore} file to use as the keystore; use "NONE"
+	 * if it's not file-based.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.keyStoreType</td>
+	 * <td>Keystore type for the keystore.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.keyStoreProvider</td>
+	 * <td>Name of the security {@link Provider} to use to load the keystore.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.keyStorePassword</td>
+	 * <td>Password to load the keystore.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.keyStoreProviderClass</td>
+	 * <td>Name of the {@link Provider} class to use to load the keystore,
+	 * typically used with a provider arg file or text; this takes precedence
+	 * over loading via provider name.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.keyStoreProviderArgFile</td>
+	 * <td>Path to the file to use as an argument when instantiating the
+	 * keystore {@link Provider} via its class name</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.keyStoreProviderArgText</td>
+	 * <td>Text content of the argument when instantiating the keystore
+	 * {@link Provider} via its class name.</td>
+	 * </tr>
+	 * 
+	 * <tr>
+	 * <td>org.jsslutils.prop.keyPassword</td>
+	 * <td>Password to use the key itself from the keystore.</td>
+	 * </tr>
+	 * 
+	 * <tr>
+	 * <td>org.jsslutils.prop.trustStore</td>
+	 * <td>Path to the {@link KeyStore} file to use as the truststore; use
+	 * "NONE" if it's not file-based.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.trustStoreType</td>
+	 * <td>Keystore type for the truststore.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.trustStoreProvider</td>
+	 * <td>Name of the security {@link Provider} to use to load the truststore.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.trustStorePassword</td></td>
+	 * <td>Password to load the truststore.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.trustStoreProviderClass</td>
+	 * <td>Name of the {@link Provider} class to use to load the truststore,
+	 * typically used with a provider arg file or text; this takes precedence
+	 * over loading via provider name.</td>
+	 * </tr>
+	 * 
+	 * <tr>
+	 * <td>org.jsslutils.prop.trustStoreProviderArgFile</td>
+	 * <td>Path to the file to use as an argument when instantiating the
+	 * truststore {@link Provider} via its class name</td>
+	 * </tr>
+	 * <tr>
+	 * <td>org.jsslutils.prop.trustStoreProviderArgText</td>
+	 * <td>Text content of the argument when instantiating the truststore
+	 * {@link Provider} via its class name.</td>
+	 * </tr>
+	 * </tbody>
+	 * 
+	 * @param properties
+	 *            properties to use for the configuration.
+	 */
 	@Override
 	public void configure(Properties properties)
 			throws SSLContextFactoryException {
@@ -249,7 +340,16 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 	 * @param keyPassword
 	 */
 	public void setKeyPassword(char[] keyPassword) {
-		this.keyPassword = keyPassword;
+		if (keyPassword != null) {
+			this.keyPassword = new char[keyPassword.length];
+			System.arraycopy(keyPassword, 0, this.keyPassword, 0,
+					keyPassword.length);
+			this.keyPassword = keyPassword;
+		} else {
+			if (this.keyPassword != null) {
+				Arrays.fill(this.keyPassword, ' ');
+			}
+		}
 	}
 
 	/**
@@ -311,9 +411,7 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
 					char[] password = passwordCallback.getPassword();
 					kmf.init(this.keyStore, password);
 					if (password != null) {
-						for (int i = 0; i < password.length; i++) {
-							password[i] = 0;
-						}
+						Arrays.fill(password, ' ');
 					}
 				}
 				return kmf.getKeyManagers();

@@ -248,7 +248,7 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 		serverKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 		serverKeyStore.load(null);
 		serverKeyStore.setKeyEntry("localhost", keyPair.getPrivate(),
-				MiniSslClientServer.KEYSTORE_PASSWORD,
+				MiniSslClientServer.KEYSTORE_PASSWORD.toCharArray(),
 				new Certificate[] { localhostCertificate });
 
 		kpg.initialize(1024);
@@ -260,7 +260,7 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 		client1KeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 		client1KeyStore.load(null);
 		client1KeyStore.setKeyEntry("client1", keyPair.getPrivate(),
-				MiniSslClientServer.KEYSTORE_PASSWORD,
+				MiniSslClientServer.KEYSTORE_PASSWORD.toCharArray(),
 				new Certificate[] { client1Certificate });
 
 		kpg.initialize(1024);
@@ -272,7 +272,7 @@ public class PKIXReloadCrlTest extends MiniSslClientServer {
 		client2KeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 		client2KeyStore.load(null);
 		client2KeyStore.setKeyEntry("client2", keyPair.getPrivate(),
-				MiniSslClientServer.KEYSTORE_PASSWORD,
+				MiniSslClientServer.KEYSTORE_PASSWORD.toCharArray(),
 				new Certificate[] { client2Certificate });
 	}
 

@@ -88,7 +88,7 @@ import javax.net.ssl.SSLSocketFactory;
 public abstract class MiniSslClientServer {
 
 	public final static String CERTIFICATES_DIRECTORY = "org/jsslutils/certificates/";
-	public final static char[] KEYSTORE_PASSWORD = "testtest".toCharArray();
+	public final static String KEYSTORE_PASSWORD = "testtest";
 
 	protected volatile boolean stopServer = false;
 	protected boolean verboseExceptions = false;
@@ -119,7 +119,7 @@ public abstract class MiniSslClientServer {
 		InputStream ksis = ClassLoader
 				.getSystemResourceAsStream(getCertificatesDirectory()
 						+ "cacert.jks");
-		ks.load(ksis, KEYSTORE_PASSWORD);
+		ks.load(ksis, KEYSTORE_PASSWORD.toCharArray());
 		ksis.close();
 		return ks;
 	}
@@ -140,7 +140,7 @@ public abstract class MiniSslClientServer {
 		InputStream ksis = ClassLoader
 				.getSystemResourceAsStream(getCertificatesDirectory()
 						+ "localhost.p12");
-		ks.load(ksis, KEYSTORE_PASSWORD);
+		ks.load(ksis, KEYSTORE_PASSWORD.toCharArray());
 		ksis.close();
 		return ks;
 	}
@@ -163,7 +163,7 @@ public abstract class MiniSslClientServer {
 		InputStream ksis = ClassLoader
 				.getSystemResourceAsStream(getCertificatesDirectory()
 						+ "testclient.p12");
-		ks.load(ksis, KEYSTORE_PASSWORD);
+		ks.load(ksis, KEYSTORE_PASSWORD.toCharArray());
 		ksis.close();
 		return ks;
 	}
@@ -187,7 +187,7 @@ public abstract class MiniSslClientServer {
 		InputStream ksis = ClassLoader
 				.getSystemResourceAsStream(getCertificatesDirectory()
 						+ "testclient_r.p12");
-		ks.load(ksis, KEYSTORE_PASSWORD);
+		ks.load(ksis, KEYSTORE_PASSWORD.toCharArray());
 		ksis.close();
 		return ks;
 	}
