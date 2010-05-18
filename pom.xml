@@ -10,19 +10,17 @@
 	<name>jSSLutils (Root project)</name>
 	<url>http://www.jsslutils.org/</url>
 	<description>This is a set of SSL-related utilities for Java.</description>
-	<licenses>
-		<license>
-			<name>BSD</name>
-			<url>LICENSE.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
 	<scm>
 		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
 		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/trunk</developerConnection>
 		<tag>HEAD</tag>
 		<url>http://code.google.com/p/jsslutils/source/browse</url>
 	</scm>
+	<licenses>
+		<license>
+			<comments>Please see individual modules</comments>
+		</license>
+	</licenses>
 	<build>
 		<plugins>
 			<plugin>
