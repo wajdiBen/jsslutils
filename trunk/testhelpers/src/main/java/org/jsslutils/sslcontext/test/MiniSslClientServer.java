@@ -541,7 +541,8 @@ public abstract class MiniSslClientServer {
         if (session != null) {
             System.out.println("Session: " + session);
             System.out.println("  Local certificates: "
-                    + Arrays.asList(session.getLocalCertificates()));
+                    + (session.getLocalCertificates() != null ? Arrays
+                            .asList(session.getLocalCertificates()) : null));
             System.out.println("  Local principal: "
                     + session.getLocalPrincipal());
             SSLSessionContext context = session.getSessionContext();
