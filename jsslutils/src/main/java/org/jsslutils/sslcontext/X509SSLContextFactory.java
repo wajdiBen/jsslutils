@@ -346,7 +346,6 @@ public class X509SSLContextFactory extends DefaultSSLContextFactory {
             this.keyPassword = new char[keyPassword.length];
             System.arraycopy(keyPassword, 0, this.keyPassword, 0,
                     keyPassword.length);
-            this.keyPassword = keyPassword;
         } else {
             if (this.keyPassword != null) {
                 Arrays.fill(this.keyPassword, ' ');
