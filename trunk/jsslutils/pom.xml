@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils</artifactId>
-	<version>1.0</version>
-	<packaging>jar</packaging>
+	<version>1.0.1</version>
+	<packaging>bundle</packaging>
 	<name>jSSLutils</name>
 	<url>http://www.jsslutils.org/</url>
 	<description>This is a set of SSL-related utilities for Java.</description>
@@ -53,6 +53,32 @@ POSSIBILITY OF SUCH DAMAGE.
 		<tag>HEAD</tag>
 		<url>http://code.google.com/p/jsslutils/source/browse</url>
 	</scm>
+	<profiles>
+		<profile>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<build>
 		<plugins>
 			<plugin>
@@ -71,6 +97,17 @@ POSSIBILITY OF SUCH DAMAGE.
 							<value>certpath</value>
 						</property>
 					</systemProperties>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<version>2.1.0</version>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+					</instructions>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -99,7 +136,7 @@ POSSIBILITY OF SUCH DAMAGE.
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>1.0</version>
+			<version>1.0.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
