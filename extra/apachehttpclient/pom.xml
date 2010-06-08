@@ -1,20 +1,19 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils-extra-apachehttpclient3</artifactId>
-	<version>1.0</version>
-	<packaging>jar</packaging>
+	<version>1.0.1</version>
+	<packaging>bundle</packaging>
 	<name>jSSLutils :: Extra :: Apache Commons HTTP client util</name>
 	<url>http://www.jsslutils.org/</url>
 	<description>Utilities for use with the Apache Commons HTTP client library 3.x.</description>
 	<licenses>
-	    <license>
-	      <name>The Apache Software License, Version 2.0</name>
-	      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-	      <distribution>repo</distribution>
-	      <comments>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>
  This is derived from Apache Jakarta HttpClient:
  Copyright 1999-2007 The Apache Software Foundation
  
@@ -23,12 +22,12 @@
 This product includes software developed by
 The Apache Software Foundation (http://www.apache.org/).
 	      </comments>
-	    </license>
-	    <license>
-	      <name>LGPL</name>
-	      <url>http://www.gnu.org/copyleft/lesser.txt</url>
-	      <distribution>repo</distribution>
-	      <comments>
+		</license>
+		<license>
+			<name>LGPL</name>
+			<url>http://www.gnu.org/copyleft/lesser.txt</url>
+			<distribution>repo</distribution>
+			<comments>
  This is derived from Apache Jakarta HttpClient:
  Copyright 1999-2007 The Apache Software Foundation
  
@@ -37,7 +36,7 @@ The Apache Software Foundation (http://www.apache.org/).
 This product includes software developed by
 The Apache Software Foundation (http://www.apache.org/).
 	      </comments>
-	    </license>
+		</license>
 	</licenses>
 	<scm>
 		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
@@ -45,6 +44,32 @@ The Apache Software Foundation (http://www.apache.org/).
 		<tag>HEAD</tag>
 		<url>http://code.google.com/p/jsslutils/source/browse</url>
 	</scm>
+	<profiles>
+		<profile>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<build>
 		<plugins>
 			<plugin>
@@ -52,6 +77,17 @@ The Apache Software Foundation (http://www.apache.org/).
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<version>2.1.0</version>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+					</instructions>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -65,13 +101,13 @@ The Apache Software Foundation (http://www.apache.org/).
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils</artifactId>
-			<version>1.0</version>
+			<version>1.0.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>1.0</version>
+			<version>1.0.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
