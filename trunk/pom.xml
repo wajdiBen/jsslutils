@@ -3,15 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils-root</artifactId>
-	<version>1.0.5</version>
+	<version>1.0.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>jSSLutils (Root project)</name>
 	<url>http://www.jsslutils.org/</url>
 	<description>This is a set of SSL-related utilities for Java.</description>
 	<scm>
-		<connection>scm:svn:http://jsslutils.googlecode.com/svn/tags/release-1.0.5</connection>
-		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/tags/release-1.0.5</developerConnection>
-		<url>http://code.google.com/p/jsslutils/source/browse/tags/release-1.0.5</url>
+		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/trunk</developerConnection>
+		<url>http://code.google.com/p/jsslutils/source/browse</url>
 	</scm>
 	<distributionManagement>
 		<repository>
