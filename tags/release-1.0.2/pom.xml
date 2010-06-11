@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.jsslutils</groupId>
+	<artifactId>jsslutils-root</artifactId>
+	<version>1.0.2</version>
+	<packaging>pom</packaging>
+	<name>jSSLutils (Root project)</name>
+	<url>http://www.jsslutils.org/</url>
+	<description>This is a set of SSL-related utilities for Java.</description>
+	<scm>
+		<connection>scm:svn:http://jsslutils.googlecode.com/svn/tags/release-1.0.2</connection>
+		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/tags/release-1.0.2</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://code.google.com/p/jsslutils/source/browse/tags/release-1.0.2</url>
+	</scm>
+	<distributionManagement>
+		<repository>
+			<id>sonatype-nexus-staging</id>
+			<name>Nexus Release Repository</name>
+			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<licenses>
+		<license>
+			<comments>Please see individual modules</comments>
+		</license>
+	</licenses>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<modules>
+		<module>jsslutils</module>
+		<module>certificates</module>
+		<module>extra/gsi</module>
+		<module>extra/apachehttpclient</module>
+		<module>extra/apachetomcat5</module>
+		<module>extra/apachetomcat6</module>
+		<module>testhelpers</module>
+	</modules>
+</project>
