@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils-extra-apachehttpclient3</artifactId>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.2</version>
 	<packaging>bundle</packaging>
 	<name>jSSLutils :: Extra :: Apache Commons HTTP client util</name>
 	<url>http://www.jsslutils.org/</url>
@@ -39,10 +38,10 @@ The Apache Software Foundation (http://www.apache.org/).
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
-		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/trunk</developerConnection>
+		<connection>scm:svn:http://jsslutils.googlecode.com/svn/tags/release-1.0.2</connection>
+		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/tags/release-1.0.2</developerConnection>
 		<tag>HEAD</tag>
-		<url>http://code.google.com/p/jsslutils/source/browse</url>
+		<url>http://code.google.com/p/jsslutils/source/browse/tags/release-1.0.2</url>
 	</scm>
 	<distributionManagement>
 		<repository>
@@ -123,13 +122,13 @@ The Apache Software Foundation (http://www.apache.org/).
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils</artifactId>
-			<version>1.0.2-SNAPSHOT</version>
+			<version>1.0.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>1.0.2-SNAPSHOT</version>
+			<version>1.0.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
