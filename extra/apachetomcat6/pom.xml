@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils-extra-apachetomcat6</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<name>jSSLutils :: Extra :: SSLImplementation for Apache Tomcat 6</name>
 	<url>http://www.jsslutils.org/</url>
@@ -25,10 +25,9 @@ The Apache Software Foundation (http://www.apache.org/).
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:svn:http://jsslutils.googlecode.com/svn/tags/release-1.0.2</connection>
-		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/tags/release-1.0.2</developerConnection>
-		<tag>HEAD</tag>
-		<url>http://code.google.com/p/jsslutils/source/browse/tags/release-1.0.2</url>
+		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/trunk</developerConnection>
+		<url>http://code.google.com/p/jsslutils/source/browse</url>
 	</scm>
 	<distributionManagement>
 		<repository>
@@ -109,7 +108,7 @@ The Apache Software Foundation (http://www.apache.org/).
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
