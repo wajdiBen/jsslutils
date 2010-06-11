@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<name>jSSLutils</name>
 	<url>http://www.jsslutils.org/</url>
@@ -53,8 +53,21 @@ POSSIBILITY OF SUCH DAMAGE.
 		<tag>HEAD</tag>
 		<url>http://code.google.com/p/jsslutils/source/browse</url>
 	</scm>
+	<distributionManagement>
+		<repository>
+			<id>sonatype-nexus-staging</id>
+			<name>Nexus Release Repository</name>
+			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 	<profiles>
 		<profile>
+			<id>release-sign-artifacts</id>
 			<activation>
 				<property>
 					<name>performRelease</name>
@@ -68,7 +81,8 @@ POSSIBILITY OF SUCH DAMAGE.
 						<artifactId>maven-gpg-plugin</artifactId>
 						<executions>
 							<execution>
-								<phase>package</phase>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
 								<goals>
 									<goal>sign</goal>
 								</goals>
@@ -111,6 +125,15 @@ POSSIBILITY OF SUCH DAMAGE.
 				</configuration>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>${basedir}</directory>
+				<targetPath>META-INF</targetPath>
+				<includes>
+					<include>LICENSE.txt</include>
+				</includes>
+			</resource>
+		</resources>
 	</build>
 	<reporting>
 		<plugins>
@@ -136,7 +159,7 @@ POSSIBILITY OF SUCH DAMAGE.
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.2-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
