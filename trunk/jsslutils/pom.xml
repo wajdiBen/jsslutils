@@ -164,7 +164,7 @@ POSSIBILITY OF SUCH DAMAGE.
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-helpers</artifactId>
-			<version>1.0.3-SNAPSHOT</version>
+			<version>1.0.4-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
