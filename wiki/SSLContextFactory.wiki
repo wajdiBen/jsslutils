@@ -41,7 +41,6 @@ For example, the following will create an `X509SSLContextFactory` that uses X.50
 X509SSLContextFactory sslContextFactory = 
 	new X509SSLContextFactory(getServerCertKeyStore(), "testtest", getCaKeyStore());
 sslContextFactory.setTrustManagerWrapper(new TrustAllClientsWrappingTrustManager.Wrapper());
-sslContextFactory.lockTrustManagerWrapper();
 SSLServerSocket socket = prepareServerSocket(sslContextFactory.buildSSLContext());
 }}}
 
