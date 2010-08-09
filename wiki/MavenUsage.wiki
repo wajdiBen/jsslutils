@@ -3,23 +3,21 @@
 
 = Using jsslutils from Maven =
 
-As of 22/05/2008, jsslutils (version 0.3) has entered the [http://maven.apache.org/ Maven] central repository.
-
-Here is the dependency descriptor:
+Here is the main dependency descriptor:
 {{{
 <dependency>
-	<groupId>com.googlecode.jsslutils</groupId>
+	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils</artifactId>
-	<version>0.3</version>
+	<version>1.0.5</version>
 </dependency>
 }}}
 
 
-In addition, you may also use the test keys and certificates, which are bundled separately:
+In addition, you may also use some optional extensions:
 {{{
 <dependency>
-	<groupId>com.googlecode.jsslutils</groupId>
-	<artifactId>jsslutils-test-certificates</artifactId>
-	<version>1.0</version>
+	<groupId>org.jsslutils</groupId>
+	<artifactId>jsslutils-extra-gsi</artifactId>
+	<version>1.0.5</version>
 </dependency>
 }}}
