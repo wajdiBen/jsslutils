@@ -5,7 +5,7 @@
 
 The `setSslContext` method was added to the [http://www.mortbay.org/ Jetty] SSL connectors (see [http://jira.codehaus.org/browse/JETTY-554 JETTY-554]) in version 7.0.0pre4, so it is possible to use jSSLutils with Jetty. This can be used for configuring Certificate Revocation Lists (CRLs).
 
-The following configuration is for Jetty 7.0.1. For these examples to work, `jsslutils-0.5.jar` needs to be on Jetty's classpath. One way to do this is to put `jsslutils-0.5.jar` in `$JETTY_HOME/lib/ext` and use the `ext` option:
+The following configuration is for Jetty 7.0.1. For these examples to work, `jsslutils-1.0.5.jar` needs to be on Jetty's classpath. One way to do this is to put `jsslutils-1.0.5.jar` in `$JETTY_HOME/lib/ext` and use the `ext` option:
 
 
 {{{
