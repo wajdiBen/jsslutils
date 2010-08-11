@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsslutils</groupId>
 	<artifactId>jsslutils-test-helpers</artifactId>
-	<version>1.0.6-SNAPSHOT</version>
+	<version>1.0.6</version>
 	<packaging>bundle</packaging>
 	<name>jSSLutils</name>
 	<url>http://www.jsslutils.org/</url>
@@ -47,9 +47,9 @@ POSSIBILITY OF SUCH DAMAGE.
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:svn:http://jsslutils.googlecode.com/svn/trunk</connection>
-		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/trunk</developerConnection>
-		<url>http://code.google.com/p/jsslutils/source/browse</url>
+		<connection>scm:svn:http://jsslutils.googlecode.com/svn/tags/jsslutils-root-1.0.6</connection>
+		<developerConnection>scm:svn:https://jsslutils.googlecode.com/svn/tags/jsslutils-root-1.0.6</developerConnection>
+		<url>http://code.google.com/p/jsslutils/source/browse/tags/jsslutils-root-1.0.6</url>
 	</scm>
 	<distributionManagement>
 		<repository>
@@ -131,7 +131,7 @@ POSSIBILITY OF SUCH DAMAGE.
 		<dependency>
 			<groupId>org.jsslutils</groupId>
 			<artifactId>jsslutils-test-certificates</artifactId>
-			<version>2.0.6-SNAPSHOT</version>
+			<version>2.0.6</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
