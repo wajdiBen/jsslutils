@@ -73,11 +73,13 @@ public class GsiVerificationTest {
     private X509Certificate[] rfc3820ProxyCert;
     private X509Certificate[] legacyProxyCert;
     private X509Certificate[] limitedLegacyProxyCert;
+    private X509Certificate[] userCert;
 
     private Date preRfcProxyCertDate;
     private Date rfc3820ProxyCertDate;
     private Date legacyProxyCertDate;
     private Date limitedLegacyProxyCertDate;
+    private Date userCertDate;
 
     @Before
     public void loadTestCertificates() throws Exception {
@@ -107,6 +109,10 @@ public class GsiVerificationTest {
                         .getResourceAsStream("rfc3820_cert.pem")).toArray(
                 new X509Certificate[] {});
         rfc3820ProxyCertDate = date;
+        userCert = certificateFactory.generateCertificates(
+                GsiVerificationTest.class.getResourceAsStream("user_cert.pem"))
+                .toArray(new X509Certificate[] {});
+        userCertDate = date;
     }
 
     @Test
@@ -130,6 +136,11 @@ public class GsiVerificationTest {
 
         e = GsiWrappingTrustManager.verifyProxyCertificate(rfc3820ProxyCert, 1,
                 rfc3820ProxyCertDate);
+        displayException(e);
+        assertNull(e);
+
+        e = GsiWrappingTrustManager.verifyProxyCertificate(userCert, 0,
+                userCertDate);
         displayException(e);
         assertNull(e);
     }
@@ -158,6 +169,11 @@ public class GsiVerificationTest {
                 true, false, false, rfc3820ProxyCertDate);
         displayException(e);
         assertNotNull(e);
+
+        e = GsiWrappingTrustManager.verifyProxyCertificate(userCert, 0, true,
+                false, false, userCertDate);
+        displayException(e);
+        assertNull(e);
     }
 
     @Test
@@ -183,6 +199,11 @@ public class GsiVerificationTest {
                 rfc3820ProxyCert, 1, rfc3820ProxyCertDate);
         displayException(e);
         assertNotNull(e);
+
+        e = GsiWrappingTrustManager.verifyLegacyProxyCertificate(userCert, 0,
+                userCertDate);
+        displayException(e);
+        assertNull(e);
     }
 
     @Test
@@ -206,6 +227,11 @@ public class GsiVerificationTest {
 
         e = GsiWrappingTrustManager.verifyRfc3820ProxyCertificate(
                 rfc3820ProxyCert, 1, rfc3820ProxyCertDate);
+        displayException(e);
+        assertNull(e);
+
+        e = GsiWrappingTrustManager.verifyRfc3820ProxyCertificate(userCert, 0,
+                userCertDate);
         displayException(e);
         assertNull(e);
     }
@@ -233,6 +259,11 @@ public class GsiVerificationTest {
                 rfc3820ProxyCert, 1, rfc3820ProxyCertDate);
         displayException(e);
         assertNotNull(e);
+
+        e = GsiWrappingTrustManager.verifyPreRfcProxyCertificate(userCert, 0,
+                userCertDate);
+        displayException(e);
+        assertNull(e);
     }
 
     private static void displayException(Exception e) {
@@ -338,8 +369,8 @@ public class GsiVerificationTest {
         public void run() {
             System.out.println("Accepted connection.");
             try {
-                PrintWriter out = new PrintWriter(acceptedSocket
-                        .getOutputStream(), true);
+                PrintWriter out = new PrintWriter(
+                        acceptedSocket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         acceptedSocket.getInputStream()));
                 String inputLine;

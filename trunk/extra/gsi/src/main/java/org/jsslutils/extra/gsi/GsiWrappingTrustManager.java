@@ -188,6 +188,9 @@ public class GsiWrappingTrustManager implements X509TrustManager {
     public static CertificateException verifyProxyCertificate(
             X509Certificate[] chain, int eecCertIndex, boolean allowLegacy,
             boolean allowPreRfc, boolean allowRfc3820, Date date) {
+        if (eecCertIndex <= 0) {
+            return null;
+        }
         try {
             X509Certificate proxyCert = chain[0];
             X509Principal subjectPrincipal = new X509Principal(proxyCert
@@ -263,6 +266,9 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 
     public static CertificateException verifyLegacyProxyCertificate(
             X509Certificate[] chain, int eecCertIndex, Date date) {
+        if (eecCertIndex <= 0) {
+            return null;
+        }
         try {
             /*
              * Walk through the rest of the chain to check that the subsequent
@@ -398,6 +404,9 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 
     public static CertificateException verifyPreRfcProxyCertificate(
             X509Certificate[] chain, int eecCertIndex, Date date) {
+        if (eecCertIndex <= 0) {
+            return null;
+        }
         try {
             X509Certificate cert = chain[eecCertIndex];
 
@@ -684,6 +693,9 @@ public class GsiWrappingTrustManager implements X509TrustManager {
 
     public static CertificateException verifyRfc3820ProxyCertificate(
             X509Certificate[] chain, int eecCertIndex, Date date) {
+        if (eecCertIndex <= 0) {
+            return null;
+        }
         try {
             X509Certificate cert = chain[eecCertIndex];
 
