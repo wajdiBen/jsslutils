@@ -43,8 +43,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -297,9 +299,10 @@ public class SslContextedSecureProtocolSocketFactory implements
      * @exception UnknownHostException
      *                If we are not able to resolve the SSL sessions returned
      *                server host name.
+     * @throws CertificateParsingException
      */
-    private void verifyHostname(SSLSocket socket)
-            throws SSLPeerUnverifiedException, UnknownHostException {
+    private void verifyHostname(SSLSocket socket) throws IOException,
+            UnknownHostException {
         synchronized (this) {
             if (!verifyHostname)
                 return;
@@ -320,21 +323,38 @@ public class SslContextedSecureProtocolSocketFactory implements
             throw new SSLPeerUnverifiedException(
                     "No server certificates found!");
 
-        X500Principal subjectDN = certs[0].getSubjectX500Principal();
-
-        // get the common names from the first cert
-        List<String> cns = getCNs(subjectDN);
-        boolean foundHostName = false;
-        for (String cn : cns) {
-            if (hostname.equalsIgnoreCase(cn)) {
-                foundHostName = true;
-                break;
+        try {
+            List<String> cns = new ArrayList<String>();
+            boolean foundDnsSan = false;
+            Collection<List<?>> subjectAltNames = certs[0]
+                    .getSubjectAlternativeNames();
+            if (subjectAltNames != null) {
+                for (List<?> san : subjectAltNames) {
+                    if (((Integer) san.get(0)).intValue() == 2) {
+                        foundDnsSan = true;
+                        String sanDns = (String) san.get(1);
+                        cns.add(sanDns);
+                        if (hostname.equalsIgnoreCase(sanDns)) {
+                            return;
+                        }
+                    }
+                }
             }
-        }
-        if (!foundHostName) {
+            if (!foundDnsSan) {
+                // get the common names from the first cert
+                X500Principal subjectDN = certs[0].getSubjectX500Principal();
+                cns = getCNs(subjectDN);
+                for (String cn : cns) {
+                    if (hostname.equalsIgnoreCase(cn)) {
+                        return;
+                    }
+                }
+            }
             throw new SSLPeerUnverifiedException(
                     "HTTPS hostname invalid: expected '" + hostname
                             + "', received '" + cns + "'");
+        } catch (CertificateParsingException e) {
+            throw new IOException(e);
         }
     }
 
